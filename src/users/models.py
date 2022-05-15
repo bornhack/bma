@@ -9,5 +9,5 @@ class User(AbstractUser):
         help_text="The public_credit_name field of the user profile on the BornHack website.",
     )
     description = models.TextField(
-        help_text="The description field of the user profile on the BornHack website."
+        help_text="The description field of the user profile on the BornHack website.",
     )

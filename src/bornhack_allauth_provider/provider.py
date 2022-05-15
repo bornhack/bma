@@ -17,12 +17,12 @@ class CustomProvider(OAuth2Provider):
         return str(data["user"]["user_id"])
 
     def extract_common_fields(self, data):
-        return dict(
-            username=data["user"]["username"],
-            email=data["user"]["username"],
-            public_credit_name=data["profile"]["public_credit_name"],
-            description=data["profile"]["description"],
-        )
+        return {
+            "username": data["user"]["username"],
+            "email": data["user"]["username"],
+            "public_credit_name": data["profile"]["public_credit_name"],
+            "description": data["profile"]["description"],
+        }
 
     def get_default_scope(self):
         scope = ["profile:read"]
