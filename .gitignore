@@ -1,3 +1,10 @@
+# vim
+*.swp
+
+# local env settings
+environment_settings.py
+bma/.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

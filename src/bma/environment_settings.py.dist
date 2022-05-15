@@ -1,0 +1,36 @@
+from pathlib import Path
+from environs import Env
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# read os.environ or .env file
+env = Env()
+env.read_env()
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="{{ django_secret_key }}")
+
+# debug settings - remember to set allowed_hosts if debug is disabled
+DEBUG = env.bool("DJANGO_DEBUG", default="{{ django_debug }}")
+DEBUG_TOOLBAR = False
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default="{{ django_allowed_hostnames|join(',')|default('127.0.0.1,localhost') }}")
+
+# Database settings
+DATABASES = {
+    "default": env.dj_db_url("DJANGO_DATABASE_URL", default="postgres://{{ django_postgres_user }}:{{ django_postgres_password }}@{{ django_postgres_host }}/{{ django_postgres_dbname }}")
+}
+
+# admin site url prefix, set to 'admin' for /admin/
+ADMIN_PREFIX = env.str("DJANGO_ADMIN_PREFIX", default="{{ django_admin_prefix|default('admin') }}")
+
+# secure cookies and proxy header
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# uploaded or generated files are placed below MEDIA_ROOT
+MEDIA_ROOT = Path(env.str("DJANGO_MEDIA_ROOT", default="{{ django_media_root }}"))
+
+# auth server
+OAUTH_SERVER_BASEURL=env.str("DJANGO_OAUTH_SERVER_BASEURL", default="https://bornhack.dk")
