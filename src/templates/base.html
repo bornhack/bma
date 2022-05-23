@@ -1,0 +1,107 @@
+{% load static %}
+{% load bootstrap5 %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Untitled page{% endblock %} - BornHack Media Archive</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/vendor/bootstrap.5.0.2.min.css' %}" rel="stylesheet">
+
+    <!-- FontAwesome CSS -->
+    <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
+
+    <!-- Custom stylesheets -->
+    <link href="{% static 'css/bma.css' %}" rel="stylesheet">
+
+    <!-- https://datatables.net/ -->
+    <link href="{% static 'css/vendor/dataTables.1.12.1.min.css' %}" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="{% static "js/vendor/jquery-3.6.0.min.js" %}"></script>
+
+    <!-- https://datatables.net/ -->
+    <script src="{% static "js/vendor/jquery.dataTables.1.12.1.min.js" %}"></script>
+
+    <!-- bootstrap -->
+    <script src="{% static "js/vendor/bootstrap.5.0.2.min.js" %}"></script>
+
+    <!-- Custom javascript -->
+    <script src="{% static 'js/bma.js' %}"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+
+  <body class="d-flex flex-column min-vh-100 bma-no-js">
+    {% block body %}
+      <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="#">BornHack Media Archive</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  {% if request.resolver_match.url_name == "frontpage" %}
+                    <a class="nav-link active" aria-current="page" href="#">Frontpage</a>
+                  {% else %}
+                    <a class="nav-link" href="/">Frontpage</a>
+                  {% endif %}
+                </li>
+
+                <li class="nav-item">
+                  {% if request.resolver_match.url_name == "gallery_create" %}
+                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_create' %}">Upload</a>
+                  {% else %}
+                    <a class="nav-link" href="{% url 'galleries:gallery_create' %}">Upload</a>
+                  {% endif %}
+                </li>
+
+                <li class="nav-item">
+                  {% if request.resolver_match.url_name == "gallery_list" %}
+                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_list' %}">Galleries</a>
+                  {% else %}
+                    <a class="nav-link" href="{% url 'galleries:gallery_list' %}">Galleries</a>
+                  {% endif %}
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+              </ul>
+              <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main class="flex-shrink-0">
+        <div class="container">
+          {% for message in messages %}
+            <div class="{{ message|bootstrap_message_classes }} alert-dismissible fade show" role="alert">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+              {{ message }}
+            </div>
+          {% endfor %}
+          <!-- Begin page content -->
+          {% block content %}
+            <p class="lead">This is the default content of the block 'body' in the base.html template of the BMA project. Please replace in templates inheriting from base.html</p>
+          {% endblock content %}
+        </div>
+      </main>
+
+      <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+          <span class="text-muted">Git tag/revision: {{ request.revision }}</span>
+        </div>
+      </footer>
+    {% endblock body %}
+  </body>
+</html>

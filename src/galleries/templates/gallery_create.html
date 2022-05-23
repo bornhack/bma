@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Create Gallery{% endblock title %}
+
+{% block content %}
+  <h3>Create Gallery</h3>
+  <p class="lead">A gallery is a collection of photos, videos and/or audio files. Only images are supported for now.</p>
+  <form enctype=multipart/form-data method="POST">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <div class="upload__box">
+      <div class="row gy-4 upload__img-wrap"></div>
+    </div>
+    <hr>
+    <button type="submit" class="btn btn-success">Submit</button>
+  </form>
+{% endblock content %}

@@ -26,11 +26,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    # deps
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "taggit",
+    "bootstrap5",
+    "fontawesomefree",
+    # bma apps
     "bornhack_allauth_provider",
     "users",
+    "utils",
+    "galleries",
+    "photos",
+    "videos",
 ]
 
 MIDDLEWARE = [
@@ -41,6 +50,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "dealer.contrib.django.Middleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -61,6 +71,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "dealer.contrib.django.context_processor",
+                "django.template.context_processors.media",
             ],
         },
     },
@@ -105,7 +117,9 @@ USE_TZ = True
 
 STATICFILES_DIRS = [BASE_DIR / "static_src"]  # find static files below here
 STATIC_ROOT = BASE_DIR / "static"  # collect all static files here
-STATIC_URL = "/static/"  # serve the static files here
+STATIC_URL = "static/"  # serve the static files here
+
+MEDIA_URL = "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

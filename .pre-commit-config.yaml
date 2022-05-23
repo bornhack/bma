@@ -71,3 +71,12 @@ repos:
           - flake8-comprehensions
           - flake8-tidy-imports
         args: [--max-line-length=120]
+  - repo: https://github.com/rtts/djhtml
+    rev: 'v1.5.0'  # replace with the latest tag on GitHub
+    hooks:
+      - id: djhtml
+        args: ["-t", "2"]
+      - id: djcss
+        exclude: static_src/css/vendor/.*
+      - id: djjs
+        exclude: static_src/js/vendor/.*
