@@ -4,81 +4,39 @@ jQuery(document).ready(function () {
 });
 
 function ImgUpload() {
-    var imgWrap = "";
-    var imgArray = [];
+    $('#id_files').bind('change', function (e) {
+        $(this).closest('.container').find('.upload__img-wrap').remove();
+        $(this).closest('.container').find('.upload__box').append('<div class="row gy-4 upload__img-wrap"></div>');
+        imgWrap = $(this).closest('.container').find('.upload__img-wrap');
 
-    $('#id_files').each(function () {
-        $(this).bind('change', function (e) {
-            imgWrap = $(this).closest('.container').find('.upload__img-wrap');
-            var maxLength = $(this).attr('data-max_length');
-
-            var files = e.target.files;
-            var filesArr = Array.prototype.slice.call(files);
-            var iterator = 0;
-            var maxLength = $(this).attr('data-max_length');
-
-            var files = e.target.files;
-            var filesArr = Array.prototype.slice.call(files);
-            var iterator = 0;
-            filesArr.forEach(function (f, index) {
-
-                // only images for now
-                if (!f.type.match('image.*')) {
-                    return;
-                }
-
-                if (imgArray.length > maxLength) {
-                    return false
-                } else {
-                    var len = 0;
-                    for (var i = 0; i < imgArray.length; i++) {
-                        if (imgArray[i] !== undefined) {
-                            len++;
-                        }
-                    }
-                    if (len > maxLength) {
-                        return false;
-                    } else {
-                        imgArray.push(f);
-
-                        var reader = new FileReader();
-                        reader.addEventListener('progress', (event) => {
-                            if (event.loaded && event.total) {
-                                const percent = (event.loaded / event.total) * 100;
-                                console.log(`Progress: ${Math.round(percent)}`);
-                            }
-                        });
-                        reader.onload = function (e) {
-                            var originalImage = new Image();
-                            originalImage.src = e.target.result;
-                            var html = "<div class='col-sm-3'><div id='img-card-" + iterator + "' class='card h-100 w-20'><div class='card-body'><h5 class='card-title'>" + f.name + "</h5><p id='img-card-body-" + iterator + "' class='card-text'></p></div><div class='card-footer'><small class='text-muted'>File size: " + f.size.toLocaleString() + " bytes</small></div></div></div>";
-                            imgWrap.append(html);
-                            originalImage.addEventListener("load", function () {
-                                // set image to thumbnail
-                                var thumbnailImage = createThumbnail(originalImage);
-                                thumbnailImage.className = "card-img-top";
-                                $("#img-card-" + iterator).prepend(thumbnailImage);
-                                // set card body
-                                $("#img-card-body-" + iterator).text("Image is " + originalImage.width + " x " + originalImage.height + " pixels (aspect ratio " + ratio(originalImage.width, originalImage.height).join(":") + ")");
-                                iterator++;
-                            });
-                        }
-                        reader.readAsDataURL(f);
-                    }
-                }
-            });
-        });
-    });
-
-    $('body').on('click', ".upload__img-close", function (e) {
-        var file = $(this).parent().data("file");
-        for (var i = 0; i < imgArray.length; i++) {
-            if (imgArray[i].name === file) {
-                imgArray.splice(i, 1);
-                break;
+        var files = e.target.files;
+        var filesArr = Array.prototype.slice.call(files);
+        var iterator =  0;
+        filesArr.forEach(function (f, index) {
+            // only images for now
+            if (!f.type.match('image.*')) {
+                return;
             }
-        }
-        $(this).parent().parent().remove();
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                iterator++;
+                var originalImage = new Image();
+                originalImage.src = e.target.result;
+                var html = "<div class='col-sm-3'><div id='img-card-" + iterator + "' class='card h-100 w-20'><div class='card-body'><h5 class='card-title'>" + f.name + "</h5><p id='img-card-body-" + iterator + "' class='card-text'></p></div><div class='card-footer'><small class='text-muted'>File size: " + f.size.toLocaleString() + " bytes</small></div></div></div>";
+                imgWrap.append(html);
+                originalImage.addEventListener("load", function () {
+                    // set image to thumbnail
+                    var thumbnailImage = createThumbnail(originalImage);
+                    thumbnailImage.className = "card-img-top";
+                    $("#img-card-" + iterator).prepend(thumbnailImage);
+                    // set card body
+                    $("#img-card-body-" + iterator).text("Image is " + originalImage.width + " x " + originalImage.height + " pixels (aspect ratio " + ratio(originalImage.width, originalImage.height).join(":") + ")");
+
+
+                });
+            }
+            reader.readAsDataURL(f);
+        });
     });
 }
 
