@@ -5,6 +5,7 @@
 {% block content %}
   <h3>Create Gallery</h3>
   <p class="lead">A gallery is a collection of photos, videos and/or audio files. Only images are supported for now.</p>
+  <p class="lead">ONLY UPLOAD CONTENT YOU ARE THE COPYRIGHT HOLDER FOR!</p>
   <form enctype=multipart/form-data method="POST">
     {% csrf_token %}
     {% bootstrap_form form %}

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
 
@@ -25,3 +26,19 @@ class Gallery(BaseModel):
     )
 
     tags = TaggableManager(through=UUIDTaggedItem)
+
+    license = models.CharField(
+        max_length=20,
+        choices=settings.LICENSES,
+        help_text="The license for files in this gallery.",
+    )
+
+    attribution = models.CharField(
+        max_length=255,
+        help_text="The attribution text for files in this gallery. This is usually the real name of the creator/copyright holder.",
+    )
+
+    published = models.BooleanField(
+        default=True,
+        help_text="Is the gallery published on the website or not.",
+    )

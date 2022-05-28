@@ -34,3 +34,9 @@ MEDIA_ROOT = Path(env.str("DJANGO_MEDIA_ROOT", default="{{ django_media_root }}"
 
 # auth server
 OAUTH_SERVER_BASEURL=env.str("DJANGO_OAUTH_SERVER_BASEURL", default="https://bornhack.dk")
+
+LICENSES=[
+    ("cc-zero-1.0", "Creative Commons CC0 1.0 Universal"),
+    ("cc-by-4.0", "Creative Commons Attribution 4.0 International"),
+    ("cc-by-sa-4.0", "Creative Commons Attribution-ShareAlike 4.0 International"),
+]

@@ -17,6 +17,12 @@ class GalleryCreateView(LoginRequiredMixin, CreateView):
     form_class = GalleryForm
     success_url = "/"
 
+    def get_initial(self):
+        initial = super().get_initial()
+        # initial = initial.copy()
+        initial["attribution"] = self.request.user.public_credit_name
+        return initial
+
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
@@ -52,3 +58,6 @@ class GalleryListView(ListView):
 
     model = Gallery
     template_name = "gallery_list.html"
+
+    def get_queryset(self, *args, **kwargs):
+        return Gallery.objects.filter(published=True)

@@ -11,7 +11,6 @@ from utils.models import UUIDTaggedItem
 
 def get_photo_upload_path(instance, filename):
     """Return the upload path for this photo."""
-    print(filename)
     return Path(
         f"photos/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/photo_{instance.uuid}.{Path(filename).suffix.lower()}",
     )
