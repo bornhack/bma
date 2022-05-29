@@ -16,12 +16,15 @@ urlpatterns = [
     path("galleries/", include("galleries.urls", namespace="galleries")),
 ]
 
-# are we serving media files through nginx or is this local dev?
 if settings.NGINX_PROXY:
-    urlpatterns += re_path(
-        r"^media/(?P<path>.*)",
-        AccelMediaView,
-        name="nginx_accel_media",
-    )
+    # we are serving media files through nginx using X-Accel-Redirect
+    urlpatterns += [
+        re_path(
+            r"^media/(?P<path>.*)",
+            AccelMediaView,
+            name="nginx_accel_media",
+        ),
+    ]
 else:
+    # app is not behind nginx, serve files locally with devserver
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
