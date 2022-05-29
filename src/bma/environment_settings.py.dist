@@ -40,3 +40,5 @@ LICENSES=[
     ("cc-by-4.0", "Creative Commons Attribution 4.0 International"),
     ("cc-by-sa-4.0", "Creative Commons Attribution-ShareAlike 4.0 International"),
 ]
+
+NGINX_PROXY=env.bool("DJANGO_NGINX_PROXY", default="{{ django_nginx_proxy }}")
