@@ -39,7 +39,7 @@
         <!-- Fixed navbar -->
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
-            <a class="navbar-brand" href="#">BornHack Media Archive</a>
+            <a class="navbar-brand" href="/">BornHack Media Archive</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
@@ -69,9 +69,24 @@
                   {% endif %}
                 </li>
 
-                <li class="nav-item">
-                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                </li>
+                {% if user.is_anonymous %}
+                  <li class="nav-item">
+                    {% if request.resolver_match.url_name == "account_login" %}
+                      <a class="nav-link active" aria-current="page" href="{% url 'account_login' %}">Login</a>
+                    {% else %}
+                      <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                    {% endif %}
+                  </li>
+                {% else %}
+                  <li class="nav-item">
+                    {% if request.resolver_match.url_name == "account_logout" %}
+                      <a class="nav-link active" aria-current="page" href="{% url 'account_logout' %}">Logout</a>
+                    {% else %}
+                      <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+                    {% endif %}
+                  </li>
+                {% endif %}
+
               </ul>
               <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
@@ -99,7 +114,7 @@
 
       <footer class="footer mt-auto py-3 bg-light">
         <div class="container">
-          <span class="text-muted">Git tag/revision: {{ request.revision }}</span>
+          <span class="text-muted">Git Commit: <a href="https://github.com/bornhack/bma/commit/{{ request.revision }}" target="_blank">{{ request.revision }}</a> - Tag: {{ request.tag }}</span>
         </div>
       </footer>
     {% endblock body %}

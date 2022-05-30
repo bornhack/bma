@@ -2,8 +2,9 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import photos.models
+import taggit.managers
 import uuid
+import videos.models
 
 
 class Migration(migrations.Migration):
@@ -11,20 +12,23 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('galleries', '0001_initial'),
+        ('galleries', '0003_gallery_tags'),
+        ('taggit', '0005_auto_20220424_2025'),
+        ('utils', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Photo',
+            name='Video',
             fields=[
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('status', models.CharField(choices=[('PENDING', 'Pending Moderation'), ('PUBLISHED', 'Published'), ('UNPUBLISHED', 'Unpublished'), ('DELETED', 'Deleted')], help_text='The status of this file. Only published files are visible on the website.', max_length=20)),
                 ('original_filename', models.CharField(help_text='The original (uploaded) filename.', max_length=255)),
-                ('photo', models.ImageField(upload_to=photos.models.get_photo_upload_path)),
-                ('gallery', models.ForeignKey(help_text='The gallery this file belongs to.', on_delete=django.db.models.deletion.CASCADE, related_name='gallery_photos', to='galleries.gallery')),
+                ('video', models.FileField(upload_to=videos.models.get_video_upload_path)),
+                ('gallery', models.ForeignKey(help_text='The gallery this file belongs to.', on_delete=django.db.models.deletion.CASCADE, related_name='gallery_videos', to='galleries.gallery')),
+                ('tags', taggit.managers.TaggableManager(help_text='The tags for this video file', through='utils.UUIDTaggedItem', to='taggit.Tag', verbose_name='Tags')),
             ],
             options={
                 'abstract': False,

@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "galleries",
     "photos",
     "videos",
+    "audios",
+    "documents",
 ]
 
 MIDDLEWARE = [
@@ -131,3 +133,11 @@ SESSION_COOKIE_NAME = "bma_sessionid"
 SITE_ID = 1
 LOGIN_REDIRECT_URL = "/"
 AUTH_USER_MODEL = "users.User"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_USER_MODEL_EMAIL_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
+SOCIALACCOUNT_ADAPTER = (
+    "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
+)

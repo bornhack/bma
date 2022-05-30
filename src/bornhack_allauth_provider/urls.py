@@ -1,5 +1,5 @@
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 
-from .provider import CustomProvider
+from .provider import BornHackProvider
 
-urlpatterns = default_urlpatterns(CustomProvider)
+urlpatterns = default_urlpatterns(BornHackProvider)

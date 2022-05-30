@@ -9,15 +9,15 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('documents', '0002_document_gallery'),
         ('taggit', '0005_auto_20220424_2025'),
-        ('galleries', '0002_gallery_owner'),
         ('utils', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='gallery',
+            model_name='document',
             name='tags',
-            field=taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='utils.UUIDTaggedItem', to='taggit.Tag', verbose_name='Tags'),
+            field=taggit.managers.TaggableManager(help_text='The tags for this document file', through='utils.UUIDTaggedItem', to='taggit.Tag', verbose_name='Tags'),
         ),
     ]

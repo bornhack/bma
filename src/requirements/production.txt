@@ -1,4 +1,6 @@
-Django==4.0.4
+# taggit through model doesn't seem to work with django4, try again later
+#Django==4.0.4
+Django==3.2.12
 django-allauth==0.50.0
 django-taggit==3.0.0
 environs[django]==9.5.0

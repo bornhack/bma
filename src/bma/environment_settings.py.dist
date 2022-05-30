@@ -42,3 +42,32 @@ LICENSES=[
 ]
 
 NGINX_PROXY=env.bool("DJANGO_NGINX_PROXY", default="{{ django_nginx_proxy }}")
+
+ALLOWED_PHOTO_TYPES={
+    "image/jpeg": ["jpg", "jpe", "jpeg"],
+    "image/bmp": ["bmp"],
+    "image/gif": ["gif"],
+    "image/svg+xml": ["svg"],
+    "image/tiff": ["tif", "tiff"],
+    "image/png": ["png"],
+}
+
+ALLOWED_VIDEO_TYPES={
+    "video/mpeg": ["mp2", "mpa", "mpe", "mpeg", "mpg", "mpv2"],
+    "video/mp4": ["mp4"],
+    "video/quicktime": ["mov", "qt"],
+    "video/x-ms-asf": ["asf", "asr", "asx"],
+}
+
+ALLOWED_AUDIO_TYPES={
+    "audio/basic": ["snd", "au"],
+    "audio/mid": ["mid", "rmi"],
+    "audio/mpeg": ["mp3"],
+    "audio/x-aiff": ["aif", "aifc", "aiff"],
+    "audio/x-pn-realaudio": ["ra", "ram"],
+}
+
+ALLOWED_DOCUMENT_TYPES={
+    "text/plain": ["txt"],
+    "application/pdf": ["pdf"],
+}

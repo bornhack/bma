@@ -11,9 +11,9 @@ class Gallery(BaseModel):
 
     owner = models.ForeignKey(
         "users.User",
-        on_delete=models.PROTECT,
-        related_name="uploaded_%(class)s",
-        help_text="The photographer / copyright holder for this file.",
+        on_delete=models.CASCADE,
+        related_name="galleries",
+        help_text="The creator and copyright holder for this gallery.",
     )
 
     name = models.CharField(

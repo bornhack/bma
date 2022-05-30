@@ -5,6 +5,7 @@
 {% block content %}
   {% if not user.is_anonymous %}
     <h1>Hello {{ user }}!</h1>
+    <p class="lead">public_credit_name: {{ user.public_credit_name }} - description: {{ user.description }}</p>
   {% else %}
     <h1>Hello world!</h1>
     <a href="{% url 'account_login' %}">> Login</a>
