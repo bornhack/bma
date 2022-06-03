@@ -7,7 +7,8 @@ from .models import Gallery
 class GalleryForm(forms.ModelForm):
     class Meta:
         model = Gallery
-        fields = ["name", "tags", "license", "attribution"]
+        fields = ["name", "description", "tags", "license", "attribution"]
+        # widgets = {"tags": taggit.forms.TagWidget(attrs={"data-role": "tagsinput"})}
 
     # files = forms.FileField(widget=forms.ClearableFileInput(attrs={"multiple": True}))
     files = forms.FileField(

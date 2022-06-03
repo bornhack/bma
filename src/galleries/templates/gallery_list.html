@@ -13,24 +13,26 @@
         <th>License</th>
         <th>Files</th>
         <th>Preview</th>
+        <th>Status</th>
       </tr>
     </thead>
     <tbody>
       {% for gallery in gallery_list %}
         <tr>
-          <td>{{ gallery.name }}</td>
+          <td><a href="{% url 'galleries:gallery_detail' slug=gallery.slug %}">{{ gallery.name }}</a></td>
           <td>{{ gallery.attribution }}</td>
           <td>{{ gallery.get_license_display }}</td>
           <td>
-            Photos: {{ gallery.gallery_photos.count }}<br>
-            Videos: {{ gallery.gallery_videos.count }}<br>
-            Audios: {{ gallery.gallery_audios.count }}<br>
-            Documents: {{ gallery.gallery_documents.count }}<br>
+            Photos: {{ gallery.photos.count }}<br>
+            Videos: {{ gallery.videos.count }}<br>
+            Audios: {{ gallery.audios.count }}<br>
+            Documents: {{ gallery.documents.count }}<br>
           </td>
           <td>
             <img src="{{ gallery.gallery_photos.first.small_thumbnail.url }}" alt="{{ gallery.gallery_photos.first.original_filename }}" class="img-thumbnail">
             <img src="{{ gallery.gallery_photos.last.small_thumbnail.url }}" alt="{{ gallery.gallery_photos.last.original_filename }}" class="img-thumbnail">
           </td>
+          <td>{{ gallery.status }}</td>
         </tr>
       {% endfor %}
     </tbody>

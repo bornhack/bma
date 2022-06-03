@@ -1,0 +1,31 @@
+<div class="card shadow-sm">
+  <img src="{{ file.small.url }}" class="card-img-top">
+  <div class="card-body">
+    <h5 class="card-title">Photo: {{ file.original_filename }}</h5>
+    <small class="text-muted">Tags</small>
+    <div class="container">{% for tag in file.tags.all %}{{ tag }}{% empty %}<i>No tags found!</i>{% endfor %}</div>
+    <small class="text-muted">Thumbnails</small>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="btn-group">
+        <a href="{{ file.small_thumbnail.url }}" class="btn btn-sm btn-outline-secondary">{{ file.small_thumbnail.width }}x{{ file.small_thumbnail.height }}</a>
+        <a href="{{ file.medium_thumbnail.url }}" class="btn btn-sm btn-outline-secondary">{{ file.medium_thumbnail.width }}x{{ file.medium_thumbnail.height }}</a>
+        <a href="{{ file.large_thumbnail.url }}" class="btn btn-sm btn-outline-secondary">{{ file.large_thumbnail.width }}x{{ file.large_thumbnail.height }}</a>
+      </div>
+    </div>
+    <small class="text-muted">Web Sizes</small>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="btn-group">
+        <a href="{{ file.small.url }}" class="btn btn-sm btn-outline-secondary">{{ file.small.width }}x{{ file.small.height }}</a>
+        <a href="{{ file.medium.url }}" class="btn btn-sm btn-outline-secondary">{{ file.medium.width }}x{{ file.medium.height }}</a>
+        <a href="{{ file.large.url }}" class="btn btn-sm btn-outline-secondary">{{ file.large.width }}x{{ file.large.height }}</a>
+      </div>
+    </div>
+    <small class="text-muted">Large Sizes</small>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="btn-group">
+        <a href="{{ file.slideshow.url }}" class="btn btn-sm btn-outline-secondary">{{ file.slideshow.width }}x{{ file.slideshow.height }}</a>
+        <a href="{{ file.original.url }}" class="btn btn-sm btn-outline-secondary">{{ file.original.width }}x{{ file.original.height }} (original)</a>
+      </div>
+    </div>
+  </div>
+</div>

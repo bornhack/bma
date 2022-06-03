@@ -2,70 +2,78 @@ from pathlib import Path
 
 from django.db import models
 from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 from taggit.managers import TaggableManager
 
-from utils.models import MediaBaseModel
+from galleries.models import GalleryFile
 from utils.models import UUIDTaggedItem
 
 
 def get_photo_upload_path(instance, filename):
-    """Return the upload path for this photo."""
+    """Return the upload path under MEDIA_ROOT for this photo."""
+    # with open(instance.photo) as f:
+    #    mime = magic.from_buffer(f.read(), mime=True)
+    #    print(mime)
     return Path(
         f"photos/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/photo_{instance.uuid}.{Path(filename).suffix.lower()}",
     )
 
 
-class Photo(MediaBaseModel):
+class Photo(GalleryFile):
     """The Photo model."""
 
-    original_filename = models.CharField(
-        max_length=255,
-        help_text="The original (uploaded) filename.",
+    gallery = models.ForeignKey(
+        "galleries.Gallery",
+        on_delete=models.CASCADE,
+        related_name="photos",
+        help_text="The gallery this photo belongs to.",
     )
 
-    photo = models.ImageField(upload_to=get_photo_upload_path)
+    original = models.ImageField(
+        upload_to=get_photo_upload_path,
+        help_text="The original uploaded file.",
+    )
 
     small_thumbnail = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(100, 100)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
     )
 
     medium_thumbnail = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(200, 200)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(200, 200)],
+        format="JPEG",
     )
 
     large_thumbnail = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(300, 300)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
     )
 
     small = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(700, 700)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(700, 700)],
+        format="JPEG",
     )
 
     medium = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(1000, 1000)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(1000, 1000)],
+        format="JPEG",
     )
 
     large = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(1500, 1500)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(1500, 1500)],
+        format="JPEG",
     )
 
     slideshow = ImageSpecField(
-        source="photo",
-        processors=[ResizeToFill(2400, 1600)],
-        format="PNG",
+        source="original",
+        processors=[ResizeToFit(2400, 1600)],
+        format="JPEG",
     )
 
     tags = TaggableManager(

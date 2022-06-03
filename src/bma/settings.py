@@ -141,3 +141,5 @@ ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
 SOCIALACCOUNT_ADAPTER = (
     "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
 )
+TAGGIT_CASE_INSENSITIVE = True
+IMAGEKIT_USE_MEMCACHED_SAFE_CACHE_KEY = False

@@ -3,7 +3,7 @@ from pathlib import Path
 from django.db import models
 from taggit.managers import TaggableManager
 
-from utils.models import MediaBaseModel
+from galleries.models import GalleryFile
 from utils.models import UUIDTaggedItem
 
 
@@ -14,15 +14,20 @@ def get_video_upload_path(instance, filename):
     )
 
 
-class Video(MediaBaseModel):
+class Video(GalleryFile):
     """The Video model."""
 
-    original_filename = models.CharField(
-        max_length=255,
-        help_text="The original (uploaded) filename.",
+    gallery = models.ForeignKey(
+        "galleries.Gallery",
+        on_delete=models.CASCADE,
+        related_name="videos",
+        help_text="The gallery this video belongs to.",
     )
 
-    video = models.FileField(upload_to=get_video_upload_path)
+    original = models.FileField(
+        upload_to=get_video_upload_path,
+        help_text="The original uploaded file.",
+    )
 
     tags = TaggableManager(
         through=UUIDTaggedItem,

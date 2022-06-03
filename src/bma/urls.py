@@ -7,7 +7,7 @@ from django.urls import path
 from django.urls import re_path
 from django.views.generic import TemplateView
 
-from utils.views import AccelMediaView
+from galleries.views import AccelMediaView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
