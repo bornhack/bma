@@ -29,8 +29,8 @@
             Documents: {{ gallery.documents.count }}<br>
           </td>
           <td>
-            <img src="{{ gallery.gallery_photos.first.small_thumbnail.url }}" alt="{{ gallery.gallery_photos.first.original_filename }}" class="img-thumbnail">
-            <img src="{{ gallery.gallery_photos.last.small_thumbnail.url }}" alt="{{ gallery.gallery_photos.last.original_filename }}" class="img-thumbnail">
+            <img src="{{ gallery.photos.first.small_thumbnail.url }}" alt="{{ gallery.photos.first.original_filename }}" class="img-thumbnail">
+            <img src="{{ gallery.photos.last.small_thumbnail.url }}" alt="{{ gallery.photos.last.original_filename }}" class="img-thumbnail">
           </td>
           <td>{{ gallery.status }}</td>
         </tr>
