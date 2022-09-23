@@ -43,7 +43,7 @@ LICENSES=[
 
 NGINX_PROXY=env.bool("DJANGO_NGINX_PROXY", default="{{ django_nginx_proxy }}")
 
-ALLOWED_PHOTO_TYPES={
+ALLOWED_PICTURE_TYPES={
     "image/jpeg": ["jpg", "jpe", "jpeg"],
     "image/bmp": ["bmp"],
     "image/gif": ["gif"],

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% load static %}
+{% block title %}{{ gallery.name }}{% endblock title %}
+
+{% block extra_head %}
+  <script src="{% static 'js/vendor/spotlight.v0.7.8.bundle.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <h3>Gallery <b>{{ gallery.name }}</b> by <b>{{ gallery.attribution }}</b></h3>
+  <p class="lead">{{ gallery.description|default:"<i>This gallery has no description</i>" }}</p>
+  {% if page_obj %}
+    <div class="album py-5 bg-light">
+      <div class="container">
+
+        <div class="pagination">
+          <span class="step-links">
+            {% if page_obj.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}">next</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+          {% for gf in page_obj %}
+            <div class="col">
+              {% include "includes/"|add:gf.filetype|add:"_card.html" with file=gf.file %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="lead">This gallery contains no files!</p>
+  {% endif %}
+{% endblock content %}

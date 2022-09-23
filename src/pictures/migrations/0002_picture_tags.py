@@ -10,14 +10,14 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('taggit', '0005_auto_20220424_2025'),
+        ('pictures', '0001_initial'),
         ('utils', '0001_initial'),
-        ('audios', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='audio',
+            model_name='picture',
             name='tags',
-            field=taggit.managers.TaggableManager(help_text='The tags for this audio file', through='utils.UUIDTaggedItem', to='taggit.Tag', verbose_name='Tags'),
+            field=taggit.managers.TaggableManager(help_text='The tags for this picture', through='utils.UUIDTaggedItem', to='taggit.Tag', verbose_name='Tags'),
         ),
     ]

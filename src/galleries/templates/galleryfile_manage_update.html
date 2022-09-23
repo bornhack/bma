@@ -1,0 +1,11 @@
+{% extends "manage_base.html" %}
+{% block title %}Update GalleryFile{% endblock title %}
+
+{% block manage_content %}
+  <h3>Update GalleryFile</h3>
+  <form method="POST">
+    {% csrf_token %}
+    {% include "includes/bootstrap_form.html" %}
+    <button type="submit" class="btn btn-success">Submit</button>
+  </form>
+{% endblock manage_content %}

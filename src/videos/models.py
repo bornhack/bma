@@ -17,16 +17,9 @@ def get_video_upload_path(instance, filename):
 class Video(GalleryFile):
     """The Video model."""
 
-    gallery = models.ForeignKey(
-        "galleries.Gallery",
-        on_delete=models.CASCADE,
-        related_name="videos",
-        help_text="The gallery this video belongs to.",
-    )
-
     original = models.FileField(
         upload_to=get_video_upload_path,
-        help_text="The original uploaded file.",
+        help_text="The original uploaded video file.",
     )
 
     tags = TaggableManager(

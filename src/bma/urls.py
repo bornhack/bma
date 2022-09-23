@@ -7,11 +7,13 @@ from django.urls import path
 from django.urls import re_path
 from django.views.generic import TemplateView
 
+from .api import api
 from galleries.views import AccelMediaView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("api/", api.urls),
     path("", TemplateView.as_view(template_name="frontpage.html"), name="frontpage"),
     path("galleries/", include("galleries.urls", namespace="galleries")),
 ]

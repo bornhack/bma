@@ -5,32 +5,46 @@ import magic
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
+from django.shortcuts import reverse
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import ListView
+from django.views.generic import UpdateView
 
-from .forms import GalleryForm
+from .forms import GalleryCreateForm
 from .models import Gallery
 from .models import GalleryFile
 from audios.models import Audio
 from documents.models import Document
-from photos.models import Photo
+from pictures.models import Picture
+from utils.mixins import OwnerOrAdminMixin
 from utils.slugify import unique_slugify
 from videos.models import Video
 
 
-class GalleryCreateView(LoginRequiredMixin, CreateView):
-    """The gallery create view. For now."""
+class GalleryManageListView(ListView):
+    """List all galleries owned by this user."""
 
     model = Gallery
-    template_name = "gallery_create.html"
-    form_class = GalleryForm
-    success_url = "/"
+    template_name = "gallery_manage_list.html"
+
+    def get_queryset(self, *args, **kwargs):
+        """Return QS with all galleries owned by the logged-in user."""
+        return Gallery.objects.filter(owner=self.request.user)
+
+
+class GalleryManageCreateView(LoginRequiredMixin, CreateView):
+    """The gallery create view."""
+
+    model = Gallery
+    template_name = "gallery_manage_create.html"
+    form_class = GalleryCreateForm
 
     def get_initial(self):
         """Set initial values for the upload form."""
@@ -55,44 +69,43 @@ class GalleryCreateView(LoginRequiredMixin, CreateView):
             # save files
             for f in files:
                 mime = magic.from_buffer(f.read(), mime=True)
-                if mime in settings.ALLOWED_PHOTO_TYPES:
-                    Photo.objects.create(
+                if mime in settings.ALLOWED_PICTURE_TYPES:
+                    Picture.objects.create(
                         gallery=gallery,
                         original=f,
                         original_filename=f.name,
+                        title=f.name,
                     )
                 elif mime in settings.ALLOWED_VIDEO_TYPES:
                     Video.objects.create(
                         gallery=gallery,
                         original=f,
                         original_filename=f.name,
+                        title=f.name,
                     )
                 elif mime in settings.ALLOWED_AUDIO_TYPES:
                     Audio.objects.create(
                         gallery=gallery,
                         original=f,
                         original_filename=f.name,
+                        title=f.name,
                     )
                 elif mime in settings.ALLOWED_DOCUMENT_TYPES:
                     Document.objects.create(
                         gallery=gallery,
                         original=f,
                         original_filename=f.name,
+                        title=f.name,
                     )
                 else:
                     messages.warning(
                         request,
                         f"File type {mime} not supported for file: {f.name} - skipping file",
                     )
-            if (
-                gallery.photos.exists()
-                or gallery.videos.exists()
-                or gallery.audios.exists()
-                or gallery.documents.exists()
-            ):
+            if gallery.galleryfiles.exists():
                 messages.success(
                     request,
-                    f"Gallery created! Photos: {gallery.photos.count()}, Videos: {gallery.videos.count()}, Audios: {gallery.audios.count()}, Documents: {gallery.documents.count()}",
+                    f"Gallery created! Pictures: {gallery.pictures.count()}, Videos: {gallery.videos.count()}, Audios: {gallery.audios.count()}, Documents: {gallery.documents.count()}",
                 )
                 return redirect(gallery.get_absolute_url())
             else:
@@ -105,48 +118,119 @@ class GalleryCreateView(LoginRequiredMixin, CreateView):
         return self.form_invalid(form)
 
 
-class GalleryListView(ListView):
-    """List all galleries."""
+class GalleryManageDetailView(OwnerOrAdminMixin, DetailView):
+    """Show a gallery to the owner or an admin."""
 
     model = Gallery
-    template_name = "gallery_list.html"
+    template_name = "gallery_manage_detail.html"
+
+    def get_context_data(self, *args, **kwargs):
+        """Paginate."""
+        context = super().get_context_data(*args, **kwargs)
+        paginator = Paginator(
+            self.object.galleryfiles.all(),
+            settings.GALLERY_MANAGER_DEFAULT_PAGINATE_COUNT,
+        )
+        page_number = self.request.GET.get("page")
+        context["page_obj"] = paginator.get_page(page_number)
+        return context
+
+
+class GalleryManageUpdateView(OwnerOrAdminMixin, UpdateView):
+    """Allow the gallery owner or an admin to update a gallery."""
+
+    model = Gallery
+    template_name = "gallery_manage_update.html"
+    fields = ["name", "description", "tags", "attribution"]
+
+
+class GalleryManagePublishView(OwnerOrAdminMixin, UpdateView):
+    """Allow the gallery owner or an admin to publish an unpublished gallery."""
+
+    model = Gallery
+    template_name = "gallery_manage_publish.html"
+    fields = []
+
+    def setup(self, *args, **kwargs):
+        super().setup(*args, **kwargs)
+        if self.get_object().status != "UNPUBLISHED":
+            raise PermissionDenied("Gallery status must be unpublished!")
+
+    def form_valid(self, form):
+        self.object.status = "PUBLISHED"
+        self.object.save()
+        messages.success(
+            self.request,
+            f"Gallery '{self.object.name}' ({self.object.uuid}) has been published!",
+        )
+        return redirect(reverse("galleries:gallery_manage_list"))
+
+
+class GalleryManageUnpublishView(OwnerOrAdminMixin, UpdateView):
+    """Allow the gallery owner or an admin to unpublish a gallery."""
+
+    model = Gallery
+    template_name = "gallery_manage_unpublish.html"
+    fields = []
+
+    def setup(self, *args, **kwargs):
+        super().setup(*args, **kwargs)
+        if self.get_object().status != "PUBLISHED":
+            raise PermissionDenied("Gallery must be published!")
+
+    def form_valid(self, form):
+        self.object.status = "UNPUBLISHED"
+        self.object.save()
+        messages.success(
+            self.request,
+            f"Gallery '{self.object.name}' ({self.object.uuid}) has been unpublished!",
+        )
+        return redirect(reverse("galleries:gallery_manage_list"))
+
+
+class GalleryFileManageUpdateView(OwnerOrAdminMixin, UpdateView):
+    """Allow the gallery owner or an admin to update a galleryfile."""
+
+    model = GalleryFile
+    fields = ["title", "description", "source", "tags"]
+
+    def get_template_name(self):
+        if self.request.is_htmx:
+            return "includes/galleryfile_form.html"
+        else:
+            return "galleryfile_manage_update.html"
+
+
+# PUBLIC VIEWS ##############################
+
+
+class GalleryPublicListView(ListView):
+    """List all published galleries."""
+
+    model = Gallery
+    template_name = "gallery_public_list.html"
 
     def get_queryset(self, *args, **kwargs):
-        return Gallery.objects.filter(status="PUBLISHED") | Gallery.objects.filter(
-            owner=self.request.user,
-        )
+        """
+        Return QS with all published galleries."""
+        return Gallery.objects.filter(status="PUBLISHED")
 
 
-class GalleryDetailView(DetailView):
+class GalleryPublicDetailView(DetailView):
     """Show a gallery."""
 
     model = Gallery
-    template_name = "gallery_detail.html"
+    template_name = "gallery_public_detail.html"
 
     def get_object(self, *args, **kwargs):
-        gallery = get_object_or_404(Gallery, slug=self.kwargs["slug"])
-        if (
-            gallery.owner == self.request.user
-            or gallery.status == "PUBLISHED"
-            or self.request.user.is_superuser
-        ):
-            return gallery
-        raise Http404("Gallery not found")
+        """Only show this gallery if it is published."""
+        return get_object_or_404(Gallery, slug=self.kwargs["slug"], status="PUBLISHED")
 
     def get_context_data(self, *args, **kwargs):
+        """Only get published files and paginate."""
         context = super().get_context_data(*args, **kwargs)
-        if self.object.owner == self.request.user or self.request.user.is_superuser:
-            # get all files
-            files = (
-                GalleryFile.objects.filter(photo__gallery=self.object)
-                | GalleryFile.objects.filter(video__gallery=self.object)
-                | GalleryFile.objects.filter(audio__gallery=self.object)
-                | GalleryFile.objects.filter(document__gallery=self.object)
-            )
-        else:
-            # only get published files
-            files = GalleryFile.objects.filter(gallery=self.object, status="PUBLISHED")
-        paginator = Paginator(files, 3)
+        files = self.object.galleryfiles.filter(status="PUBLISHED")
+        paginator = Paginator(files, 6)
         page_number = self.request.GET.get("page")
         context["page_obj"] = paginator.get_page(page_number)
         return context
@@ -155,8 +239,7 @@ class GalleryDetailView(DetailView):
 def AccelMediaView(request, path):
     """This view uses Nginx X-Accel-Redirect to serve files.
 
-    This means the request goes to Django and can be validated before telling
-    Nginx what to return.
+    This means the request goes to Django and can be validated before telling Nginx what to return.
 
     In this view we just check if the Gallery is published and return a 404 if not.
     """
@@ -166,10 +249,10 @@ def AccelMediaView(request, path):
         ".*?/gallery_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/.*?",
         path,
     ):
-        # return 404 if the Gallery containing this file is unpublished
+        # return 404 if the Gallery containing this file is not published
         get_object_or_404(Gallery, uuid=match.group(1), status="PUBLISHED")
         # return 404 if the file is unpublished
-
+        # TODO
         response = HttpResponse(status=200)
         del response["Content-Type"]
         response["X-Accel-Redirect"] = f"/public/{quote(path)}"

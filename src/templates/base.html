@@ -1,5 +1,6 @@
 {% load static %}
 {% load bootstrap5 %}
+{% load django_htmx %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,7 +12,7 @@
     <link href="{% static 'css/vendor/bootstrap.5.0.2.min.css' %}" rel="stylesheet">
 
     <!-- FontAwesome CSS -->
-    <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/vendor/fontawesome-free-6.1.2.min.css' %}" rel="stylesheet" type="text/css">
 
     <!-- Custom stylesheets -->
     <link href="{% static 'css/bma.css' %}" rel="stylesheet">
@@ -28,12 +29,16 @@
     <!-- bootstrap -->
     <script src="{% static "js/vendor/bootstrap.5.0.2.min.js" %}"></script>
 
+    <!-- htmx -->
+    <script src="{% static 'js/vendor/htmx.v1.8.0.min.js' %}" defer></script>
+    {% django_htmx_script %}
+
     <!-- Custom javascript -->
     <script src="{% static 'js/bma.js' %}"></script>
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="d-flex flex-column min-vh-100 bma-no-js">
+  <body class="d-flex flex-column min-vh-100 bma-no-js {% block body-extra-classes %}{% endblock %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
     {% block body %}
       <header>
         <!-- Fixed navbar -->
@@ -54,20 +59,30 @@
                 </li>
 
                 <li class="nav-item">
-                  {% if request.resolver_match.url_name == "gallery_create" %}
-                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_create' %}">Upload</a>
+                  {% if request.resolver_match.url_name == "gallery_manage_create" %}
+                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_manage_create' %}">Upload</a>
                   {% else %}
-                    <a class="nav-link" href="{% url 'galleries:gallery_create' %}">Upload</a>
+                    <a class="nav-link" href="{% url 'galleries:gallery_manage_create' %}">Upload</a>
                   {% endif %}
                 </li>
 
                 <li class="nav-item">
-                  {% if request.resolver_match.url_name == "gallery_list" %}
-                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_list' %}">Galleries</a>
+                  {% if request.resolver_match.url_name == "gallery_public_list" %}
+                    <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_public_list' %}">Galleries</a>
                   {% else %}
-                    <a class="nav-link" href="{% url 'galleries:gallery_list' %}">Galleries</a>
+                    <a class="nav-link" href="{% url 'galleries:gallery_public_list' %}">Galleries</a>
                   {% endif %}
                 </li>
+
+                {% if not user.is_anonymous %}
+                  <li class="nav-item">
+                    {% if request.resolver_match.url_name == "gallery_manage_list" %}
+                      <a class="nav-link active" aria-current="page" href="{% url 'galleries:gallery_manage_list' %}">Manage</a>
+                    {% else %}
+                      <a class="nav-link" href="{% url 'galleries:gallery_manage_list' %}">Manage</a>
+                    {% endif %}
+                  </li>
+                {% endif %}
 
                 {% if user.is_anonymous %}
                   <li class="nav-item">

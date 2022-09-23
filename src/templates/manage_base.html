@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body-extra-classes %}bg-secondary bg-gradient{% endblock body-extra-classes %}
+{% block content %}
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <nav class="navbar navbar-expand-md navbar-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'galleries:gallery_manage_list' %}">Gallery Manager</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#manageNavbarCollapse" aria-controls="manageNavbarCollapse" aria-expanded="false" aria-label="Toggle manage navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="manageNavbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'galleries:gallery_manage_list' %}">List</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'galleries:gallery_manage_create' %}">Upload</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="card-body">
+      {% block manage_content %}{% endblock manage_content %}
+    </div>
+  </div>
+{% endblock content %}

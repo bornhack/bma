@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PhotosConfig(AppConfig):
+class PicturesConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "photos"
+    name = "pictures"

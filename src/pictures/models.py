@@ -9,29 +9,19 @@ from galleries.models import GalleryFile
 from utils.models import UUIDTaggedItem
 
 
-def get_photo_upload_path(instance, filename):
-    """Return the upload path under MEDIA_ROOT for this photo."""
-    # with open(instance.photo) as f:
-    #    mime = magic.from_buffer(f.read(), mime=True)
-    #    print(mime)
+def get_picture_upload_path(instance, filename):
+    """Return the upload path under MEDIA_ROOT for this picture."""
     return Path(
-        f"photos/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/photo_{instance.uuid}.{Path(filename).suffix.lower()}",
+        f"pictures/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/picture_{instance.uuid}.{Path(filename).suffix.lower()}",
     )
 
 
-class Photo(GalleryFile):
-    """The Photo model."""
-
-    gallery = models.ForeignKey(
-        "galleries.Gallery",
-        on_delete=models.CASCADE,
-        related_name="photos",
-        help_text="The gallery this photo belongs to.",
-    )
+class Picture(GalleryFile):
+    """The Picture model."""
 
     original = models.ImageField(
-        upload_to=get_photo_upload_path,
-        help_text="The original uploaded file.",
+        upload_to=get_picture_upload_path,
+        help_text="The original uploaded picture file.",
     )
 
     small_thumbnail = ImageSpecField(
@@ -78,5 +68,5 @@ class Photo(GalleryFile):
 
     tags = TaggableManager(
         through=UUIDTaggedItem,
-        help_text="The tags for this photo",
+        help_text="The tags for this picture",
     )

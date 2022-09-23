@@ -1,0 +1,18 @@
+{% load static %}
+<div class="card shadow-sm">
+  <a class="spotlight" data-media="video"
+    data-src-mp4="{{ file.original.url }}"
+    data-poster="{% static 'images/video.svg' %}"
+    data-autoplay="true"
+    data-muted="true"
+    data-preload="true"
+    data-controls="true"
+    data-inline="false">
+    <img src="{% static 'images/video.svg' %}" class="card-img-top">
+  </a>
+  <div class="card-body">
+    <h5 class="card-title"><i class="fas fa-file-video fs-5"></i> {{ file.title }}</h5>
+    <small class="text-muted">Tags</small>
+    <div class="container">{% for tag in file.tags.all %}{{ tag }}{% empty %}<i>No tags found!</i>{% endfor %}</div>
+  </div>
+</div>

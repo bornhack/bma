@@ -17,13 +17,6 @@ def get_audio_upload_path(instance, filename):
 class Audio(GalleryFile):
     """The Audio model."""
 
-    gallery = models.ForeignKey(
-        "galleries.Gallery",
-        on_delete=models.CASCADE,
-        related_name="audios",
-        help_text="The gallery this audio belongs to.",
-    )
-
     original = models.FileField(
         upload_to=get_audio_upload_path,
         help_text="The original uploaded file.",

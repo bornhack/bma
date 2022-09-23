@@ -33,12 +33,15 @@ INSTALLED_APPS = [
     "taggit",
     "bootstrap5",
     "fontawesomefree",
+    "polymorphic",
+    "ninja",
+    "django_htmx",
     # bma apps
     "bornhack_allauth_provider",
     "users",
     "utils",
     "galleries",
-    "photos",
+    "pictures",
     "videos",
     "audios",
     "documents",
@@ -53,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "dealer.contrib.django.Middleware",
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -105,13 +109,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Copenhagen"
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
+
+SHORT_DATE_FORMAT = "Ymd"
+DATE_FORMAT = "l, M jS, Y"
+DATETIME_FORMAT = "l, M jS, Y, H:i (e)"
+TIME_FORMAT = "H:i"
 
 
 # Static files (CSS, JavaScript, Images)
@@ -143,3 +152,4 @@ SOCIALACCOUNT_ADAPTER = (
 )
 TAGGIT_CASE_INSENSITIVE = True
 IMAGEKIT_USE_MEMCACHED_SAFE_CACHE_KEY = False
+GALLERY_MANAGER_DEFAULT_PAGINATE_COUNT = 20

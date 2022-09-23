@@ -9,6 +9,7 @@ class GalleryAdmin(admin.ModelAdmin):
         "uuid",
         "owner",
         "name",
+        "slug",
         "description",
         "tags",
         "license",

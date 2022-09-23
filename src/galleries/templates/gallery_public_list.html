@@ -4,12 +4,12 @@
 
 {% block content %}
   <h3>Gallery List</h3>
-  <p class="lead">A gallery is a collection of photos, videos, audio files, and/or pdf documents.</p>
+  <p class="lead">A gallery is a collection of pictures, videos, audio files, and/or pdf documents.</p>
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
         <th>Name</th>
-        <th>Creator</th>
+        <th>Attribution</th>
         <th>License</th>
         <th>Files</th>
         <th>Preview</th>
@@ -19,18 +19,18 @@
     <tbody>
       {% for gallery in gallery_list %}
         <tr>
-          <td><a href="{% url 'galleries:gallery_detail' slug=gallery.slug %}">{{ gallery.name }}</a></td>
+          <td><a href="{% url 'galleries:gallery_public_detail' slug=gallery.slug %}">{{ gallery.name }}</a></td>
           <td>{{ gallery.attribution }}</td>
           <td>{{ gallery.get_license_display }}</td>
           <td>
-            Photos: {{ gallery.photos.count }}<br>
+            Pictures: {{ gallery.pictures.count }}<br>
             Videos: {{ gallery.videos.count }}<br>
             Audios: {{ gallery.audios.count }}<br>
             Documents: {{ gallery.documents.count }}<br>
           </td>
           <td>
-            <img src="{{ gallery.photos.first.small_thumbnail.url }}" alt="{{ gallery.photos.first.original_filename }}" class="img-thumbnail">
-            <img src="{{ gallery.photos.last.small_thumbnail.url }}" alt="{{ gallery.photos.last.original_filename }}" class="img-thumbnail">
+            <img src="{{ gallery.pictures.first.small_thumbnail.url }}" alt="{{ gallery.pictures.first.original_filename }}" class="img-thumbnail">
+            <img src="{{ gallery.pictures.last.small_thumbnail.url }}" alt="{{ gallery.pictures.last.original_filename }}" class="img-thumbnail">
           </td>
           <td>{{ gallery.status }}</td>
         </tr>

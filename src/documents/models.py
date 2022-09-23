@@ -17,13 +17,6 @@ def get_document_upload_path(instance, filename):
 class Document(GalleryFile):
     """The Document model."""
 
-    gallery = models.ForeignKey(
-        "galleries.Gallery",
-        on_delete=models.CASCADE,
-        related_name="documents",
-        help_text="The gallery this document belongs to.",
-    )
-
     original = models.FileField(
         upload_to=get_document_upload_path,
         help_text="The original uploaded file.",

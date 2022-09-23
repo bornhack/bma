@@ -1,7 +1,13 @@
 <div class="card shadow-sm">
-  <img src="{{ file.small.url }}" class="card-img-top">
+  <a class="spotlight" href="{{ gf.slideshow.url }}">
+    <img src="{{ file.small.url }}" class="card-img-top">
+  </a>
   <div class="card-body">
-    <h5 class="card-title">Photo: {{ file.original_filename }}</h5>
+    <h5 class="card-title"><i class="fas fa-file-image fs-5"></i> {{ file.title }}</h5>
+    {% if file.description %}
+      <small class="text-muted">Description</small>
+      <div class="container">{{ file.description }}</div>
+    {% endif %}
     <small class="text-muted">Tags</small>
     <div class="container">{% for tag in file.tags.all %}{{ tag }}{% empty %}<i>No tags found!</i>{% endfor %}</div>
     <small class="text-muted">Thumbnails</small>
