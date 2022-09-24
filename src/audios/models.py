@@ -19,6 +19,7 @@ class Audio(GalleryFile):
 
     original = models.FileField(
         upload_to=get_audio_upload_path,
+        max_length=255,
         help_text="The original uploaded file.",
     )
 
