@@ -8,7 +8,7 @@ django-polymorphic==3.1.0
 django-ninja==0.19.1
 environs[django]==9.5.0
 psycopg2-binary==2.9.3
-Pillow==9.1.0
+Pillow==9.1.1
 django-imagekit==4.1.0
 django-bootstrap-v5==1.0.11
 fontawesomefree==6.2.0
