@@ -11,6 +11,6 @@ psycopg2-binary==2.9.3
 Pillow==9.1.0
 django-imagekit==4.1.0
 django-bootstrap-v5==1.0.11
-fontawesomefree==6.1.1
+fontawesomefree==6.2.0
 dealer==2.1.0
 python-magic==0.4.27
