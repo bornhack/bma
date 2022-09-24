@@ -1,7 +1,7 @@
 -r production.txt
 
 django-debug-toolbar==3.4.0
-coverage==6.3.3
+coverage==6.4.4
 codecov==2.1.12
 black==22.3.0
 pre-commit==2.19.0
