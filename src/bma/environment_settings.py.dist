@@ -65,6 +65,7 @@ ALLOWED_AUDIO_TYPES={
     "audio/mpeg": ["mp3"],
     "audio/x-aiff": ["aif", "aifc", "aiff"],
     "audio/x-pn-realaudio": ["ra", "ram"],
+    "audio/x-wav": ["wav"],
 }
 
 ALLOWED_DOCUMENT_TYPES={
