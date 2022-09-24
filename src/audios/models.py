@@ -10,7 +10,7 @@ from utils.models import UUIDTaggedItem
 def get_audio_upload_path(instance, filename):
     """Return the upload path for this audio file."""
     return Path(
-        f"audios/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/audio_{instance.uuid}.{Path(filename).suffix.lower()}",
+        f"audios/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/audio_{instance.uuid}{Path(filename).suffix.lower()}",
     )
 
 
