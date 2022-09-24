@@ -1,6 +1,6 @@
 {% load static %}
 <div style="display: none">
-  <div id="{{ file.uuid }}" style="width: 100%; height: 100%">
+  <div id="uuid_{{ file.uuid }}" style="width: 100%; height: 100%">
     <figure>
       <figcaption>{{ file.title }}</figcaption>
       <audio controls src="{{ file.original.url }}">
@@ -11,7 +11,7 @@
 </div>
 
 <div class="card shadow-sm">
-  <p class="text-center mt-1"><a class="spotlight" data-media="node" data-src="#{{ file.uuid }}"><i class="fas fa-file-audio fa-10x card-img-top"></i></a></p>
+  <p class="text-center mt-1"><a class="spotlight" data-media="node" data-src="#uuid_{{ file.uuid }}"><i class="fas fa-file-audio fa-10x card-img-top"></i></a></p>
   <div class="card-body">
     <h5 class="card-title"><i class="fas fa-file-audio fs-5"></i> {{ file.title }}</h5>
     <small class="text-muted">Tags</small>
