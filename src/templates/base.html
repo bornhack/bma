@@ -33,9 +33,7 @@
     <script src="{% static 'js/vendor/htmx.v1.8.0.min.js' %}" defer></script>
     {% django_htmx_script %}
 
-    <script type="module">
-      import Spotlight from "{% static 'js/vendor/spotlight.v0.7.8.bundle.js' %}";
-    </script>
+    <script src="{% static 'js/vendor/spotlight.v0.7.8.bundle.js' %}" defer></script>
 
     <!-- Custom javascript -->
     <script src="{% static 'js/bma.js' %}"></script>
