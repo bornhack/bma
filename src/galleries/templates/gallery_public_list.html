@@ -5,7 +5,7 @@
 {% block content %}
   <h3>Gallery List</h3>
   <p class="lead">A gallery is a collection of pictures, videos, audio files, and/or pdf documents.</p>
-  <table class="table table-bordered table-striped">
+  <table class="table table-bordered table-hover">
     <thead>
       <tr>
         <th>Name</th>
@@ -29,8 +29,28 @@
             Documents: {{ gallery.documents.count }}<br>
           </td>
           <td>
-            <img src="{{ gallery.pictures.first.small_thumbnail.url }}" alt="{{ gallery.pictures.first.original_filename }}" class="img-thumbnail">
-            <img src="{{ gallery.pictures.last.small_thumbnail.url }}" alt="{{ gallery.pictures.last.original_filename }}" class="img-thumbnail">
+            <div class="row">
+                {% if gallery.pictures.count > 0 %}
+                <div class="col-3 text-center p-0">
+                    <img src="{{ gallery.pictures.first.small_thumbnail.url }}" alt="{{ gallery.pictures.first.original_filename }}" class="img-thumbnail">
+                </div>
+                {% endif %}
+                {% if gallery.videos.count > 0 %}
+                <div class="col-3 text-center p-0">
+                    <i class="fas fa-file-video fa-6x img-thumbnail"></i>
+                </div>
+                {% endif %}
+                {% if gallery.audios.count > 0 %}
+                <div class="col-3 text-center p-0">
+                    <i class="fas fa-file-audio fa-6x img-thumbnail"></i>
+                </div>
+                {% endif %}
+                {% if gallery.documents.count > 0 %}
+                <div class="col-3 text-center p-0">
+                    <i class="fas fa-file-pdf fa-6x img-thumbnail"></i>
+                </div>
+                {% endif %}
+            </div>
           </td>
           <td>{{ gallery.status }}</td>
         </tr>
