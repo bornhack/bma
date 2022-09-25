@@ -132,6 +132,7 @@ class GalleryFile(PolymorphicModel):
     )
 
     source = models.URLField(
+        blank=True,
         help_text="The URL to the original source of this work. Leave blank to consider the BMA URL the original source.",
     )
 
