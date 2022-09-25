@@ -11,6 +11,10 @@ class AudioAdmin(admin.ModelAdmin):
         "created",
         "updated",
         "title",
+        "description",
+        "source",
+        "status",
+        "original_filename",
         "original",
         "tags"
     ]
