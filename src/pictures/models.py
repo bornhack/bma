@@ -12,7 +12,7 @@ from utils.models import UUIDTaggedItem
 def get_picture_upload_path(instance, filename):
     """Return the upload path under MEDIA_ROOT for this picture."""
     return Path(
-        f"pictures/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/picture_{instance.uuid}.{Path(filename).suffix.lower()}",
+        f"pictures/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/picture_{instance.uuid}{Path(filename).suffix.lower()}",
     )
 
 
@@ -21,6 +21,7 @@ class Picture(GalleryFile):
 
     original = models.ImageField(
         upload_to=get_picture_upload_path,
+        max_length=255,
         help_text="The original uploaded picture file.",
     )
 

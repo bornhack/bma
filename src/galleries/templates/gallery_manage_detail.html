@@ -3,10 +3,6 @@
 {% load bootstrap5 %}
 {% block title %}{{ gallery.name }}{% endblock title %}
 
-{% block extra_head %}
-  <script src="{% static 'js/vendor/spotlight.v0.7.8.bundle.js' %}"></script>
-{% endblock %}
-
 {% block manage_content %}
   <h3>Gallery <b>{{ gallery.name }}</b> by <b>{{ gallery.attribution }}</b></h3>
   <span class="badge bg-secondary fs-5"><i class="fas fa-file-image"></i> {{ gallery.pictures.count }} pictures</span>

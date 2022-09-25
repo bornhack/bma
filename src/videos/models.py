@@ -10,7 +10,7 @@ from utils.models import UUIDTaggedItem
 def get_video_upload_path(instance, filename):
     """Return the upload path for this video file."""
     return Path(
-        f"videos/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/video_{instance.uuid}.{Path(filename).suffix.lower()}",
+        f"videos/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/video_{instance.uuid}{Path(filename).suffix.lower()}",
     )
 
 
@@ -19,6 +19,7 @@ class Video(GalleryFile):
 
     original = models.FileField(
         upload_to=get_video_upload_path,
+        max_length=255,
         help_text="The original uploaded video file.",
     )
 

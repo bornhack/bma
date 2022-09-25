@@ -243,19 +243,41 @@ def AccelMediaView(request, path):
 
     In this view we just check if the Gallery is published and return a 404 if not.
     """
-
+    print(path)
     # check file access by getting Gallery uuid from the path
     if match := re.match(
-        ".*?/gallery_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/.*?",
+        r".*?/gallery_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/(?:picture|video|audio|document)_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*?",
         path,
     ):
-        # return 404 if the Gallery containing this file is not published
-        get_object_or_404(Gallery, uuid=match.group(1), status="PUBLISHED")
+        # return 404 if the Gallery containing this file is not published,
+        # unless the owner of the file or an admin is requesting it
+        try:
+            gallery = Gallery.objects.get(uuid=match.group(1))
+        except Gallery.DoesNotExist:
+            raise Http404("Gallery UUID not found")
+
+        if gallery.status != "PUBLISHED":
+            # gallery is not published but we might still want to show the file anyway
+            if gallery.owner != request.user and not request.user.is_superuser:
+                raise Http404("Gallery is not published")
+
         # return 404 if the file is unpublished
-        # TODO
+        try:
+            galleryfile = GalleryFile.objects.get(uuid=match.group(2))
+        except GalleryFile.DoesNotExist:
+            raise Http404("File UUID not found")
+
+        if galleryfile.status != "PUBLISHED":
+            # file is not published but we might still want to show the file anyway
+            if (
+                galleryfile.gallery.owner != request.user
+                and not request.user.is_superuser
+            ):
+                raise Http404("File is not published")
+
         response = HttpResponse(status=200)
         del response["Content-Type"]
         response["X-Accel-Redirect"] = f"/public/{quote(path)}"
         return response
     else:
-        raise Http404("Unable to find Gallery uuid")
+        raise Http404("Unable to find Gallery or GalleryFile uuid")
