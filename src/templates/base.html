@@ -46,7 +46,10 @@
         <!-- Fixed navbar -->
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
-            <a class="navbar-brand" href="/">BornHack Media Archive</a>
+            <a class="navbar-brand" href="/">
+                <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135"></img>
+                <span class="align-middle font-weight-bold"> Media Archive</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
@@ -114,6 +117,8 @@
       <footer class="footer mt-auto py-3 bg-light">
         <div class="container">
           <span class="text-muted">Git Commit: <a href="https://github.com/bornhack/bma/commit/{{ request.revision }}" target="_blank">{{ request.revision }}</a> - Tag: {{ request.tag }}</span>
+          <span>| <a href="https://bornhack.dk/privacy-policy/">Privacy policy</a></span>
+          <span>| <a href="https://bornhack.dk/contact/">Contact</a></span>
         </div>
       </footer>
     {% endblock body %}

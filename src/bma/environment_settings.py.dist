@@ -24,6 +24,13 @@ DATABASES = {
     "default": env.dj_db_url("DJANGO_DATABASE_URL", default="postgres://{{ django_postgres_user }}:{{ django_postgres_password }}@{{ django_postgres_host }}/{{ django_postgres_dbname }}")
 }
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#    }
+#}
+
 # admin site url prefix, set to 'admin' for /admin/
 ADMIN_PREFIX = env.str("DJANGO_ADMIN_PREFIX", default="{{ django_admin_prefix|default('admin') }}")
 
@@ -75,3 +82,8 @@ ALLOWED_DOCUMENT_TYPES={
     "text/plain": ["txt"],
     "application/pdf": ["pdf"],
 }
+
+# LOGGING
+DJANGO_LOG_LEVEL=env.str("DJANGO_LOG_LEVEL", default="{{ django_log_level }}")
+BMA_LOG_LEVEL=env.str("BMA_LOG_LEVEL", default="{{ bma_log_level }}")
+
