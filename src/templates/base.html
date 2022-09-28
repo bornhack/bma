@@ -65,9 +65,9 @@
 
                 <li class="nav-item">
                   {% if request.resolver_match.url_name == "upload" %}
-                    <a class="nav-link active" aria-current="page" href="{% url 'upload' %}">Upload</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'files:upload' %}">Upload</a>
                   {% else %}
-                    <a class="nav-link" href="{% url 'upload' %}">Upload</a>
+                    <a class="nav-link" href="{% url 'files:upload' %}">Upload</a>
                   {% endif %}
                 </li>
 

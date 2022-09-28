@@ -7,11 +7,21 @@ from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.generic import FormView
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .forms import UploadForm
-from .models import BaseFile
+from files.forms import UploadForm
+from files.models import BaseFile
 
 logger = logging.getLogger("bma")
+
+
+class FilesManageListView(LoginRequiredMixin, ListView):
+    template_name = "files_manage_list.html"
+    model = BaseFile
+
+    def get_queryset(self):
+        return BaseFile.objects.filter(owner=self.request.user)
 
 
 class UploadView(FormView):

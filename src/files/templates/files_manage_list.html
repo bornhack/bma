@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Manage Files{% endblock title %}
+
+{% block content %}
+  <h3>Manage Files</h3>
+
+  {% for file in object_list %}
+
+    <div class="card" style="width: 18rem;">
+        <img src="{{ file.original.url }}" class="card-img-top" alt="{{ file.original_filename }}">
+  <div class="card-body">
+      <p class="card-text">{{ file.description }}</p>
+  </div>
+</div>
+
+  {% endfor %}
+
+{% endblock content %}
