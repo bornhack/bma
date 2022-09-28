@@ -1,26 +1,18 @@
-from pathlib import Path
-
 from django.db import models
 from taggit.managers import TaggableManager
 
-from galleries.models import GalleryFile
+from files.models import BaseFile
 from utils.models import UUIDTaggedItem
+from utils.upload import get_upload_path
 
 
-def get_document_upload_path(instance, filename):
-    """Return the upload path for this document file."""
-    return Path(
-        f"documents/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/document_{instance.uuid}{Path(filename).suffix.lower()}",
-    )
-
-
-class Document(GalleryFile):
+class Document(BaseFile):
     """The Document model."""
 
     original = models.FileField(
-        upload_to=get_document_upload_path,
+        upload_to=get_upload_path,
         max_length=255,
-        help_text="The original uploaded file.",
+        help_text="The original uploaded document file.",
     )
 
     tags = TaggableManager(

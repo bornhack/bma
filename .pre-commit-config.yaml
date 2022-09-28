@@ -33,10 +33,6 @@ repos:
       - id: python-no-eval
       - id: python-no-log-warn
       - id: rst-backticks
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.4.0
-    hooks:
-      -   id: yesqa
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.3
     hooks:

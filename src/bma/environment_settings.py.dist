@@ -8,6 +8,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = Env()
 env.read_env()
 
+DJANGO_LOG_LEVEL = env.str("DJANGO_LOG_LEVEL", default="{{ django_loglevel }}")
+BMA_LOG_LEVEL = env.str("DJANGO_BMA_LOG_LEVEL", default="{{ django_bma_loglevel }}")
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="{{ django_secret_key }}")
 

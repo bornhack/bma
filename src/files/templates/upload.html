@@ -1,0 +1,13 @@
+{% extends "manage_base.html" %}
+{% load bootstrap5 %}
+{% block title %}Upload Files{% endblock title %}
+
+{% block manage_content %}
+  <h3>Upload Files</h3>
+  <div class="upload__box">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button onclick="uploadFiles();">Upload</button>
+    <div class="row gy-4 upload__img-wrap"></div>
+  </div>
+{% endblock manage_content %}

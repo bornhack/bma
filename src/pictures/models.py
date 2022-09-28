@@ -1,28 +1,20 @@
-from pathlib import Path
-
 from django.db import models
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from taggit.managers import TaggableManager
 
-from galleries.models import GalleryFile
+from files.models import BaseFile
 from utils.models import UUIDTaggedItem
+from utils.upload import get_upload_path
 
 
-def get_picture_upload_path(instance, filename):
-    """Return the upload path under MEDIA_ROOT for this picture."""
-    return Path(
-        f"pictures/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/picture_{instance.uuid}{Path(filename).suffix.lower()}",
-    )
-
-
-class Picture(GalleryFile):
+class Picture(BaseFile):
     """The Picture model."""
 
     original = models.ImageField(
-        upload_to=get_picture_upload_path,
+        upload_to=get_upload_path,
         max_length=255,
-        help_text="The original uploaded picture file.",
+        help_text="The original uploaded picture.",
     )
 
     small_thumbnail = ImageSpecField(

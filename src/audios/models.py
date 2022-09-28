@@ -1,24 +1,16 @@
-from pathlib import Path
-
 from django.db import models
 from taggit.managers import TaggableManager
 
-from galleries.models import GalleryFile
+from files.models import BaseFile
 from utils.models import UUIDTaggedItem
+from utils.upload import get_upload_path
 
 
-def get_audio_upload_path(instance, filename):
-    """Return the upload path for this audio file."""
-    return Path(
-        f"audios/user_{instance.gallery.owner.id}/gallery_{instance.gallery.uuid}/audio_{instance.uuid}{Path(filename).suffix.lower()}",
-    )
-
-
-class Audio(GalleryFile):
+class Audio(BaseFile):
     """The Audio model."""
 
     original = models.FileField(
-        upload_to=get_audio_upload_path,
+        upload_to=get_upload_path,
         max_length=255,
         help_text="The original uploaded file.",
     )

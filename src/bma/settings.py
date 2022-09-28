@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from pathlib import Path
 
-from .environment_settings import *  # noqa: F401, F403
+from .environment_settings import *  # noqa: F403
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "bornhack_allauth_provider",
     "users",
     "utils",
-    "galleries",
+    "files",
     "pictures",
     "videos",
     "audios",
@@ -155,3 +155,38 @@ IMAGEKIT_USE_MEMCACHED_SAFE_CACHE_KEY = False
 GALLERY_MANAGER_DEFAULT_PAGINATE_COUNT = 20
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# https://docs.djangoproject.com/en/4.1/topics/logging/
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "console",
+        },
+    },
+    "formatters": {
+        "syslog": {"format": "%(levelname)s %(name)s.%(funcName)s(): %(message)s"},
+        "console": {
+            "format": "[%(asctime)s] %(name)s.%(funcName)s() %(levelname)s %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": DJANGO_LOG_LEVEL,  # noqa: F405
+            "propagate": False,
+        },
+        "bma": {
+            "handlers": ["console"],
+            "level": BMA_LOG_LEVEL,  # noqa: F405
+            "propagate": False,
+        },
+    },
+}

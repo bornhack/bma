@@ -3,6 +3,9 @@ jQuery(document).ready(function () {
     $('#id_files').trigger("change");
 });
 
+// use global var for formdatas
+var formdatas = [];
+
 function ImgUpload() {
     $('#id_files').bind('change', function (e) {
         $(this).closest('.container').find('.upload__img-wrap').remove();
@@ -12,6 +15,14 @@ function ImgUpload() {
         var files = e.target.files;
         var filesArr = Array.prototype.slice.call(files);
         var iterator =  0;
+
+        // create metadata object
+        let metaData = {};
+        let license = document.getElementById("id_license");
+        metaData.license = license.options[license.selectedIndex].value;
+        metaData.attribution = document.getElementById("id_attribution").value;
+
+        // loop over selected files to show thumbnail and generate formData for each
         filesArr.forEach(function (f, index) {
             // only images for now
             if (!f.type.match('image.*')) {
@@ -24,6 +35,14 @@ function ImgUpload() {
                 originalImage.src = e.target.result;
                 var html = "<div class='col-sm-3'><div id='img-card-" + iterator + "' class='card h-100 w-20'><div class='card-body'><h5 class='card-title'>" + f.name + "</h5><p id='img-card-body-" + iterator + "' class='card-text'></p></div><div class='card-footer'><small class='text-muted'>File size: " + f.size.toLocaleString() + " bytes</small></div></div></div>";
                 imgWrap.append(html);
+                // create formData object for upload of this file
+                let formData = new FormData();
+                formData.append("f", f);
+                // add metadata to form
+                formData.append("metadata", JSON.stringify(metaData));
+                // add csrf token
+                formData.append("csrfmiddlewaretoken", document.getElementsByName("csrfmiddlewaretoken")[0].value);
+                formdatas.push(formData);
                 originalImage.addEventListener("load", function () {
                     // set image to thumbnail
                     var thumbnailImage = createThumbnail(originalImage);
@@ -31,8 +50,6 @@ function ImgUpload() {
                     $("#img-card-" + iterator).prepend(thumbnailImage);
                     // set card body
                     $("#img-card-body-" + iterator).text("Image is " + originalImage.width + " x " + originalImage.height + " pixels (aspect ratio " + ratio(originalImage.width, originalImage.height).join(":") + ")");
-
-
                 });
             }
             reader.readAsDataURL(f);
@@ -40,6 +57,17 @@ function ImgUpload() {
     });
 }
 
+function uploadFiles() {
+    formdatas.forEach(fd => uploadFile(fd));
+}
+
+async function uploadFile(fd) {
+    await fetch('/api/v1/json/files/upload/', {
+        method: "POST",
+        body: fd
+    });
+    alert('The file has been uploaded successfully.');
+}
 
 var thumbnailMaxWidth = 400;
 var thumbnailMaxHeight = 400;

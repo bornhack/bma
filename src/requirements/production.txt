@@ -7,6 +7,7 @@ django-taggit==3.0.0
 django-polymorphic==3.1.0
 django-ninja==0.19.1
 environs[django]==9.5.0
+orjson==3.8.0
 psycopg2-binary==2.9.3
 Pillow==9.1.1
 django-imagekit==4.1.0
