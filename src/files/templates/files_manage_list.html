@@ -3,17 +3,88 @@
 {% block title %}Manage Files{% endblock title %}
 
 {% block content %}
-  <h3>Manage Files</h3>
 
-  {% for file in object_list %}
-
-    <div class="card" style="width: 18rem;">
-        <img src="{{ file.original.url }}" class="card-img-top" alt="{{ file.original_filename }}">
-  <div class="card-body">
-      <p class="card-text">{{ file.description }}</p>
-  </div>
+<div class="row mt-5 mb-5 justify-content-between">
+    <div class="col-2">
+        <h3>Manage Files</h3>
+    </div>
+    <div class="col-2 d-flex justify-content-end">
+        <a href="{% url 'files:upload' %}" class="btn btn-outline-primary">Upload</a>
+    </div>
 </div>
 
-  {% endfor %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col">
+                <div class="card">
+                    <img src="{{ latest_picture.large_thumbnail.url }}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Pictures</h5>
+                        <p class="card-text"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Videos</h5>
+                        <p class="card-text"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Audios</h5>
+                        <p class="card-text"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Documents</h5>
+                        <p class="card-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Attribution</th>
+                    <th>License</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in object_list %}
+                <tr>
+                    <td>{{ file.title }}</td>
+                    <td>{{ file.attribution }}</td>
+                    <td>{{ file.get_license_display }}</td>
+                    <td>{{ file.get_status_display }}</td>
+                    <td>
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <i class="fa-solid fa-trash"></i>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock content %}
