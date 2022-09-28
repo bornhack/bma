@@ -45,7 +45,7 @@ class FilesManageListView(LoginRequiredMixin, ListView):
             return ""
 
 
-class UploadView(LoginRequiredMixin, FormView):
+class FilesUploadView(LoginRequiredMixin, FormView):
     template_name = "upload.html"
     form_class = UploadForm
 

@@ -96,7 +96,18 @@
                     <td>{{ file.title }}</td>
                     <td>{{ file.attribution }}</td>
                     <td>{{ file.get_license_display }}</td>
-                    <td>{{ file.get_status_display }}</td>
+                    <td>
+                        <span
+                            {% if file.get_status_display == 'Published' %}
+                            class="badge bg-success">
+                            {% elif 'Pending' in file.get_status_display %}
+                            class="badge bg-warning">
+                            {% else %}
+                            class="badge bg-seconday">
+                            {% endif %}
+                            {{ file.get_status_display }}
+                        </span>
+                    </td>
                     <td>
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <i class="fa-solid fa-pen-to-square"></i>
