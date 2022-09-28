@@ -16,7 +16,10 @@ function ImgUpload() {
         var filesArr = Array.prototype.slice.call(files);
         var iterator =  0;
 
-        // create metadata object
+        // get preview templates
+        const pt = document.getElementById("preview-template");
+
+        // create file metadata object from the form fields
         let metaData = {};
         let license = document.getElementById("id_license");
         metaData.license = license.options[license.selectedIndex].value;
@@ -33,8 +36,12 @@ function ImgUpload() {
                 iterator++;
                 var originalImage = new Image();
                 originalImage.src = e.target.result;
-                var html = "<div class='col-sm-3'><div id='img-card-" + iterator + "' class='card h-100 w-20'><div class='card-body'><h5 class='card-title'>" + f.name + "</h5><p id='img-card-body-" + iterator + "' class='card-text'></p></div><div class='card-footer'><small class='text-muted'>File size: " + f.size.toLocaleString() + " bytes</small></div></div></div>";
-                imgWrap.append(html);
+                let clone = pt.content.cloneNode(true);
+                clone.querySelector(".card").id = 'img-card-' + iterator;
+                clone.querySelector(".card-title").innerHTML = f.name;
+                clone.querySelector(".card-text").id = 'img-card-body-' + iterator;
+                clone.querySelector(".card-footer").id = 'img-card-footer-' + iterator;
+                imgWrap.append(clone);
                 // create formData object for upload of this file
                 let formData = new FormData();
                 formData.append("f", f);
@@ -44,12 +51,12 @@ function ImgUpload() {
                 formData.append("csrfmiddlewaretoken", document.getElementsByName("csrfmiddlewaretoken")[0].value);
                 formdatas.push(formData);
                 originalImage.addEventListener("load", function () {
-                    // set image to thumbnail
+                    // when the image is done loading fill the card
                     var thumbnailImage = createThumbnail(originalImage);
                     thumbnailImage.className = "card-img-top";
                     $("#img-card-" + iterator).prepend(thumbnailImage);
-                    // set card body
                     $("#img-card-body-" + iterator).text("Image is " + originalImage.width + " x " + originalImage.height + " pixels (aspect ratio " + ratio(originalImage.width, originalImage.height).join(":") + ")");
+                    $("#img-card-footer-" + iterator).text("File size " + f.size.toLocaleString() + " bytes");
                 });
             }
             reader.readAsDataURL(f);
