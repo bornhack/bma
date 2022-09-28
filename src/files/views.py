@@ -9,13 +9,13 @@ from django.http import HttpResponse
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from audios.models import Audio
-from documents.models import Document
 
 from files.forms import UploadForm
 from files.models import BaseFile
 from pictures.models import Picture
 from videos.models import Video
+from audios.models import Audio
+from documents.models import Document
 
 logger = logging.getLogger("bma")
 
