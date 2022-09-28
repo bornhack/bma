@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/v1/json/", api_v1_json.urls),
     path("", TemplateView.as_view(template_name="frontpage.html"), name="frontpage"),
     path("files/", include("files.urls", namespace="files")),
+    path("pictures/", include("pictures.urls", namespace="pictures")),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
