@@ -9,6 +9,7 @@ from django.http import Http404
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView
+from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
 
@@ -51,6 +52,11 @@ class FilesManageDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "files_manage_delete.html"
     model = BaseFile
     success_url = reverse_lazy("files:manage")
+
+
+class FilesManageDetailView(LoginRequiredMixin, DetailView):
+    template_name = "files_manage_detail.html"
+    model = BaseFile
 
 
 class FilesUploadView(LoginRequiredMixin, FormView):

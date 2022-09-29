@@ -116,8 +116,7 @@
                   <small>{{ file.tags }}</small>
                 </td>
                 <td>
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                  <i class="fa-solid fa-pen-to-square"></i>
+                  <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>
                   <a href="{% url 'files:delete' file.uuid %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>
