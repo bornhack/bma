@@ -1,5 +1,6 @@
 """BMA URL Configuration."""
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
@@ -23,11 +24,16 @@ urlpatterns = [
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
 # and locally during development, determined by the value of 'accel' arg to BMAMediaView
-urlpatterns += [
-    re_path(
-        r"^media/(?P<path>.*)",
-        BMAMediaView,
-        name="nginx_accel_media",
-        kwargs={"accel": settings.NGINX_PROXY},
-    ),
-]
+
+if settings.NGINX_PROXY:
+    urlpatterns += [
+        re_path(
+            r"^media/(?P<path>.*)",
+            BMAMediaView,
+            name="nginx_accel_media",
+            kwargs={"accel": settings.NGINX_PROXY},
+        ),
+    ]
+else:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
