@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Frontpage{% endblock title %}
+
+{% block content %}
+  <div class="row justify-content-between">
+    <div class="col-6 mt-4">
+      <div class="row">
+        <div class="col-md-12 col-sm-10">
+          <div class="row">
+            <div class="col-12">
+              <h3>Recent pictures</h3>
+              <hr/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="row">
+                {% for picture in 6_last_pictures %}
+                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                    <img
+                      src="{{ picture.large_thumbnail.url }}"
+                      class="w-100 rounded mb-4"
+                      alt="{{ picture.name }}">
+                    </img>
+                    <small class="text-wrap">{{ picture.title }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 col-sm-10">
+          <div class="row">
+            <div class="col-12">
+              <h3>Recent videos</h3>
+              <hr/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="row">
+                {% for video in 6_last_videos %}
+                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                    <video class="w-75">
+                      <source src="{{ video.original.url }}">
+                    </video>
+                    <small class="text-wrap">{{ video.title }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 col-sm-10">
+          <div class="row">
+            <div class="col-12">
+              <h3>Recent audios</h3>
+              <hr/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="row">
+                {% for audio in 6_last_audios %}
+                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                    <audio controls class="w-75">
+                      <source src="{{ audio.original.url }}">
+                    </audio>
+                    <small class="text-wrap">{{ audio.title }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 col-sm-10">
+          <div class="row">
+            <div class="col-12">
+              <h3>Recent documents</h3>
+              <hr/>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="row">
+                {% for document in 6_last_documents %}
+                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                    <i class="fa-solid fa-file fa-2x"></i>
+                    <small class="text-wrap">{{ document.title }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-4 mt-4">
+      <div class="row">
+        <div class="col-12">
+          <h3>Most viewed</h3>
+          <hr class="w-75"/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-8">
+          {% for picture in 6_last_pictures %}
+            <div class="row">
+              <div class="col-4">
+                <img src="{{ picture.large_thumbnail.url }}" class="w-75"></img>
+              </div>
+              <div class="col-8">
+                <div class="row">
+                  <strong>{{ picture.name }}</strong>
+                </div>
+                <div class="row">
+                  <p>{{ picture.description }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
