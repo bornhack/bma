@@ -12,6 +12,7 @@ from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
+from django.views.generic import UpdateView
 
 from audios.models import Audio
 from documents.models import Document
@@ -57,6 +58,13 @@ class FilesManageDeleteView(LoginRequiredMixin, DeleteView):
 class FilesManageDetailView(LoginRequiredMixin, DetailView):
     template_name = "files_manage_detail.html"
     model = BaseFile
+
+
+class FilesManageEditView(LoginRequiredMixin, UpdateView):
+    template_name = "files_manage_edit.html"
+    model = BaseFile
+    fields = ["title", "attribution", "source", "description"]
+    success_url = reverse_lazy("files:manage")
 
 
 class FilesUploadView(LoginRequiredMixin, FormView):

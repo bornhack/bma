@@ -31,45 +31,51 @@
             </div>
           </div>
         </a>
-        <div class="col">
-          <div class="card">
-            {% if latest_video %}
-              <img src="{{ latest_video.large_thumbnail.url }}" class="card-img-top" alt="...">
-            {% else %}
-              <i class="fa-regular fa-file-video fa-5x card-img-top"></i>
-            {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">Videos</h5>
-              <p class="card-text"></p>
+        <a href="{% url 'videos:manage' %}">
+          <div class="col">
+            <div class="card">
+              {% if latest_video %}
+                <img src="{{ latest_video.large_thumbnail.url }}" class="card-img-top" alt="...">
+              {% else %}
+                <i class="fa-regular fa-file-video fa-5x card-img-top"></i>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">Videos</h5>
+                <p class="card-text"></p>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            {% if latest_audio %}
-              <img src="{{ latest_audio.large_thumbnail.url }}" class="card-img-top" alt="...">
-            {% else %}
-              <i class="fa-regular fa-file-audio fa-5x card-img-top"></i>
-            {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">Audios</h5>
-              <p class="card-text"></p>
+        </a>
+        <a href="{% url 'audios:manage' %}">
+          <div class="col">
+            <div class="card">
+              {% if latest_audio %}
+                <img src="{{ latest_audio.large_thumbnail.url }}" class="card-img-top" alt="...">
+              {% else %}
+                <i class="fa-regular fa-file-audio fa-5x card-img-top"></i>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">Audios</h5>
+                <p class="card-text"></p>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            {% if latest_document %}
-              <img src="{{ latest_document.large_thumbnail.url }}" class="card-img-top" alt="...">
-            {% else %}
-              <i class="fa-regular fa-file-lines fa-5x card-img-top"></i>
-            {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">Documents</h5>
-              <p class="card-text"></p>
+        </a>
+        <a href="{% url 'documents:manage' %}">
+          <div class="col">
+            <div class="card">
+              {% if latest_document %}
+                <img src="{{ latest_document.large_thumbnail.url }}" class="card-img-top" alt="...">
+              {% else %}
+                <i class="fa-regular fa-file-lines fa-5x card-img-top"></i>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">Documents</h5>
+                <p class="card-text"></p>
+              </div>
             </div>
           </div>
-        </div>
+        </a>
       </div>
     </div>
   </div>
@@ -117,6 +123,7 @@
                 </td>
                 <td>
                   <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>
+                  <a href="{% url 'files:edit' file.uuid %}"><i class="fa-solid fa-pen-to-square"></i></a>
                   <a href="{% url 'files:delete' file.uuid %}"><i class="fa-solid fa-trash"></i></a>
                 </td>
               </tr>

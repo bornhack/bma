@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load bootstrap5 %}
-{% block title %}Manage Files{% endblock title %}
+{% block title %}File details{% endblock title %}
 
 {% block content %}
 
@@ -24,15 +24,20 @@
   <div class="row justify-content-between">
     <div class="col-8">
       <div class="row mb-3">
-        <div class="col-10">
-          <img src="{{ object.medium_thumbnail.url }}" class="w-100"/>
+        <div class="col-11">
+          {% if object.medium_thumbnail.url %}
+            <img src="{{ object.medium_thumbnail.url }}" class="w-100"/>
+          {% else %}
+            <i class="fa-regular fa-eye-slash fa-9x"></i>
+            <p class="lead">No preview yet</p>
+          {% endif %}
         </div>
       </div>
       <div class="row mb-3">
-        <div class="col-10">
+        <div class="col-11">
           <div class="card">
             <h5 class="card-header">Information</h5>
-            <div class="card-body" style="max-height:17em; overflow-y:auto;">
+            <div class="card-body" style="max-height:18em; overflow-y:auto;">
               <div class="row justfiy-content-between">
                 <div class="col-10">
                   <dl class="row mb-1">
@@ -42,24 +47,33 @@
                     <dt class="col-sm-3">Owner</dt>
                     <dd class="col-sm-9">{{ object.owner }}</dd>
 
+                    <dt class="col-sm-3">Attribution</dt>
+                    <dd class="col-sm-9">{{ object.attribution }}</dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9"><span class="badge bg-primary">{{ object.get_status_display }}</span></dd>
+
                     <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ object.created|date:"d/m/y" }}</dd>
+                    <dd class="col-sm-9">{{ object.created|date:"d/m/y-H:i:s" }}</dd>
 
                     <dt class="col-sm-3">Updated</dt>
-                    <dd class="col-sm-9">{{ object.updated|date:"d/m/y" }}</dd>
+                    <dd class="col-sm-9">{{ object.updated|date:"d/m/y-H:i:s" }}</dd>
 
                     <dt class="col-sm-3">Source</dt>
-                    <dd class="col-sm-9">{{ object.source }}</dd>
+                    <dd class="col-sm-9">{{ object.source|default:"n/a" }}</dd>
 
                     <dt class="col-sm-3">License</dt>
                     <dd class="col-sm-9">{{ object.get_license_display }}</dd>
 
+                    <dt class="col-sm-3 text-truncate">Filename</dt>
+                    <dd class="col-sm-9">{{ object.original_filename }}</dd>
+
                     <dt class="col-sm-3">Description</dt>
-                    <dd class="col-sm-9"><p>{{ object.description }}</p></dd>
+                    <dd class="col-sm-9"><p>{{ object.description|default:"n/a" }}</p></dd>
                   </dl>
                 </div>
                 <div class="col-2 d-flex justify-content-end">
-                  <a href="#" class="text-muted">
+                  <a href="{% url 'files:edit' object.uuid %}" class="text-muted">
                     <i class="fa-solid fa-pen-to-square"></i>
                     <small>Edit</small>
                   </a>
