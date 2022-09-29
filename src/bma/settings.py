@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "videos",
     "audios",
     "documents",
+    "frontpage",
 ]
 
 MIDDLEWARE = [

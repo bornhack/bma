@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.urls import include
 from django.urls import path
 from django.urls import re_path
-from django.views.generic import TemplateView
 
 from .api import api_v1_json
 from files.views import BMAMediaView
@@ -15,7 +14,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("api/v1/json/", api_v1_json.urls),
     path("upload/", UploadView.as_view(), name="upload"),
-    path("", TemplateView.as_view(template_name="frontpage.html"), name="frontpage"),
+    path("", include("frontpage.urls")),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
