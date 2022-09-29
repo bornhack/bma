@@ -7,6 +7,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
+from django.urls import reverse_lazy
+from django.views.generic import DeleteView
 from django.views.generic import FormView
 from django.views.generic import ListView
 
@@ -43,6 +45,12 @@ class FilesManageListView(LoginRequiredMixin, ListView):
             return model.objects.filter(owner=self.request.user).latest("uuid")
         except BaseFile.DoesNotExist:
             return ""
+
+
+class FilesManageDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = "files_manage_delete.html"
+    model = BaseFile
+    success_url = reverse_lazy("files:manage")
 
 
 class FilesUploadView(LoginRequiredMixin, FormView):

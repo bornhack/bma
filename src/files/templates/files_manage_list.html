@@ -82,43 +82,49 @@
 
   <div class="row">
     <div class="col-12">
-      <table class="table table-bordered table-hover">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Attribution</th>
-            <th>License</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for file in object_list %}
+      <div class="table-responsive-lg">
+        <table class="table table-bordered table-hover">
+          <thead>
             <tr>
-              <td>{{ file.title }}</td>
-              <td>{{ file.attribution }}</td>
-              <td>{{ file.get_license_display }}</td>
-              <td>
-                <span
-                  {% if file.get_status_display == 'Published' %}
-                    class="badge bg-success">
-                  {% elif 'Pending' in file.get_status_display %}
-                    class="badge bg-warning">
-                  {% else %}
-                    class="badge bg-seconday">
-                  {% endif %}
-                  {{ file.get_status_display }}
-                </span>
-              </td>
-              <td>
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <i class="fa-solid fa-pen-to-square"></i>
-                <i class="fa-solid fa-trash"></i>
-              </td>
+              <th>Name</th>
+              <th>Attribution</th>
+              <th>License</th>
+              <th>Status</th>
+              <th>Tags</th>
+              <th>Action</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for file in object_list %}
+              <tr>
+                <td>{{ file.title }}</td>
+                <td>{{ file.attribution }}</td>
+                <td>{{ file.get_license_display }}</td>
+                <td>
+                  <span
+                    {% if file.get_status_display == 'Published' %}
+                      class="badge bg-success">
+                    {% elif 'Pending' in file.get_status_display %}
+                      class="badge bg-warning">
+                    {% else %}
+                      class="badge bg-seconday">
+                    {% endif %}
+                    {{ file.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  <small>{{ file.tags }}</small>
+                </td>
+                <td>
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <a href="{% url 'files:delete' file.uuid %}"><i class="fa-solid fa-trash"></i></a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
