@@ -17,6 +17,9 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="frontpage.html"), name="frontpage"),
     path("files/", include("files.urls", namespace="files")),
     path("pictures/", include("pictures.urls", namespace="pictures")),
+    path("videos/", include("videos.urls", namespace="videos")),
+    path("audios/", include("audios.urls", namespace="audios")),
+    path("documents/", include("documents.urls", namespace="documents")),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
