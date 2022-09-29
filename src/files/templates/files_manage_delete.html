@@ -16,7 +16,7 @@
         {% csrf_token %}
         <p class="lead">Are you sure you want to delete "{{ object.title }}"?</p>
         <div class="d-flex justify-content-between">
-          <button onclick="history.back()" class="btn btn-outline-danger ml-2">Cancel</button>
+          <button type="button" onclick="history.back()" class="btn btn-outline-danger ml-2">Cancel</button>
           <input type="submit" class="btn btn-success mr-2" value="Delete"/>
         </div>
       </form>
