@@ -1,5 +1,4 @@
 import orjson
-import yaml
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 
@@ -14,15 +13,3 @@ class ORJSONRenderer(BaseRenderer):
 
     def render(self, request, data, *, response_status):
         return orjson.dumps(data)
-
-
-class YamlParser(Parser):
-    def parse_body(self, request):
-        return yaml.safe_load(request.body)
-
-
-class YamlRenderer(BaseRenderer):
-    media_type = "application/yaml"
-
-    def render(self, request, data, *, response_status):
-        return yaml.dump(data)
