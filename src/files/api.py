@@ -71,8 +71,3 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
     else:
         # not htmx, return json
         return uploaded_file
-
-
-@router.get("/add")
-def add(request, a: int, b: int):
-    return {"result": a + b}
