@@ -86,4 +86,3 @@ ALLOWED_DOCUMENT_TYPES={
 # LOGGING
 DJANGO_LOG_LEVEL=env.str("DJANGO_LOG_LEVEL", default="{{ django_log_level }}")
 BMA_LOG_LEVEL=env.str("BMA_LOG_LEVEL", default="{{ bma_log_level }}")
-

@@ -7,4 +7,3 @@ app_name = "documents"
 urlpatterns = [
     path("manage/", DocumentsManageListView.as_view(), name="manage"),
 ]
-

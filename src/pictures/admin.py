@@ -25,7 +25,6 @@ class PictureAdmin(admin.ModelAdmin):
         "medium",
         "large",
         "slideshow",
-        "tags"
+        "tags",
     ]
     list_filter = ["tags"]
-

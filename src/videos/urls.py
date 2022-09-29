@@ -7,4 +7,3 @@ app_name = "videos"
 urlpatterns = [
     path("manage/", VideoManageListView.as_view(), name="manage"),
 ]
-

@@ -1,11 +1,12 @@
 import logging
 
-from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
 
 from audios.models import Audio
 
 logger = logging.getLogger("bma")
+
 
 class AudiosManageListView(LoginRequiredMixin, ListView):
     template_name = "audios_manage_list.html"

@@ -47,8 +47,8 @@
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
             <a class="navbar-brand" href="/">
-                <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135"></img>
-                <span class="align-middle font-weight-bold"> Media Archive</span>
+              <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135"></img>
+              <span class="align-middle font-weight-bold"> Media Archive</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
@@ -64,20 +64,20 @@
                 </li>
 
                 {% if not user.is_anonymous %}
-                <li class="nav-item dropdown">
+                  <li class="nav-item dropdown">
                     <a href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" class="nav-link dropdown-toggle active">
-                        File manager
+                      File manager
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'files:upload' %}">Upload</a></li>
-                        <li><a class="dropdown-item" href="{% url 'files:manage' %}">Manage</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'pictures:manage' %}">Pictures</a></li>
-                        <li><a class="dropdown-item" href="{% url 'videos:manage' %}">Videos</a></li>
-                        <li><a class="dropdown-item" href="{% url 'audios:manage' %}">Audios</a></li>
-                        <li><a class="dropdown-item" href="{% url 'documents:manage' %}">Documents</a></li>
+                      <li><a class="dropdown-item" href="{% url 'files:upload' %}">Upload</a></li>
+                      <li><a class="dropdown-item" href="{% url 'files:manage' %}">Manage</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item" href="{% url 'pictures:manage' %}">Pictures</a></li>
+                      <li><a class="dropdown-item" href="{% url 'videos:manage' %}">Videos</a></li>
+                      <li><a class="dropdown-item" href="{% url 'audios:manage' %}">Audios</a></li>
+                      <li><a class="dropdown-item" href="{% url 'documents:manage' %}">Documents</a></li>
                     </ul>
-                </li>
+                  </li>
                 {% endif %}
 
                 {% if user.is_anonymous %}
