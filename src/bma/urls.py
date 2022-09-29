@@ -7,14 +7,17 @@ from django.urls import re_path
 
 from .api import api_v1_json
 from files.views import BMAMediaView
-from files.views import UploadView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("api/v1/json/", api_v1_json.urls),
-    path("upload/", UploadView.as_view(), name="upload"),
     path("", include("frontpage.urls")),
+    path("files/", include("files.urls", namespace="files")),
+    path("pictures/", include("pictures.urls", namespace="pictures")),
+    path("videos/", include("videos.urls", namespace="videos")),
+    path("audios/", include("audios.urls", namespace="audios")),
+    path("documents/", include("documents.urls", namespace="documents")),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,

@@ -3,18 +3,49 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.generic import FormView
+from django.views.generic import ListView
 
-from .forms import UploadForm
-from .models import BaseFile
+from audios.models import Audio
+from documents.models import Document
+from files.forms import UploadForm
+from files.models import BaseFile
+from pictures.models import Picture
+from videos.models import Video
 
 logger = logging.getLogger("bma")
 
 
-class UploadView(FormView):
+class FilesManageListView(LoginRequiredMixin, ListView):
+    template_name = "files_manage_list.html"
+    model = BaseFile
+
+    def get_queryset(self):
+        return BaseFile.objects.filter(owner=self.request.user)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        return self._latest_files_context(context)
+
+    def _latest_files_context(self, context: dict):
+        context["latest_picture"] = self._query_latest_file(Picture)
+        context["latest_video"] = self._query_latest_file(Video)
+        context["latest_audio"] = self._query_latest_file(Audio)
+        context["latest_document"] = self._query_latest_file(Document)
+        return context
+
+    def _query_latest_file(self, model):
+        try:
+            return model.objects.filter(owner=self.request.user).latest("uuid")
+        except BaseFile.DoesNotExist:
+            return ""
+
+
+class FilesUploadView(LoginRequiredMixin, FormView):
     template_name = "upload.html"
     form_class = UploadForm
 
@@ -23,7 +54,7 @@ def BMAMediaView(request, path, accel):
     """Serve media files using nginx x-accel-redirect, or serve directly for dev use."""
     # get BaseFile uuid from the path
     if match := re.match(
-        r".*?/(?:picture|video|audio|document)_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*?",
+        r".*?/bma_(?:picture|video|audio|document)_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*?",
         path,
     ):
         # get the file from database
@@ -59,8 +90,8 @@ def BMAMediaView(request, path, accel):
             response["X-Accel-Redirect"] = f"/public/{quote(path)}"
         else:
             # we are serving the file locally
-            with open(dbfile.original.path, "rb") as f:
-                response = FileResponse(f, status=200)
+            f = open(dbfile.original.path, "rb")
+            response = FileResponse(f, status=200)
         # all good
         return response
     else:

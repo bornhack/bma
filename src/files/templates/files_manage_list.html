@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Manage Files{% endblock title %}
+
+{% block content %}
+
+  <div class="row mt-5 mb-5 justify-content-between">
+    <div class="col-6">
+      <h3>Manage Files</h3>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+      <a href="{% url 'files:upload' %}" class="btn btn-outline-primary">Upload</a>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="row row-cols-lg-4 row-cols-md-2 row-cols-sm-2 g-4">
+        <a href="{% url 'pictures:manage' %}">
+          <div class="col">
+            <div class="card">
+              {% if latest_picture %}
+                <img src="{{ latest_picture.large_thumbnail.url }}" class="card-img-top" alt="...">
+              {% else %}
+                <i class="fa-regular fa-image fa-5x card-img-top"></i>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">Pictures</h5>
+                <p class="card-text"></p>
+              </div>
+            </div>
+          </div>
+        </a>
+        <div class="col">
+          <div class="card">
+            {% if latest_video %}
+              <img src="{{ latest_video.large_thumbnail.url }}" class="card-img-top" alt="...">
+            {% else %}
+              <i class="fa-regular fa-file-video fa-5x card-img-top"></i>
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">Videos</h5>
+              <p class="card-text"></p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card">
+            {% if latest_audio %}
+              <img src="{{ latest_audio.large_thumbnail.url }}" class="card-img-top" alt="...">
+            {% else %}
+              <i class="fa-regular fa-file-audio fa-5x card-img-top"></i>
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">Audios</h5>
+              <p class="card-text"></p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card">
+            {% if latest_document %}
+              <img src="{{ latest_document.large_thumbnail.url }}" class="card-img-top" alt="...">
+            {% else %}
+              <i class="fa-regular fa-file-lines fa-5x card-img-top"></i>
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">Documents</h5>
+              <p class="card-text"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-2 justify-content-start">
+    <div class="col-6">
+      <h3>Latest uploaded files</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Attribution</th>
+            <th>License</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in object_list %}
+            <tr>
+              <td>{{ file.title }}</td>
+              <td>{{ file.attribution }}</td>
+              <td>{{ file.get_license_display }}</td>
+              <td>
+                <span
+                  {% if file.get_status_display == 'Published' %}
+                    class="badge bg-success">
+                  {% elif 'Pending' in file.get_status_display %}
+                    class="badge bg-warning">
+                  {% else %}
+                    class="badge bg-seconday">
+                  {% endif %}
+                  {{ file.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-pen-to-square"></i>
+                <i class="fa-solid fa-trash"></i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endblock content %}

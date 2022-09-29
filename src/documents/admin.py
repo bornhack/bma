@@ -18,6 +18,6 @@ class DocumentAdmin(admin.ModelAdmin):
         "status",
         "original_filename",
         "original",
-        "tags"
+        "tags",
     ]
     list_filter = ["tags"]

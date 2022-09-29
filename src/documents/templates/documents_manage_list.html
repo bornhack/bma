@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Manage Documents{% endblock title %}
+
+{% block content %}
+
+  <div class="row mt-5 mb-5 justify-content-between">
+    <div class="col-6">
+      <h3>Manage your documents</h3>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+      <a href="{% url 'files:upload' %}" class="btn btn-outline-primary">Upload</a>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="row row-cols-lg-4 row-cols-md-2 row-cols-sm-2 g-4">
+        {% for document in object_list %}
+          <div class="col">
+            <div class="card">
+              <i class="fa-regular fa-file-lines fa-5x card-img-top"></i>
+              <div class="card-body">
+                <h5 class="card-title">{{ document.title }}</h5>
+                <p class="card-text">Add document details</p>
+              </div>
+              <div class="card-footer">
+                <i class="fa-solid fa-upload text-muted"></i>
+                <small class="text-muted">{{ document.created|date:"d/m/y-H:i:s" }}</small>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
