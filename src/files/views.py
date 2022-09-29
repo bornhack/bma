@@ -3,19 +3,19 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.generic import FormView
 from django.views.generic import ListView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
+from audios.models import Audio
+from documents.models import Document
 from files.forms import UploadForm
 from files.models import BaseFile
 from pictures.models import Picture
 from videos.models import Video
-from audios.models import Audio
-from documents.models import Document
 
 logger = logging.getLogger("bma")
 
@@ -40,7 +40,7 @@ class FilesManageListView(LoginRequiredMixin, ListView):
 
     def _query_latest_file(self, model):
         try:
-            return model.objects.filter(owner=self.request.user).latest('uuid')
+            return model.objects.filter(owner=self.request.user).latest("uuid")
         except BaseFile.DoesNotExist:
             return ""
 
@@ -54,7 +54,7 @@ def BMAMediaView(request, path, accel):
     """Serve media files using nginx x-accel-redirect, or serve directly for dev use."""
     # get BaseFile uuid from the path
     if match := re.match(
-        r".*?/(?:picture|video|audio|document)_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*?",
+        r".*?/bma_(?:picture|video|audio|document)_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*?",
         path,
     ):
         # get the file from database
@@ -90,8 +90,8 @@ def BMAMediaView(request, path, accel):
             response["X-Accel-Redirect"] = f"/public/{quote(path)}"
         else:
             # we are serving the file locally
-            with open(dbfile.original.path, "rb") as f:
-                response = FileResponse(f, status=200)
+            f = open(dbfile.original.path, "rb")
+            response = FileResponse(f, status=200)
         # all good
         return response
     else:
