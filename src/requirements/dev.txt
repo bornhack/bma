@@ -1,6 +1,6 @@
 -r production.txt
 
-django-debug-toolbar==3.6.0
+django-debug-toolbar==3.7.0
 coverage==6.4.4
 codecov==2.1.12
 black==22.8.0
