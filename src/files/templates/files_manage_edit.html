@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Edit file details{% endblock title %}
+
+{% block content %}
+
+  <div class="row mt-3 mb-3 justify-content-start">
+    <div class="col-10">
+      <h3>Edit file</h3>
+    </div>
+  </div>
+
+  <div class="row justify-content-between">
+    <div class="col-8">
+      <div class="row mb-3">
+        <div class="col-11">
+          {% if object.medium_thumbnail.url %}
+            <img src="{{ object.small_thumbnail.url }}" class="w-50"/>
+          {% else %}
+            <i class="fa-regular fa-eye-slash fa-9x"></i>
+            <p class="lead">No preview yet</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-11">
+          <div class="card">
+            <h5 class="card-header">Information</h5>
+            <div class="card-body" style="max-height:18em; overflow-y:auto;">
+              <div class="row justfiy-content-between">
+                <div class="col-10">
+                  <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" class="btn btn-success" value="Save"/>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="row">
+        <div class="col-12 mb-3">
+          <div class="card w-100">
+            <h5 class="card-header">Albums</h5>
+            <div class="card-body" style="max-height:25em; overflow-y:auto;">
+              <p>List all albums..</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="card w-100">
+            <h5 class="card-header">Tags</h5>
+            <div class="card-body" style="max-height:25em; overflow-y:auto;">
+              <p>List all tags..</p>
+              <p>{{ object.tags }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
