@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "polymorphic",
     "ninja",
     "django_htmx",
+    "oauth2_provider",
     # bma apps
     "bornhack_allauth_provider",
     "users",
@@ -46,12 +47,15 @@ INSTALLED_APPS = [
     "audios",
     "documents",
     "frontpage",
+    "albums",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "utils.middleware.ExemptOauthFromCSRFMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -63,6 +67,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
+    "oauth2_provider.backends.OAuth2Backend",
 ]
 
 ROOT_URLCONF = "bma.urls"

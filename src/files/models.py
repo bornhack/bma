@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from polymorphic.models import PolymorphicModel
 
+from users.sentinel import get_sentinel_user
 from utils.license import LicenseChoices
 
 
@@ -30,7 +31,7 @@ class BaseFile(PolymorphicModel):
 
     owner = models.ForeignKey(
         "users.User",
-        on_delete=models.CASCADE,
+        on_delete=models.SET(get_sentinel_user),
         related_name="files",
         help_text="The uploader of this file.",
     )

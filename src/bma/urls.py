@@ -12,6 +12,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("api/v1/json/", api_v1_json.urls),
+    path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("", include("frontpage.urls")),
     path("files/", include("files.urls", namespace="files")),
     path("pictures/", include("pictures.urls", namespace="pictures")),
