@@ -6,17 +6,18 @@ from typing import Union
 import magic
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from ninja import Query
 from ninja import Router
 from ninja.files import UploadedFile
 
 from .models import BaseFile
+from .schema import FileFilters
 from .schema import FileOutSchema
 from .schema import FileUpdateSchema
 from .schema import UploadMetadata
 from audios.schema import AudioOutSchema
 from documents.schema import DocumentOutSchema
 from pictures.schema import PictureOutSchema
-from utils.license import LicenseChoices
 from utils.schema import MessageSchema
 from videos.schema import VideoOutSchema
 
@@ -24,6 +25,9 @@ logger = logging.getLogger("bma")
 
 # initialise API router
 router = Router()
+
+# https://django-ninja.rest-framework.com/guides/input/query-params/#using-schema
+query = Query(...)
 
 
 @router.post(
@@ -63,10 +67,6 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
         # title defaults to the original filename
         uploaded_file.title = uploaded_file.original_filename
 
-    # XXX why doesn't django-ninja validate enums?
-    if uploaded_file.license not in LicenseChoices:
-        return 422, {"message": "Invalid license"}
-
     # save everything and return
     uploaded_file.save()
     return 201, uploaded_file
@@ -95,14 +95,36 @@ def file_get(request, file_uuid: uuid.UUID):
     response={200: List[FileOutSchema]},
     summary="Return a list of all files.",
 )
-def file_list(request):
-    """Return a list of all files."""
-    if request.user.is_superuser:
-        return BaseFile.objects.all()
-    else:
-        return BaseFile.objects.filter(status="PUBLISHED") | BaseFile.objects.filter(
-            owner=request.user,
+def file_list(request, filters: FileFilters = query):
+    """Return a list of all files. Supports offset, limit, query."""
+    files = BaseFile.objects.all()
+
+    if not request.user.is_superuser:
+        files = files.filter(status="PUBLISHED") | files.filter(owner=request.user)
+
+    if filters.albums:
+        files = files.filter(albums__in=filters.albums)
+
+    if filters.search:
+        files = files.filter(title__icontains=filters.search) | files.filter(
+            description__icontains=filters.search,
         )
+
+    if filters.sorting:
+        if filters.sorting.endswith("_asc"):
+            # remove _asc and add +
+            files = files.order_by(f"{filters.sorting[:-4]}")
+        else:
+            # remove _desc and add -
+            files = files.order_by(f"-{filters.sorting[:-5]}")
+
+    if filters.offset:
+        files = files[filters.offset :]
+
+    if filters.limit:
+        files = files[: filters.limit]
+
+    return files
 
 
 @router.put(
@@ -155,6 +177,7 @@ def file_delete(request, file_uuid: uuid.UUID):
     if basefile.owner != request.user:
         return 403, {"message": f"No permission to delete file {file_uuid}"}
     # we don't let users fully delete files for now
+    # basefile.delete()
     basefile.status = "PENDING_DELETION"
     basefile.save()
     return 204, None

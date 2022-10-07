@@ -1,11 +1,16 @@
 import logging
+import operator
 import uuid
+from functools import reduce
 from typing import List
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from ninja import Query
 from ninja import Router
 
 from .models import Album
+from .schema import AlbumFilters
 from .schema import AlbumInSchema
 from .schema import AlbumOutSchema
 from utils.schema import MessageSchema
@@ -14,6 +19,9 @@ logger = logging.getLogger("bma")
 
 # initialise API router
 router = Router()
+
+# https://django-ninja.rest-framework.com/guides/input/query-params/#using-schema
+query = Query(...)
 
 
 @router.post(
@@ -49,9 +57,35 @@ def album_get(request, album_uuid: uuid.UUID):
     response={200: List[AlbumOutSchema]},
     summary="Return a list of albums.",
 )
-def album_list(request):
+def album_list(request, filters: AlbumFilters = query):
     """Return a list of albums."""
-    return Album.objects.all()
+    albums = Album.objects.all()
+
+    if filters.files:
+        # __in is OR and we want AND, build a query for .exclude() with all file UUIDs
+        query = reduce(operator.and_, (Q(files__uuid=uuid) for uuid in filters.files))
+        albums = albums.exclude(~query)
+
+    if filters.search:
+        albums = albums.filter(title__icontains=filters.search) | albums.filter(
+            description__icontains=filters.search,
+        )
+
+    if filters.sorting:
+        if filters.sorting.endswith("_asc"):
+            # remove _asc and add +
+            albums = albums.order_by(f"{filters.sorting[:-4]}")
+        else:
+            # remove _desc and add -
+            albums = albums.order_by(f"-{filters.sorting[:-5]}")
+
+    if filters.offset:
+        albums = albums[filters.offset :]
+
+    if filters.limit:
+        albums = albums[: filters.limit]
+
+    return albums
 
 
 @router.put(

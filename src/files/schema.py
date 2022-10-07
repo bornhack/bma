@@ -1,12 +1,16 @@
+import uuid
 from pathlib import Path
 from typing import List
 from typing import Optional
 
+from ninja import Field
 from ninja import ModelSchema
 
 from albums.schema import AlbumOutSchema
 from files.models import BaseFile
 from utils.license import LicenseChoices
+from utils.schema import ListFilters
+from utils.schema import SortingChoices
 
 
 class UploadMetadata(ModelSchema):
@@ -49,3 +53,10 @@ class FileUpdateSchema(ModelSchema):
     class Config:
         model = BaseFile
         model_fields = ["title", "description", "source", "license", "attribution"]
+
+
+class FileFilters(ListFilters):
+    """The filters used for the file_list endpoint."""
+
+    sorting: SortingChoices = None
+    albums: List[uuid.UUID] = Field(None, alias="albums")

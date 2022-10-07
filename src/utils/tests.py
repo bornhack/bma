@@ -3,6 +3,7 @@ import hashlib
 import json
 import random
 import string
+from pathlib import Path
 from urllib.parse import parse_qs
 from urllib.parse import urlsplit
 
@@ -100,26 +101,45 @@ class ApiTestBase(TestCase):
         user.tokeninfo = cls.tokeninfo
         cls.auth = f"Bearer {cls.tokeninfo['access_token']}"
 
-    def file_upload(cls):
-        with open("static_src/images/logo_wide_black_500_RGB.png", "rb") as f:
+    def file_upload(
+        cls,
+        filepath="static_src/images/logo_wide_black_500_RGB.png",
+        title="some title",
+        license="CC_ZERO_1_0",
+        attribution="fotoarne",
+        source="the internet",
+        return_full=False,
+        expect_status_code=201,
+    ):
+        with open(filepath, "rb") as f:
             response = cls.client.post(
                 reverse("api-v1-json:upload"),
                 {
                     "f": f,
                     "metadata": json.dumps(
                         {
-                            "license": "CC_ZERO_1_0",
-                            "attribution": "fotoarne",
-                            "source": "the internet",
+                            "title": title,
+                            "license": license,
+                            "attribution": attribution,
+                            "source": source,
                         },
                     ),
                 },
                 HTTP_AUTHORIZATION=cls.auth,
             )
-        assert response.status_code == 201
+        assert response.status_code == expect_status_code
+        if expect_status_code == 422:
+            return
         data = response.json()
         assert "uuid" in data
-        assert data["attribution"] == "fotoarne"
-        assert data["license"] == "CC_ZERO_1_0"
+        if not title:
+            title = Path(filepath).name
+        assert data["title"] == title
+        assert data["attribution"] == attribution
+        assert data["license"] == license
+        assert data["source"] == source
         cls.file_uuid = data["uuid"]
-        return data["uuid"]
+        if return_full:
+            return data
+        else:
+            return data["uuid"]
