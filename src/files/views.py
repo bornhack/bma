@@ -8,7 +8,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
-from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
@@ -19,6 +18,7 @@ from django.views.generic import UpdateView
 from audios.models import Audio
 from documents.models import Document
 from files.forms import UploadForm
+from files.mixins import FilesApprovalMixin
 from files.models import BaseFile
 from files.models import StatusChoices
 from pictures.models import Picture
@@ -84,63 +84,29 @@ class FilesUploadView(LoginRequiredMixin, FormView):
     form_class = UploadForm
 
 
-# TODO: Extract form method into mixin
-# TODO: Add helper method for dispatch logic in same mixin
-class FilesPublishUpdateView(LoginRequiredMixin, UpdateView):
+class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
     template_name = "files_approval_publish.html"
     model = BaseFile
-    fields = []
     success_url = reverse_lazy("files:manage")
-
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.status in [
-            StatusChoices.UNPUBLISHED,
-            StatusChoices.PENDING_MODERATION,
-        ]:
-            return super().dispatch(request, *args, **kwargs)
-        messages.error(
-            self.request,
-            f"File '{self.object.title}' with status "
-            f"'{self.object.get_status_display()}' was not published!",
-        )
-        return HttpResponseRedirect(self.get_success_url())
-
-    def form_valid(self, form):
-        self.object.status = "PUBLISHED"
-        self.object.save()
-        messages.success(
-            self.request,
-            f"File {self.object.title} was published",
-        )
-        return super().form_valid(form)
+    allowed_approval_status = [
+        StatusChoices.UNPUBLISHED,
+        StatusChoices.PENDING_MODERATION,
+    ]
+    updated_status = StatusChoices.PUBLISHED
+    error_msg_postfix = "not published"
+    success_msg_postfix = "published"
 
 
-class FilesUnpublishUpdateView(LoginRequiredMixin, UpdateView):
+class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
     template_name = "files_approval_unpublish.html"
     model = BaseFile
-    fields = []
     success_url = reverse_lazy("files:manage")
-
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.status == StatusChoices.PUBLISHED:
-            return super().dispatch(request, *args, **kwargs)
-        messages.error(
-            self.request,
-            f"File '{self.object.title}' with status "
-            f"'{self.object.get_status_display()}' was not unpublished!",
-        )
-        return HttpResponseRedirect(self.get_success_url())
-
-    def form_valid(self, form):
-        self.object.status = "UNPUBLISHED"
-        self.object.save()
-        messages.success(
-            self.request,
-            f"File {self.object.title} was unpublished",
-        )
-        return super().form_valid(form)
+    allowed_approval_status = [
+        StatusChoices.PUBLISHED,
+    ]
+    updated_status = StatusChoices.UNPUBLISHED
+    error_msg_postfix = "not unpublished"
+    success_msg_postfix = "unpublished"
 
 
 def BMAMediaView(request, path, accel):
