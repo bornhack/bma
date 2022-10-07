@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+{% block title %}Unpublish file{% endblock title %}
+
+{% block content %}
+
+  <div class="row mt-5 mb-3 justify-content-start">
+    <div class="col-6">
+      <h3>Unpublish file</h3>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-6">
+      <form method="post">
+        {% csrf_token %}
+        <p class="lead">Are you sure you want to unpublish "{{ object.title }}"?</p>
+        <div class="d-flex justify-content-between">
+          <button type="button" onclick="history.back()" class="btn btn-outline-danger ml-2">Cancel</button>
+          <input type="submit" class="btn btn-success mr-2" value="Unpublish"/>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% endblock content %}

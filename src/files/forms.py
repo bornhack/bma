@@ -9,7 +9,3 @@ class UploadForm(forms.ModelForm):
     class Meta:
         model = BaseFile
         fields = ["license", "attribution"]
-
-
-class EditFileForm(forms.ModelForm):
-    pass
