@@ -25,6 +25,8 @@ class FrontpageTemplateView(TemplateView):
 
     def _query_last_6_uploads(self, model):
         try:
-            return model.objects.all().order_by("created")[:6]
+            return model.objects.filter(status="PUBLISHED").order_by(
+                "created",
+            )[:6]
         except model.doesnotexist:
             return ""
