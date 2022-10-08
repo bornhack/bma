@@ -109,7 +109,7 @@ class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
     success_msg_postfix = "unpublished"
 
 
-def BMAMediaView(request, path, accel):
+def bma_media_view(request, path, accel):
     """Serve media files using nginx x-accel-redirect, or serve directly for dev use."""
     # get BaseFile uuid from the path
     if match := re.match(

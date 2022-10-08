@@ -6,7 +6,7 @@ from django.urls import path
 from django.urls import re_path
 
 from .api import api_v1_json
-from files.views import BMAMediaView
+from files.views import bma_media_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -22,12 +22,12 @@ urlpatterns = [
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
-# and locally during development, determined by the value of 'accel' arg to BMAMediaView
+# and locally during development, determined by the value of 'accel' arg to bma_media_view
 urlpatterns += [
     re_path(
         r"^media/(?P<path>.*)",
-        BMAMediaView,
-        name="nginx_accel_media",
+        bma_media_view,
+        name="bma_media_view",
         kwargs={"accel": settings.NGINX_PROXY},
     ),
 ]
