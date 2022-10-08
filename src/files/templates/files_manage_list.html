@@ -92,6 +92,7 @@
         <table class="table table-bordered table-hover">
           <thead>
             <tr>
+              <th>Date</th>
               <th>Name</th>
               <th>Attribution</th>
               <th>License</th>
@@ -103,30 +104,38 @@
           <tbody>
             {% for file in object_list %}
               <tr>
+                <td>{{ file.created|date:"d/m/y - H:i:s" }}</td>
                 <td>{{ file.title }}</td>
                 <td>{{ file.attribution }}</td>
                 <td>{{ file.get_license_display }}</td>
                 <td>
-                  <span
-                    {% if file.get_status_display == 'Published' %}
-                      class="badge bg-success">
-                    {% elif 'Pending' in file.get_status_display %}
-                      class="badge bg-warning">
+                  <span class="badge
+                    {% if file.status == 'PUBLISHED' %}
+                      bg-success">
+                    {% elif 'PENDING' in file.status %}
+                      bg-warning">
                     {% else %}
-                      class="badge bg-seconday">
+                      bg-info">
                     {% endif %}
                     {{ file.get_status_display }}
                   </span>
-                </td>
-                <td>
-                  <small>{{ file.tags }}</small>
-                </td>
-                <td>
-                  <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>
-                  <a href="{% url 'files:edit' file.uuid %}"><i class="fa-solid fa-pen-to-square"></i></a>
-                  <a href="{% url 'files:delete' file.uuid %}"><i class="fa-solid fa-trash"></i></a>
-                </td>
-              </tr>
+                  </td>
+                  <td>
+                    <small>{{ file.tags }}</small>
+                  </td>
+                  <td>
+                    {% if file.status == "PUBLISHED" %}
+                      <a href="{% url 'files:unpublish' file.uuid %}"><i class="fa-solid fa-eye-slash"></i></a>
+                    {% elif file.status == "UNPUBLISHED" %}
+                      <a href="{% url 'files:publish' file.uuid %}"><i class="fa-solid fa-eye"></i></a>
+                    {% elif file.status == "PENDING_MODERATION" %}
+                      <a href="{% url 'files:publish' file.uuid %}"><i class="fa-solid fa-circle-check"></i></a>
+                    {% endif %}
+                    <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>
+                    <a href="{% url 'files:edit' file.uuid %}"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <a href="{% url 'files:delete' file.uuid %}"><i class="fa-solid fa-trash"></i></a>
+                  </td>
+                </tr>
             {% endfor %}
           </tbody>
         </table>

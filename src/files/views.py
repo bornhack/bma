@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
 from django.http import Http404
@@ -17,7 +18,9 @@ from django.views.generic import UpdateView
 from audios.models import Audio
 from documents.models import Document
 from files.forms import UploadForm
+from files.mixins import FilesApprovalMixin
 from files.models import BaseFile
+from files.models import StatusChoices
 from pictures.models import Picture
 from videos.models import Video
 
@@ -29,7 +32,9 @@ class FilesManageListView(LoginRequiredMixin, ListView):
     model = BaseFile
 
     def get_queryset(self):
-        return BaseFile.objects.filter(owner=self.request.user)
+        return BaseFile.objects.filter(
+            owner=self.request.user,
+        ).order_by("-created")
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -44,7 +49,7 @@ class FilesManageListView(LoginRequiredMixin, ListView):
 
     def _query_latest_file(self, model):
         try:
-            return model.objects.filter(owner=self.request.user).latest("uuid")
+            return model.objects.filter(owner=self.request.user).latest("created")
         except BaseFile.DoesNotExist:
             return ""
 
@@ -53,6 +58,13 @@ class FilesManageDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "files_manage_delete.html"
     model = BaseFile
     success_url = reverse_lazy("files:manage")
+
+    def form_valid(self, form):
+        messages.success(
+            self.request,
+            f"File {self.object.title} was deleted",
+        )
+        return super().form_valid(form)
 
 
 class FilesManageDetailView(LoginRequiredMixin, DetailView):
@@ -70,6 +82,31 @@ class FilesManageEditView(LoginRequiredMixin, UpdateView):
 class FilesUploadView(LoginRequiredMixin, FormView):
     template_name = "upload.html"
     form_class = UploadForm
+
+
+class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
+    template_name = "files_approval_publish.html"
+    model = BaseFile
+    success_url = reverse_lazy("files:manage")
+    allowed_approval_status = [
+        StatusChoices.UNPUBLISHED,
+        StatusChoices.PENDING_MODERATION,
+    ]
+    updated_status = StatusChoices.PUBLISHED
+    error_msg_postfix = "not published"
+    success_msg_postfix = "published"
+
+
+class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
+    template_name = "files_approval_unpublish.html"
+    model = BaseFile
+    success_url = reverse_lazy("files:manage")
+    allowed_approval_status = [
+        StatusChoices.PUBLISHED,
+    ]
+    updated_status = StatusChoices.UNPUBLISHED
+    error_msg_postfix = "not unpublished"
+    success_msg_postfix = "unpublished"
 
 
 def BMAMediaView(request, path, accel):
