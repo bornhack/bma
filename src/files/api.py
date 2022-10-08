@@ -93,7 +93,7 @@ def file_get(request, file_uuid: uuid.UUID):
 @router.get(
     "/",
     response={200: List[FileOutSchema]},
-    summary="Return a list of all files.",
+    summary="Return a list of files.",
 )
 def file_list(request, filters: FileFilters = query):
     """Return a list of all files. Supports offset, limit, query."""

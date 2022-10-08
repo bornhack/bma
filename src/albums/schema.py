@@ -1,8 +1,10 @@
 import uuid
 from typing import List
 
+from django.urls import reverse
 from ninja import Field
 from ninja import ModelSchema
+from ninja import Schema
 
 from albums.models import Album
 from utils.schema import ListFilters
@@ -20,12 +22,31 @@ class AlbumInSchema(ModelSchema):
         model_fields = ["title", "description", "files"]
 
 
+class LinkSchema(Schema):
+    self: str = None
+
+
 class AlbumOutSchema(ModelSchema):
     """Schema for outputting Albums in list/detail operations."""
 
+    links: LinkSchema
+
     class Config:
         model = Album
-        model_fields = "__all__"
+        model_fields = [
+            "uuid",
+            "owner",
+            "created",
+            "updated",
+            "title",
+            "description",
+            "files",
+        ]
+
+    def resolve_links(self, obj):
+        return {
+            "self": reverse("api-v1-json:album_get", kwargs={"album_uuid": obj.uuid}),
+        }
 
 
 class AlbumFilters(ListFilters):

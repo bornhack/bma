@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 
+from django.urls import reverse
 from ninja import Field
 from ninja import ModelSchema
+from ninja import Schema
 
-from albums.schema import AlbumOutSchema
 from files.models import BaseFile
 from utils.license import LicenseChoices
 from utils.schema import ListFilters
@@ -17,7 +18,6 @@ class UploadMetadata(ModelSchema):
     """File metatata."""
 
     license: LicenseChoices
-    # title, description and source are optional
     title: str = ""
     description: str = ""
     source: str = ""
@@ -27,20 +27,45 @@ class UploadMetadata(ModelSchema):
         model_fields = ["license", "attribution", "title", "description", "source"]
 
 
+class LinkSchema(Schema):
+    self: str = None
+
+
 class FileOutSchema(ModelSchema):
-    albums: List[AlbumOutSchema]
+    albums: List[str] = []
     filename: str
     url: str
+    links: LinkSchema
 
     class Config:
         model = BaseFile
-        model_fields = "__all__"
+        model_fields = [
+            "uuid",
+            "owner",
+            "created",
+            "updated",
+            "title",
+            "description",
+            "source",
+            "license",
+            "attribution",
+            "status",
+            "original_filename",
+        ]
+
+    def resolve_albums(self, obj):
+        return [str(x) for x in obj.albums.values_list("uuid", flat=True)]
 
     def resolve_filename(self, obj):
         return Path(obj.original.path).name
 
     def resolve_url(self, obj):
         return obj.original.url
+
+    def resolve_links(self, obj):
+        return {
+            "self": reverse("api-v1-json:file_get", kwargs={"file_uuid": obj.uuid}),
+        }
 
 
 class FileUpdateSchema(ModelSchema):
