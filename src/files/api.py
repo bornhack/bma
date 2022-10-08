@@ -6,6 +6,8 @@ from typing import Union
 import magic
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from guardian.shortcuts import assign_perm
+from guardian.shortcuts import get_objects_for_user
 from ninja import Query
 from ninja import Router
 from ninja.files import UploadedFile
@@ -69,6 +71,13 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
 
     # save everything and return
     uploaded_file.save()
+
+    # assign permissions (publish_basefile and unpublish_basefile are assigned after moderation)
+    assign_perm("view_basefile", request.user, uploaded_file)
+    assign_perm("change_basefile", request.user, uploaded_file)
+    assign_perm("delete_basefile", request.user, uploaded_file)
+
+    # return response
     return 201, uploaded_file
 
 
@@ -80,14 +89,13 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
 def file_get(request, file_uuid: uuid.UUID):
     """Return a file object."""
     basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if (
-        basefile.status == "PUBLISHED"
-        or request.user == basefile.owner
-        or request.user.is_superuser
+    if basefile.status == "PUBLISHED" or request.user.has_perm(
+        "view_basefile",
+        basefile,
     ):
         return basefile
     else:
-        return 403, {"message": "File is not published"}
+        return 403, {"message": "Permission denied"}
 
 
 @router.get(
@@ -96,14 +104,19 @@ def file_get(request, file_uuid: uuid.UUID):
     summary="Return a list of files.",
 )
 def file_list(request, filters: FileFilters = query):
-    """Return a list of all files. Supports offset, limit, query."""
-    files = BaseFile.objects.all()
-
-    if not request.user.is_superuser:
-        files = files.filter(status="PUBLISHED") | files.filter(owner=request.user)
+    """Return a list of files."""
+    # start out with a list of all PUBLISHED files plus whatever else the user has access to
+    files = BaseFile.objects.filter(status="PUBLISHED") | get_objects_for_user(
+        request.user,
+        "files.view_basefile",
+    )
+    files = files.distinct()
 
     if filters.albums:
         files = files.filter(albums__in=filters.albums)
+
+    if filters.statuses:
+        files = files.filter(status__in=filters.statuses)
 
     if filters.search:
         files = files.filter(title__icontains=filters.search) | files.filter(
@@ -152,8 +165,8 @@ def file_list(request, filters: FileFilters = query):
 def file_update(request, file_uuid: uuid.UUID, metadata: FileUpdateSchema):
     """Update (PATCH) or replace (PUT) a file object."""
     basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if request.user != basefile.owner:
-        return 403, {"message": f"No permission to update file {file_uuid}"}
+    if not request.user.has_perm("change_basefile", basefile):
+        return 403, {"message": "Permission denied."}
     if request.method == "PATCH":
         # we are updating the object, we do not want defaults for absent fields
         exclude_unset = True
@@ -166,6 +179,70 @@ def file_update(request, file_uuid: uuid.UUID, metadata: FileUpdateSchema):
     return basefile
 
 
+@router.patch(
+    "/{file_uuid}/approve/",
+    response={
+        200: FileOutSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Approve a file.",
+    url_name="file_approve",
+)
+def file_approve(request, file_uuid: uuid.UUID):
+    """Approve a file and grant publish/unpublish permissions to the owner."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("approve_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    # initial status is UNPUBLISHED (so the owner can decide when to publish)
+    basefile.status = "UNPUBLISHED"
+    basefile.save()
+    assign_perm("publish_basefile", basefile.owner, basefile)
+    assign_perm("unpublish_basefile", basefile.owner, basefile)
+    return basefile
+
+
+@router.patch(
+    "/{file_uuid}/unpublish/",
+    response={
+        200: FileOutSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Unpublish a file.",
+)
+def file_unpublish(request, file_uuid: uuid.UUID):
+    """Change the status of a file to UNPUBLISHED."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("unpublish_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    basefile.status = "UNPUBLISHED"
+    basefile.save()
+    return basefile
+
+
+@router.patch(
+    "/{file_uuid}/publish/",
+    response={
+        200: FileOutSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Publish a file.",
+)
+def file_publish(request, file_uuid: uuid.UUID):
+    """Change the status of a file to PUBLISHED."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("publish_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    basefile.status = "PUBLISHED"
+    basefile.save()
+    return basefile
+
+
 @router.delete(
     "/{file_uuid}/",
     response={204: None, 403: MessageSchema, 404: MessageSchema},
@@ -174,8 +251,8 @@ def file_update(request, file_uuid: uuid.UUID, metadata: FileUpdateSchema):
 def file_delete(request, file_uuid: uuid.UUID):
     """Mark a file for deletion."""
     basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if basefile.owner != request.user:
-        return 403, {"message": f"No permission to delete file {file_uuid}"}
+    if not request.user.has_perm("delete_basefile", basefile):
+        return 403, {"message": "Permission denied."}
     # we don't let users fully delete files for now
     # basefile.delete()
     basefile.status = "PENDING_DELETION"

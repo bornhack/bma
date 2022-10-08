@@ -27,7 +27,7 @@ class TestAlbumsApi(ApiTestBase):
                 "description": description,
                 "files": files if files else [],
             },
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 201
@@ -55,7 +55,7 @@ class TestAlbumsApi(ApiTestBase):
                 "description": "description here",
                 "files": self.files[0:2],
             },
-            HTTP_AUTHORIZATION=f"Bearer {self.user2.tokeninfo['access_token']}",
+            HTTP_AUTHORIZATION=self.user2.auth,
             content_type="application/json",
         )
         assert response.status_code == 403
@@ -66,7 +66,7 @@ class TestAlbumsApi(ApiTestBase):
                 "description": "description here",
                 "files": self.files[0:2],
             },
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -77,7 +77,7 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.patch(
             reverse("api-v1-json:album_get", kwargs={"album_uuid": self.album_uuid}),
             {"files": self.files},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -86,7 +86,7 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.patch(
             reverse("api-v1-json:album_get", kwargs={"album_uuid": self.album_uuid}),
             {"files": []},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -101,12 +101,12 @@ class TestAlbumsApi(ApiTestBase):
         assert response.status_code == 403
         response = self.client.delete(
             reverse("api-v1-json:album_get", kwargs={"album_uuid": self.album_uuid}),
-            HTTP_AUTHORIZATION=f"Bearer {self.user2.tokeninfo['access_token']}",
+            HTTP_AUTHORIZATION=self.user2.auth,
         )
         assert response.status_code == 403
         response = self.client.delete(
             reverse("api-v1-json:album_get", kwargs={"album_uuid": self.album_uuid}),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 204
 
@@ -115,7 +115,7 @@ class TestAlbumsApi(ApiTestBase):
         self.test_album_create_with_files()
         response = self.client.get(
             reverse("api-v1-json:album_get", kwargs={"album_uuid": self.album_uuid}),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
 
@@ -125,7 +125,7 @@ class TestAlbumsApi(ApiTestBase):
             self.test_album_create_with_files(title=f"album{i}")
         response = self.client.get(
             reverse("api-v1-json:album_list"),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 10
@@ -134,16 +134,15 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:album_list"),
             data={"files": [self.files[0], response.json()[1]["files"][0]]},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
-        print(response.json())
         assert len(response.json()) == 0
         # test with files in the same album
         response = self.client.get(
             reverse("api-v1-json:album_list"),
             data={"files": [self.files[0], self.files[1]]},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -152,7 +151,7 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:album_list"),
             data={"search": "album4"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -161,7 +160,7 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:album_list"),
             data={"sorting": "created_desc"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 10
@@ -171,7 +170,7 @@ class TestAlbumsApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:album_list"),
             data={"sorting": "title_asc", "offset": 5},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 5

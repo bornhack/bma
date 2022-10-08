@@ -8,6 +8,7 @@ from ninja import Field
 from ninja import ModelSchema
 from ninja import Schema
 
+from .models import StatusChoices
 from files.models import BaseFile
 from utils.license import LicenseChoices
 from utils.schema import ListFilters
@@ -28,7 +29,10 @@ class UploadMetadata(ModelSchema):
 
 
 class LinkSchema(Schema):
-    self: str = None
+    self: str
+    approve: str
+    unpublish: str
+    publish: str
 
 
 class FileOutSchema(ModelSchema):
@@ -65,6 +69,18 @@ class FileOutSchema(ModelSchema):
     def resolve_links(self, obj):
         return {
             "self": reverse("api-v1-json:file_get", kwargs={"file_uuid": obj.uuid}),
+            "approve": reverse(
+                "api-v1-json:file_approve",
+                kwargs={"file_uuid": obj.uuid},
+            ),
+            "unpublish": reverse(
+                "api-v1-json:file_unpublish",
+                kwargs={"file_uuid": obj.uuid},
+            ),
+            "publish": reverse(
+                "api-v1-json:file_publish",
+                kwargs={"file_uuid": obj.uuid},
+            ),
         }
 
 
@@ -85,3 +101,4 @@ class FileFilters(ListFilters):
 
     sorting: SortingChoices = None
     albums: List[uuid.UUID] = Field(None, alias="albums")
+    statuses: List[StatusChoices] = None

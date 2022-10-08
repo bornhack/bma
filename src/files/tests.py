@@ -16,7 +16,7 @@ class TestFilesApi(ApiTestBase):
     def test_api_auth_bearer_token(self):
         response = self.client.get(
             "/o/authorized_tokens/",
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert "revoke" in response.content.decode("utf-8")
@@ -26,15 +26,15 @@ class TestFilesApi(ApiTestBase):
             "/o/token/",
             {
                 "grant_type": "refresh_token",
-                "client_id": f"client_id_{self.user.username}",
-                "refresh_token": self.tokeninfo["refresh_token"],
+                "client_id": f"client_id_{self.user1.username}",
+                "refresh_token": self.user1.tokeninfo["refresh_token"],
             },
         )
         assert response.status_code == 200
         assert "refresh_token" in response.json()
 
     def test_api_auth_django_session(self):
-        self.client.force_login(self.user)
+        self.client.force_login(self.user1)
         response = self.client.get("/o/authorized_tokens/")
         assert response.status_code == 200
         assert "revoke" in response.content.decode("utf-8")
@@ -46,13 +46,13 @@ class TestFilesApi(ApiTestBase):
         self.file_upload(license="notalicense", expect_status_code=422)
 
     def test_file_list(self):
-        """Test plain file_list."""
+        """Test the file_list endpoint."""
         files = []
         for i in range(15):
             files.append(self.file_upload(title=f"title{i}"))
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert len(response.json()) == 15
@@ -61,7 +61,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             data={"limit": 5, "sorting": "title_asc"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert len(response.json()) == 5
         assert response.json()[0]["title"] == "title0"
@@ -71,7 +71,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             data={"limit": 1, "sorting": "created_desc"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.json()[0]["title"] == "title14"
 
@@ -79,7 +79,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             data={"offset": 5, "sorting": "created_asc"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.json()[0]["title"] == "title5"
         assert response.json()[4]["title"] == "title9"
@@ -88,7 +88,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             data={"search": "title7"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert len(response.json()) == 1
         assert response.json()[0]["title"] == "title7"
@@ -100,27 +100,114 @@ class TestFilesApi(ApiTestBase):
                 "title": "album title here",
                 "files": files[3:6],
             },
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 201
-        print(response.json())
         self.album_uuid = response.json()["uuid"]
 
         # test album filter
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             data={"albums": [self.album_uuid]},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert len(response.json()) == 3
+
+    def test_file_list_permissions(self):
+        """Test various permissions stuff for the file_list endpoint."""
+        files = []
+        for i in range(15):
+            files.append(self.file_upload(title=f"title{i}"))
+
+        # no files should be visible
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            HTTP_AUTHORIZATION=self.user2.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 0
+
+        # the superuser can see all files
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            HTTP_AUTHORIZATION=self.superuser.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 15
+
+        # attempt to publish a file before approval
+        response = self.client.patch(
+            reverse("api-v1-json:file_publish", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 403
+
+        # approve the file without permission
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 403
+
+        # approve the file
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.superuser.auth,
+        )
+        assert response.status_code == 200
+
+        # now list UNPUBLISHED files
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"statuses": ["UNPUBLISHED"]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 1
+
+        # publish a file
+        response = self.client.patch(
+            reverse("api-v1-json:file_publish", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 200
+
+        # make sure someone else can see it
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            HTTP_AUTHORIZATION=self.user2.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        # unpublish the file without permission
+        response = self.client.patch(
+            reverse("api-v1-json:file_unpublish", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.user2.auth,
+        )
+        assert response.status_code == 403
+
+        # unpublish the file again
+        response = self.client.patch(
+            reverse("api-v1-json:file_unpublish", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 200
+
+        # make sure it is not visible anymore
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            HTTP_AUTHORIZATION=self.user2.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 0
 
     def test_metadata_get(self):
         """Get file metadata from the API."""
         self.file_upload()
         response = self.client.get(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         assert "uuid" in response.json()
@@ -131,14 +218,14 @@ class TestFilesApi(ApiTestBase):
         self.file_upload()
         metadata = self.client.get(
             reverse("api-v1-json:file_list"),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         ).json()[0]
         url = metadata["url"]
         # try download of unpublished file without auth
         response = self.client.get(url)
         assert response.status_code == 404
         # try again with auth
-        self.client.force_login(self.user)
+        self.client.force_login(self.user1)
         response = self.client.get(url)
         assert response.status_code == 200
         assert response["content-type"] == "image/png"
@@ -148,10 +235,12 @@ class TestFilesApi(ApiTestBase):
     def test_file_metadata_update(self):
         """Replace and then update file metadata."""
         self.file_upload()
-        original_metadata = self.client.get(
+        response = self.client.get(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
-            HTTP_AUTHORIZATION=self.auth,
-        ).json()
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 200
+        original_metadata = response.json()
         updates = {
             "title": "some title",
             "description": "some description",
@@ -174,7 +263,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.put(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             updates,
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -194,7 +283,7 @@ class TestFilesApi(ApiTestBase):
         response = self.client.patch(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             {"source": "outer space"},
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -228,7 +317,7 @@ class TestFilesApi(ApiTestBase):
         assert response.status_code == 403
         response = self.client.delete(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 204
 
@@ -239,7 +328,7 @@ class TestFilesApi(ApiTestBase):
                 "api-v1-json:file_get",
                 kwargs={"file_uuid": "a35ce7c9-f814-46ca-8c4e-87b992e15819"},
             ),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 404
 
@@ -247,7 +336,7 @@ class TestFilesApi(ApiTestBase):
         """Get file metadata get with something that is not a uuid."""
         response = self.client.get(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": "notuuid"}),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 422
 
@@ -259,7 +348,7 @@ class TestFilesApi(ApiTestBase):
                 "api-v1-json:file_get",
                 kwargs={"file_uuid": self.file_uuid},
             ),
-            HTTP_AUTHORIZATION=self.auth,
+            HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert response.status_code == 200
         response = self.client.get(

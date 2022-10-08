@@ -21,6 +21,11 @@ class BaseFile(PolymorphicModel):
 
     class Meta:
         ordering = ["created"]
+        permissions = (
+            ("approve_basefile", "Approve file"),
+            ("unpublish_basefile", "Unpublish file"),
+            ("publish_basefile", "Publish file"),
+        )
 
     uuid = models.UUIDField(
         primary_key=True,

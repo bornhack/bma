@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "ninja",
     "django_htmx",
     "oauth2_provider",
+    "guardian",
     # bma apps
     "bornhack_allauth_provider",
     "users",
@@ -69,6 +70,7 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
     "oauth2_provider.backends.OAuth2Backend",
+    "guardian.backends.ObjectPermissionBackend",
 ]
 
 ROOT_URLCONF = "bma.urls"
@@ -197,3 +199,7 @@ LOGGING = {
         },
     },
 }
+
+GUARDIAN_GET_CONTENT_TYPE = (
+    "polymorphic.contrib.guardian.get_polymorphic_base_content_type"
+)

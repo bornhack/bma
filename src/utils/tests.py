@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import json
+import logging
 import random
 import string
 from pathlib import Path
@@ -27,15 +28,24 @@ class ApiTestBase(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Test setup."""
+        # disable logging
+        logging.disable(logging.CRITICAL)
+
         # TODO figure out why using ORJSONRenderer() doesn't work
         # cls.client = Client(enforce_csrf_checks=True, json_encoder=ORJSONRenderer())
         cls.client = Client(enforce_csrf_checks=True)
-        for i in range(5):
-            username = f"user{i}"
+
+        # create 4 regular users and 1 superuser
+        for i in range(6):
+            if i == 5:
+                username = "superuser"
+            else:
+                username = f"user{i}"
             user = UserFactory.create(username=username)
             user.set_password("secret")
+            if i == 5:
+                user.is_superuser = True
             user.save()
-            cls.user = user
             setattr(cls, username, user)
             # create oauth application
             cls.application = Application.objects.create(
@@ -48,7 +58,9 @@ class ApiTestBase(TestCase):
                 client_secret="client_secret",
                 skip_authorization=True,
             )
-            cls.get_access_token(user)
+            user.auth = cls.get_access_token(user)
+            user.save()
+        cls.client.logout()
 
     @classmethod
     def get_access_token(cls, user):
@@ -66,11 +78,11 @@ class ApiTestBase(TestCase):
         )
 
         # this requires login
-        cls.client.force_login(cls.user)
+        cls.client.force_login(user)
 
         # get the authorization code
         data = {
-            "client_id": f"client_id_{cls.user.username}",
+            "client_id": f"client_id_{user.username}",
             "state": "something",
             "redirect_uri": "https://example.com/noexist/callback/",
             "response_type": "code",
@@ -92,14 +104,13 @@ class ApiTestBase(TestCase):
                 "grant_type": "authorization_code",
                 "code": qs["code"],
                 "redirect_uri": "https://example.com/noexist/callback/",
-                "client_id": f"client_id_{cls.user.username}",
+                "client_id": f"client_id_{user.username}",
                 "code_verifier": code_verifier.decode("utf-8"),
             },
         )
         assert response.status_code == 200
-        cls.tokeninfo = json.loads(response.content)
-        user.tokeninfo = cls.tokeninfo
-        cls.auth = f"Bearer {cls.tokeninfo['access_token']}"
+        user.tokeninfo = json.loads(response.content)
+        return f"Bearer {user.tokeninfo['access_token']}"
 
     def file_upload(
         cls,
@@ -125,7 +136,7 @@ class ApiTestBase(TestCase):
                         },
                     ),
                 },
-                HTTP_AUTHORIZATION=cls.auth,
+                HTTP_AUTHORIZATION=cls.user1.auth,
             )
         assert response.status_code == expect_status_code
         if expect_status_code == 422:

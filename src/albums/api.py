@@ -6,6 +6,7 @@ from typing import List
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from guardian.shortcuts import assign_perm
 from ninja import Query
 from ninja import Router
 
@@ -39,6 +40,12 @@ def album_create(request, payload: AlbumInSchema):
             setattr(album, k, v)
     album.owner = request.user
     album.save()
+
+    # assign permissions
+    assign_perm("change_album", request.user, album)
+    assign_perm("delete_album", request.user, album)
+
+    # return response
     return 201, album
 
 
@@ -103,8 +110,8 @@ def album_list(request, filters: AlbumFilters = query):
 def album_update(request, album_uuid: uuid.UUID, payload: AlbumInSchema):
     """Update (PATCH) or replace (PUT) an Album."""
     album = get_object_or_404(Album, uuid=album_uuid)
-    if album.owner != request.user:
-        return 403, {"message": f"No permission to update album {album_uuid}"}
+    if not request.user.has_perm("change_album", album):
+        return 403, {"message": "Permission denied."}
     # include defaults for optional fields absent in api call?
     if request.method == "PATCH":
         # we do not want defaults for absent fields
@@ -130,7 +137,7 @@ def album_update(request, album_uuid: uuid.UUID, payload: AlbumInSchema):
 )
 def album_delete(request, album_uuid: uuid.UUID):
     album = get_object_or_404(Album, uuid=album_uuid)
-    if album.owner != request.user:
-        return 403, {"message": f"No permission to delete album {album_uuid}"}
+    if not request.user.has_perm("delete_album", album):
+        return 403, {"message": "Permission denied."}
     album.delete()
     return 204, None
