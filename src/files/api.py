@@ -118,6 +118,9 @@ def file_list(request, filters: FileFilters = query):
     if filters.statuses:
         files = files.filter(status__in=filters.statuses)
 
+    if filters.owners:
+        files = files.filter(owner__in=filters.owners)
+
     if filters.search:
         files = files.filter(title__icontains=filters.search) | files.filter(
             description__icontains=filters.search,

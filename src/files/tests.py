@@ -84,6 +84,20 @@ class TestFilesApi(ApiTestBase):
         assert response.json()[0]["title"] == "title5"
         assert response.json()[4]["title"] == "title9"
 
+        # test owner filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"owners": [self.user1.uuid, self.user2.uuid]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 15
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"owners": [self.user2.uuid]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 0
+
         # test search
         response = self.client.get(
             reverse("api-v1-json:file_list"),

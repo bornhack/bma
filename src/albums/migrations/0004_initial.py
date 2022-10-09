@@ -9,17 +9,17 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("documents", "0001_initial"),
         ("utils", "0001_initial"),
         ("taggit", "0005_auto_20220424_2025"),
+        ("albums", "0003_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="document",
+            model_name="album",
             name="tags",
             field=taggit.managers.TaggableManager(
-                help_text="The tags for this document file",
+                help_text="The tags for this album.",
                 through="utils.UUIDTaggedItem",
                 to="taggit.Tag",
                 verbose_name="Tags",
