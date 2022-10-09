@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load bootstrap5 %}
+{% load guardian_tags %}
 {% block title %}Manage Files{% endblock title %}
 
 {% block content %}
@@ -124,11 +125,12 @@
                     <small>{{ file.tags }}</small>
                   </td>
                   <td>
-                    {% if file.status == "PUBLISHED" %}
+                    {% get_obj_perms request.user for file as "basefile_perms" %}
+                    {% if "publish_basefile" in basefile_perms and file.status == "PUBLISHED" %}
                       <a href="{% url 'files:unpublish' file.uuid %}"><i class="fa-solid fa-eye-slash"></i></a>
-                    {% elif file.status == "UNPUBLISHED" %}
+                    {% elif "unpublish_basefile" in basefile_perms and file.status == "UNPUBLISHED" %}
                       <a href="{% url 'files:publish' file.uuid %}"><i class="fa-solid fa-eye"></i></a>
-                    {% elif file.status == "PENDING_MODERATION" %}
+                    {% elif "approve_basefile" in basefile_perms and file.status == "PENDING_MODERATION" %}
                       <a href="{% url 'files:approve' file.uuid %}"><i class="fa-solid fa-circle-check"></i></a>
                     {% endif %}
                     <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>

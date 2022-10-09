@@ -14,6 +14,7 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
+from guardian.mixins import PermissionRequiredMixin
 
 from audios.models import Audio
 from documents.models import Document
@@ -38,7 +39,8 @@ class FilesManageListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        return self._latest_files_context(context)
+        context = self._latest_files_context(context)
+        return context
 
     def _latest_files_context(self, context: dict):
         context["latest_picture"] = self._query_latest_file(Picture)
@@ -84,7 +86,9 @@ class FilesUploadView(LoginRequiredMixin, FormView):
     form_class = UploadForm
 
 
-class FilesApprovalUpdateView(FilesApprovalMixin, UpdateView):
+class FilesApprovalUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permission_required = "files.approve_basefile"
     allowed_approval_status = StatusChoices.PENDING_MODERATION
     template_approval_type = "approve"
     updated_status = StatusChoices.UNPUBLISHED
@@ -92,7 +96,9 @@ class FilesApprovalUpdateView(FilesApprovalMixin, UpdateView):
     success_msg_postfix = "approved"
 
 
-class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
+class FilesPublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permissions_required = "files.publish_basefile"
     allowed_approval_status = StatusChoices.UNPUBLISHED
     template_approval_type = "publish"
     updated_status = StatusChoices.PUBLISHED
@@ -100,7 +106,9 @@ class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
     success_msg_postfix = "published"
 
 
-class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
+class FilesUnpublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permissions_required = "files.unpublish_basefile"
     allowed_approval_status = StatusChoices.PUBLISHED
     template_approval_type = "unpublish"
     updated_status = StatusChoices.UNPUBLISHED
