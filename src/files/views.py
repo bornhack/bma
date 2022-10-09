@@ -84,26 +84,25 @@ class FilesUploadView(LoginRequiredMixin, FormView):
     form_class = UploadForm
 
 
+class FilesApprovalUpdateView(FilesApprovalMixin, UpdateView):
+    allowed_approval_status = StatusChoices.PENDING_MODERATION
+    template_approval_type = "approve"
+    updated_status = StatusChoices.UNPUBLISHED
+    error_msg_postfix = "not approved"
+    success_msg_postfix = "approved"
+
+
 class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
-    template_name = "files_approval_publish.html"
-    model = BaseFile
-    success_url = reverse_lazy("files:manage")
-    allowed_approval_status = [
-        StatusChoices.UNPUBLISHED,
-        StatusChoices.PENDING_MODERATION,
-    ]
+    allowed_approval_status = StatusChoices.UNPUBLISHED
+    template_approval_type = "publish"
     updated_status = StatusChoices.PUBLISHED
     error_msg_postfix = "not published"
     success_msg_postfix = "published"
 
 
 class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
-    template_name = "files_approval_unpublish.html"
-    model = BaseFile
-    success_url = reverse_lazy("files:manage")
-    allowed_approval_status = [
-        StatusChoices.PUBLISHED,
-    ]
+    allowed_approval_status = StatusChoices.PUBLISHED
+    template_approval_type = "unpublish"
     updated_status = StatusChoices.UNPUBLISHED
     error_msg_postfix = "not unpublished"
     success_msg_postfix = "unpublished"

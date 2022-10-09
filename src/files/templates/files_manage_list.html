@@ -129,7 +129,7 @@
                     {% elif file.status == "UNPUBLISHED" %}
                       <a href="{% url 'files:publish' file.uuid %}"><i class="fa-solid fa-eye"></i></a>
                     {% elif file.status == "PENDING_MODERATION" %}
-                      <a href="{% url 'files:publish' file.uuid %}"><i class="fa-solid fa-circle-check"></i></a>
+                      <a href="{% url 'files:approve' file.uuid %}"><i class="fa-solid fa-circle-check"></i></a>
                     {% endif %}
                     <a href="{% url 'files:detail' file.uuid %}"><i class="fa-solid fa-magnifying-glass"></i></a>
                     <a href="{% url 'files:edit' file.uuid %}"><i class="fa-solid fa-pen-to-square"></i></a>
