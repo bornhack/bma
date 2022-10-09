@@ -14,6 +14,8 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
+from guardian.mixins import PermissionRequiredMixin
+from guardian.shortcuts import assign_perm
 
 from audios.models import Audio
 from documents.models import Document
@@ -38,7 +40,8 @@ class FilesManageListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        return self._latest_files_context(context)
+        context = self._latest_files_context(context)
+        return context
 
     def _latest_files_context(self, context: dict):
         context["latest_picture"] = self._query_latest_file(Picture)
@@ -84,26 +87,37 @@ class FilesUploadView(LoginRequiredMixin, FormView):
     form_class = UploadForm
 
 
-class FilesPublishUpdateView(FilesApprovalMixin, UpdateView):
-    template_name = "files_approval_publish.html"
-    model = BaseFile
-    success_url = reverse_lazy("files:manage")
-    allowed_approval_status = [
-        StatusChoices.UNPUBLISHED,
-        StatusChoices.PENDING_MODERATION,
-    ]
+class FilesApprovalUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permission_required = "files.approve_basefile"
+    allowed_approval_status = StatusChoices.PENDING_MODERATION
+    template_approval_type = "approve"
+    updated_status = StatusChoices.UNPUBLISHED
+    error_msg_postfix = "not approved"
+    success_msg_postfix = "approved"
+
+    def form_valid(self, form):
+        """Assign permissions for owner"""
+        assign_perm("publish_basefile", self.object.owner, self.object)
+        assign_perm("unpublish_basefile", self.object.owner, self.object)
+        return super().form_valid(form)
+
+
+class FilesPublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permission_required = "files.publish_basefile"
+    allowed_approval_status = StatusChoices.UNPUBLISHED
+    template_approval_type = "publish"
     updated_status = StatusChoices.PUBLISHED
     error_msg_postfix = "not published"
     success_msg_postfix = "published"
 
 
-class FilesUnpublishUpdateView(FilesApprovalMixin, UpdateView):
-    template_name = "files_approval_unpublish.html"
-    model = BaseFile
-    success_url = reverse_lazy("files:manage")
-    allowed_approval_status = [
-        StatusChoices.PUBLISHED,
-    ]
+class FilesUnpublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
+    return_403 = True
+    permission_required = "files.unpublish_basefile"
+    allowed_approval_status = StatusChoices.PUBLISHED
+    template_approval_type = "unpublish"
     updated_status = StatusChoices.UNPUBLISHED
     error_msg_postfix = "not unpublished"
     success_msg_postfix = "unpublished"
