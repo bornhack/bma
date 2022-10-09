@@ -15,6 +15,7 @@ from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
 from guardian.mixins import PermissionRequiredMixin
+from guardian.shortcuts import assign_perm
 
 from audios.models import Audio
 from documents.models import Document
@@ -95,10 +96,16 @@ class FilesApprovalUpdateView(PermissionRequiredMixin, FilesApprovalMixin, Updat
     error_msg_postfix = "not approved"
     success_msg_postfix = "approved"
 
+    def form_valid(self, form):
+        """Assign permissions for owner"""
+        assign_perm("publish_basefile", self.object.owner, self.object)
+        assign_perm("unpublish_basefile", self.object.owner, self.object)
+        return super().form_valid(form)
+
 
 class FilesPublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
     return_403 = True
-    permissions_required = "files.publish_basefile"
+    permission_required = "files.publish_basefile"
     allowed_approval_status = StatusChoices.UNPUBLISHED
     template_approval_type = "publish"
     updated_status = StatusChoices.PUBLISHED
@@ -108,7 +115,7 @@ class FilesPublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, Update
 
 class FilesUnpublishUpdateView(PermissionRequiredMixin, FilesApprovalMixin, UpdateView):
     return_403 = True
-    permissions_required = "files.unpublish_basefile"
+    permission_required = "files.unpublish_basefile"
     allowed_approval_status = StatusChoices.PUBLISHED
     template_approval_type = "unpublish"
     updated_status = StatusChoices.UNPUBLISHED
