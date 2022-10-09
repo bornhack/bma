@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load guardian_tags %}
+{% block title %}Albums{% endblock title %}
+
+{% block content %}
+
+  <div class="row mt-5 mb-5 justify-content-between">
+    <div class="col-6">
+      <h3>Album list</h3>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+      <a href="{% url 'files:upload' %}" class="btn btn-outline-primary">New album</a>
+    </div>
+  </div>
+
+{% endblock content %}
