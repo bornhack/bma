@@ -102,3 +102,4 @@ class FileFilters(ListFilters):
     sorting: SortingChoices = None
     albums: List[uuid.UUID] = Field(None, alias="albums")
     statuses: List[StatusChoices] = None
+    owners: List[uuid.UUID] = Field(None, alias="owners")
