@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% load guardian_tags %}
+{% block title %}Albums{% endblock title %}
+
+{% block content %}
+
+  <script src="{% static 'js/vendor/htmx_ext/json-enc.js' %}" defer></script>
+  <div class="row mt-5 mb-5 justify-content-between">
+    <div class="col-6">
+      <h3>Albums</h3>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+      <div class="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+          New album
+        </button>
+        <div class="dropdown-menu">
+          <form hx-post="{% url 'api-v1-json:album_create' %}" hx-ext="json-enc" hx-swap="none">
+            <div class="mb-3">
+              <input type="text" class="form-control" name="title" id="title" placeholder="Title">
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Add</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-8">
+    </div>
+    <div class="col-4">
+      <div class="card w-100">
+        <h5 class="card-header">Your albums</h5>
+        <div class="card-body" hx-get="{% url 'api-v1-json:album_list' %}" hx-trigger="load" hx-target="#albums" style="max-height:25em; overflow-y:auto;">
+          <div id="albums"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

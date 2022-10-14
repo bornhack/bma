@@ -19,6 +19,7 @@ urlpatterns = [
     path("videos/", include("videos.urls", namespace="videos")),
     path("audios/", include("audios.urls", namespace="audios")),
     path("documents/", include("documents.urls", namespace="documents")),
+    path("albums/", include("albums.urls", namespace="albums")),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,
