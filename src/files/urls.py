@@ -1,5 +1,6 @@
 from django.urls import path
 
+from files.views import FileBrowserView
 from files.views import FilesApprovalUpdateView
 from files.views import FilesManageDeleteView
 from files.views import FilesManageDetailView
@@ -12,6 +13,7 @@ from files.views import FilesUploadView
 app_name = "files"
 
 urlpatterns = [
+    path("", FileBrowserView.as_view(), name="browse"),
     path("manage/", FilesManageListView.as_view(), name="manage"),
     path("upload/", FilesUploadView.as_view(), name="upload"),
     path("delete/<pk>/", FilesManageDeleteView.as_view(), name="delete"),

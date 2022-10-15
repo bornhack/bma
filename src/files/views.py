@@ -13,6 +13,7 @@ from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import ListView
+from django.views.generic import TemplateView
 from django.views.generic import UpdateView
 from guardian.mixins import PermissionRequiredMixin
 from guardian.shortcuts import assign_perm
@@ -171,3 +172,7 @@ def bma_media_view(request, path, accel):
         # regex parsing failed
         logger.debug("Unable to parse filename regex to find file UUID, returning 404")
         raise Http404()
+
+
+class FileBrowserView(TemplateView):
+    template_name = "filebrowser.html"

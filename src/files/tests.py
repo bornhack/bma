@@ -128,6 +128,62 @@ class TestFilesApi(ApiTestBase):
         )
         assert len(response.json()) == 3
 
+        # create another empty album
+        response = self.client.post(
+            reverse("api-v1-json:album_create"),
+            {
+                "title": "another album title here",
+            },
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        uuid = response.json()["uuid"]
+
+        # test filtering for multiple albums
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"albums": [self.album_uuid, uuid]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 3
+
+        # test file size filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"size": 9478},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 15
+
+        # test file size_lt filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"size_lt": 10000},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 15
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"size_lt": 1000},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 0
+
+        # test file size_gt filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"size_gt": 10000},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 0
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"size_gt": 1000},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 15
+
     def test_file_list_permissions(self):
         """Test various permissions stuff for the file_list endpoint."""
         files = []
@@ -194,6 +250,13 @@ class TestFilesApi(ApiTestBase):
         assert response.status_code == 200
         assert len(response.json()) == 1
 
+        # make sure anonymous can see it
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
         # unpublish the file without permission
         response = self.client.patch(
             reverse("api-v1-json:file_unpublish", kwargs={"file_uuid": files[0]}),
@@ -212,6 +275,13 @@ class TestFilesApi(ApiTestBase):
         response = self.client.get(
             reverse("api-v1-json:file_list"),
             HTTP_AUTHORIZATION=self.user2.auth,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 0
+
+        # make sure it is not visible anymore to anonymous
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
         )
         assert response.status_code == 200
         assert len(response.json()) == 0

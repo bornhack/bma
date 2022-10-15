@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% load guardian_tags %}
+{% block title %}File Browser{% endblock title %}
+{% block content %}
+  <div class="row">
+    <div class="col-8">
+      <div id="filebrowser1" class="card filebrowser" data-body="filebrowser1-body" data-messages="filebrowser1-messages">
+        <div class="card-header">Filebrowser1</div>
+        <div id="filebrowser1-body" class="card-body d-flex align-content-start flex-wrap"></div>
+        <div id="filebrowser1-messages" class="card-footer">Filebrowser 1 status message window</div>
+      </div>
+    </div>
+    <div class="col-4 border">
+      <div id="filebrowser2-messages">Filebrowser 2 status message window</div>
+      <div id="filebrowser2" class="filebrowser" data-body="filebrowser2-body" data-messages="filebrowser2-messages">
+        <h2>Filebrowser2</h2>
+        <div id="filebrowser2-body" class="d-flex align-content-start flex-wrap"></div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

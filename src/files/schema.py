@@ -1,4 +1,5 @@
 import uuid
+from enum import Enum
 from pathlib import Path
 from typing import List
 from typing import Optional
@@ -40,6 +41,10 @@ class FileOutSchema(ModelSchema):
     filename: str
     url: str
     links: LinkSchema
+    filetype_icon: str
+    status_icon: str
+    size_bytes: int
+    filetype: str
 
     class Config:
         model = BaseFile
@@ -66,8 +71,11 @@ class FileOutSchema(ModelSchema):
     def resolve_url(self, obj):
         return obj.original.url
 
+    def resolve_size_bytes(self, obj):
+        return obj.original.size
+
     def resolve_links(self, obj):
-        return {
+        links = {
             "self": reverse("api-v1-json:file_get", kwargs={"file_uuid": obj.uuid}),
             "approve": reverse(
                 "api-v1-json:file_approve",
@@ -82,6 +90,7 @@ class FileOutSchema(ModelSchema):
                 kwargs={"file_uuid": obj.uuid},
             ),
         }
+        return links
 
 
 class FileUpdateSchema(ModelSchema):
@@ -96,6 +105,15 @@ class FileUpdateSchema(ModelSchema):
         model_fields = ["title", "description", "source", "license", "attribution"]
 
 
+class FileTypeChoices(Enum):
+    """The filetype filter."""
+
+    picture = "Picture"
+    video = "Video"
+    audio = "Audio"
+    document = "Document"
+
+
 class FileFilters(ListFilters):
     """The filters used for the file_list endpoint."""
 
@@ -103,3 +121,7 @@ class FileFilters(ListFilters):
     albums: List[uuid.UUID] = Field(None, alias="albums")
     statuses: List[StatusChoices] = None
     owners: List[uuid.UUID] = Field(None, alias="owners")
+    filetypes: List[FileTypeChoices] = None
+    size: int = None
+    size_lt: int = None
+    size_gt: int = None

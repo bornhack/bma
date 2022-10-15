@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "taggit",
-    "bootstrap5",
+    "django_bootstrap5",
     "fontawesomefree",
     "polymorphic",
     "ninja",

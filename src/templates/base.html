@@ -1,5 +1,5 @@
 {% load static %}
-{% load bootstrap5 %}
+{% load django_bootstrap5 %}
 {% load django_htmx %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,16 +9,18 @@
     <title>{% block title %}Untitled page{% endblock %} - BornHack Media Archive</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{% static 'css/vendor/bootstrap.5.0.2.min.css' %}" rel="stylesheet">
+    {% bootstrap_css %}
 
     <!-- FontAwesome CSS -->
-    <link href="{% static 'css/vendor/fontawesome-free-6.1.2.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
 
     <!-- Custom stylesheets -->
-    <link href="{% static 'css/bma.css' %}" rel="stylesheet">
+    <link href="{% static "css/bma.css" %}" rel="stylesheet">
 
     <!-- https://datatables.net/ -->
-    <link href="{% static 'css/vendor/dataTables.1.12.1.min.css' %}" rel="stylesheet">
+    <link href="{% static "css/vendor/dataTables.1.12.1.min.css" %}" rel="stylesheet">
 
     <!-- jQuery -->
     <script src="{% static "js/vendor/jquery-3.6.0.min.js" %}"></script>
@@ -27,16 +29,23 @@
     <script src="{% static "js/vendor/jquery.dataTables.1.12.1.min.js" %}"></script>
 
     <!-- bootstrap -->
-    <script src="{% static "js/vendor/bootstrap.bundle.5.0.2.min.js" %}"></script>
+    {% bootstrap_javascript %}
 
     <!-- htmx -->
-    <script src="{% static 'js/vendor/htmx.v1.8.0.min.js' %}" defer></script>
+    <script src="{% static "js/vendor/htmx.v1.8.0.min.js" %}" defer></script>
     {% django_htmx_script %}
 
-    <script src="{% static 'js/vendor/spotlight.v0.7.8.bundle.js' %}" defer></script>
+    <script src="{% static "js/vendor/spotlight.v0.7.8.bundle.js" %}" defer></script>
+
+    <!-- https://github.com/Mobius1/Selectable -->
+    <script type="text/javascript" src="{% static "js/vendor/selectable.min.js" %}"></script>
 
     <!-- Custom javascript -->
-    <script src="{% static 'js/bma.js' %}"></script>
+    <script src="{% static "js/bma.js" %}"></script>
+
+    <!-- bma filebrowser -->
+    <script src="{% static "js/filebrowser.js" %}"></script>
+    <link href="{% static "css/filebrowser.css" %}" rel="stylesheet">
     {% block extra_head %}{% endblock %}
   </head>
 
@@ -47,7 +56,7 @@
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
             <a class="navbar-brand" href="/">
-              <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135"></img>
+              <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135">
               <span class="align-middle font-weight-bold"> Media Archive</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +69,14 @@
                     <a class="nav-link active" aria-current="page" href="{% url 'frontpage:frontpage' %}">Frontpage</a>
                   {% else %}
                     <a class="nav-link" href="{% url 'frontpage:frontpage' %}">Frontpage</a>
+                  {% endif %}
+                </li>
+
+                <li class="nav-item">
+                  {% if request.resolver_match.url_name == "browse" %}
+                    <a class="nav-link active" aria-current="page" href="{% url 'files:browse' %}">File Browser</a>
+                  {% else %}
+                    <a class="nav-link" href="{% url 'files:browse' %}">File Browser</a>
                   {% endif %}
                 </li>
 
@@ -109,13 +126,8 @@
       </header>
 
       <main class="flex-shrink-0">
-        <div class="container">
-          {% for message in messages %}
-            <div class="{{ message|bootstrap_message_classes }} alert-dismissible fade show" role="alert">
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
-              {{ message }}
-            </div>
-          {% endfor %}
+        <div class="container-fluid mt-5 pt-5">
+          {% bootstrap_messages %}
           <!-- Begin page content -->
           {% block content %}
             <p class="lead">This is the default content of the block 'body' in the base.html template of the BMA project. Please replace in templates inheriting from base.html</p>

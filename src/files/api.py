@@ -5,6 +5,7 @@ from typing import Union
 
 import magic
 from django.conf import settings
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -15,13 +16,19 @@ from ninja.files import UploadedFile
 from .models import BaseFile
 from .schema import FileFilters
 from .schema import FileOutSchema
+from .schema import FileTypeChoices
 from .schema import FileUpdateSchema
 from .schema import UploadMetadata
+from audios.models import Audio
 from audios.schema import AudioOutSchema
+from documents.models import Document
 from documents.schema import DocumentOutSchema
+from pictures.models import Picture
 from pictures.schema import PictureOutSchema
 from utils.schema import MessageSchema
+from videos.models import Video
 from videos.schema import VideoOutSchema
+
 
 logger = logging.getLogger("bma")
 
@@ -62,6 +69,7 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
         owner=request.user,
         original=f,
         original_filename=f.name,
+        file_size=f.size,
         **metadata.dict(),
     )
 
@@ -85,6 +93,7 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
     "/{file_uuid}/",
     response={200: FileOutSchema, 403: MessageSchema, 404: MessageSchema},
     summary="Return the metadata of a file.",
+    auth=None,
 )
 def file_get(request, file_uuid: uuid.UUID):
     """Return a file object."""
@@ -102,10 +111,11 @@ def file_get(request, file_uuid: uuid.UUID):
     "/",
     response={200: List[FileOutSchema]},
     summary="Return a list of files.",
+    auth=None,
 )
 def file_list(request, filters: FileFilters = query):
     """Return a list of files."""
-    # start out with a list of all PUBLISHED files plus whatever else the user has access to
+    # start out with a list of all PUBLISHED files plus whatever else the user has explicit access to
     files = BaseFile.objects.filter(status="PUBLISHED") | get_objects_for_user(
         request.user,
         "files.view_basefile",
@@ -118,10 +128,34 @@ def file_list(request, filters: FileFilters = query):
     if filters.statuses:
         files = files.filter(status__in=filters.statuses)
 
+    if filters.filetypes:
+        query = Q()
+        for filetype in filters.filetypes:
+            # this could probably be more clever somehow
+            if filetype == FileTypeChoices.picture:
+                query |= Q(instance_of=Picture)
+            elif filetype == FileTypeChoices.video:
+                query |= Q(instance_of=Video)
+            elif filetype == FileTypeChoices.audio:
+                query |= Q(instance_of=Audio)
+            elif filetype == FileTypeChoices.document:
+                query |= Q(instance_of=Document)
+        files = files.filter(query)
+
     if filters.owners:
         files = files.filter(owner__in=filters.owners)
 
+    if filters.size:
+        files = files.filter(file_size=filters.size)
+
+    if filters.size_lt:
+        files = files.filter(file_size__lt=filters.size_lt)
+
+    if filters.size_gt:
+        files = files.filter(file_size__gt=filters.size_gt)
+
     if filters.search:
+        # we search title and description fields for now
         files = files.filter(title__icontains=filters.search) | files.filter(
             description__icontains=filters.search,
         )

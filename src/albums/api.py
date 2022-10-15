@@ -53,6 +53,7 @@ def album_create(request, payload: AlbumInSchema):
     "/{album_uuid}/",
     response={200: AlbumOutSchema, 404: MessageSchema},
     summary="Return an album.",
+    auth=None,
 )
 def album_get(request, album_uuid: uuid.UUID):
     """Return an album."""
@@ -63,6 +64,7 @@ def album_get(request, album_uuid: uuid.UUID):
     "/",
     response={200: List[AlbumOutSchema]},
     summary="Return a list of albums.",
+    auth=None,
 )
 def album_list(request, filters: AlbumFilters = query):
     """Return a list of albums."""

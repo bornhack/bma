@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from polymorphic.models import PolymorphicModel
 
@@ -91,6 +92,20 @@ class BaseFile(PolymorphicModel):
         help_text="The original (uploaded) filename.",
     )
 
+    file_size = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="The size of the file.",
+    )
+
     @property
     def filetype(self):
         return self._meta.model_name
+
+    @property
+    def filetype_icon(self):
+        return settings.FILETYPE_ICONS[self.filetype]
+
+    @property
+    def status_icon(self):
+        return settings.FILESTATUS_ICONS[self.status]

@@ -83,3 +83,20 @@ ALLOWED_DOCUMENT_TYPES={
 # LOGGING
 DJANGO_LOG_LEVEL=env.str("DJANGO_LOG_LEVEL", default="{{ django_log_level }}")
 BMA_LOG_LEVEL=env.str("BMA_LOG_LEVEL", default="{{ django_bma_log_level }}")
+
+# filetype icons
+FILETYPE_ICONS = {
+    "basefile": "fas fa-file",
+    "picture": "fas fa-file-image",
+    "video": "fas fa-file-video",
+    "audio": "fas fa-file-audio",
+    "document": "fas fa-file-lines",
+}
+
+# status icons
+FILESTATUS_ICONS = {
+    "PENDING_MODERATION": "fas fa-clock",
+    "UNPUBLISHED": "fas fa-cloud-xmark",
+    "PUBLISHED": "fas fa-cloud-check",
+    "PENDING_DELETION": "fas fa-thrash-clock",
+}
