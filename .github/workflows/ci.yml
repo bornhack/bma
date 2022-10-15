@@ -1,11 +1,22 @@
-name: CI
-on: push
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
 jobs:
-  build:
+  eslint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install modules
-      run: yarn
-    - name: Run ESLint
-      run: eslint src/static_src/js/ --ext .js --ignore-path src/static_src/js/vendor/
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - uses: sibiraj-s/action-eslint@v2
+        with:
+          eslint-args: '--ignore-path=src/static_src/js/vendor --quiet'
+          extensions: 'js'
+          annotations: true
