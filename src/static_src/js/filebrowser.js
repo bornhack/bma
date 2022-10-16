@@ -223,7 +223,7 @@
                 };
                 let clone = template.content.cloneNode(true).querySelector("div");
                 clone.querySelector(".title").innerHTML = data[file]["title"];
-                clone.querySelector("img").src = data[file]["url"];
+                clone.querySelector("img").src = data[file]["thumbnail_url"];
                 clone.querySelector(".card-body.file-title > i").classList.add(...data[file]["filetype_icon"].split(" "));
                 clone.querySelector(".card-footer.file-info > i.status").className = "status " + data[file]["status_icon"];
                 clone.querySelector(".card-footer.file-info > span").innerHTML = data[file]["albums"].length;

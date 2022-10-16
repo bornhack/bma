@@ -100,3 +100,11 @@ FILESTATUS_ICONS = {
     "PUBLISHED": "fas fa-cloud-check",
     "PENDING_DELETION": "fas fa-thrash-clock",
 }
+
+DEFAULT_THUMBNAIL_URLS = {
+    "basefile": "/static/images/file-solid.png",
+    "picture": "/static/images/file-image-solid.png",
+    "video": "/static/images/file-video-solid.png",
+    "audio": "/static/images/file-audio-solid.png",
+    "document": "/static/images/file-alt-solid.png",
+}

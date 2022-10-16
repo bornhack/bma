@@ -62,7 +62,6 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
     elif mime in settings.ALLOWED_DOCUMENT_TYPES:
         from documents.models import Document as Model
     else:
-        # file type not supported, return error
         return 422, {"message": "File type not supported"}
 
     uploaded_file = Model(
@@ -77,8 +76,22 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
         # title defaults to the original filename
         uploaded_file.title = uploaded_file.original_filename
 
-    # save everything and return
+    if not uploaded_file.thumbnail_url:
+        uploaded_file.thumbnail_url = settings.DEFAULT_THUMBNAIL_URLS[
+            uploaded_file.filetype
+        ]
+
+    # save everything
     uploaded_file.save()
+
+    # this has to be done after .save() to ensure the uuid filename and full path is passed to the imagekit namer
+    if (
+        uploaded_file.filetype == "picture"
+        and uploaded_file.thumbnail_url == settings.DEFAULT_THUMBNAIL_URLS["picture"]
+    ):
+        # use the large_thumbnail size as default
+        uploaded_file.thumbnail_url = uploaded_file.large_thumbnail.url
+        uploaded_file.save()
 
     # assign permissions (publish_basefile and unpublish_basefile are assigned after moderation)
     assign_perm("view_basefile", request.user, uploaded_file)

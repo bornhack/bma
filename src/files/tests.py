@@ -184,6 +184,20 @@ class TestFilesApi(ApiTestBase):
         )
         assert len(response.json()) == 15
 
+        # test file type filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"filetypes": ["Picture"]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 15
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"filetypes": ["Audio", "Video", "Document"]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 0
+
     def test_file_list_permissions(self):
         """Test various permissions stuff for the file_list endpoint."""
         files = []

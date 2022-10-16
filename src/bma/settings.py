@@ -203,3 +203,7 @@ LOGGING = {
 GUARDIAN_GET_CONTENT_TYPE = (
     "polymorphic.contrib.guardian.get_polymorphic_base_content_type"
 )
+
+# django-imagekit settings
+IMAGEKIT_CACHEFILE_DIR = ""
+IMAGEKIT_SPEC_CACHEFILE_NAMER = "imagekit.cachefiles.namers.source_name_dot_hash"

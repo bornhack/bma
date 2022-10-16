@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from polymorphic.models import PolymorphicModel
 
+from .validators import validate_thumbnail_url
 from users.sentinel import get_sentinel_user
 from utils.license import LicenseChoices
 
@@ -93,9 +94,13 @@ class BaseFile(PolymorphicModel):
     )
 
     file_size = models.PositiveIntegerField(
-        null=True,
-        blank=True,
         help_text="The size of the file.",
+    )
+
+    thumbnail_url = models.CharField(
+        max_length=255,
+        validators=[validate_thumbnail_url],
+        help_text="Relative URL to the image to use as thumbnail for this file.",
     )
 
     @property

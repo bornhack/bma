@@ -1,3 +1,4 @@
+import os
 import uuid
 from enum import Enum
 from pathlib import Path
@@ -60,6 +61,7 @@ class FileOutSchema(ModelSchema):
             "attribution",
             "status",
             "original_filename",
+            "thumbnail_url",
         ]
 
     def resolve_albums(self, obj):
@@ -72,7 +74,10 @@ class FileOutSchema(ModelSchema):
         return obj.original.url
 
     def resolve_size_bytes(self, obj):
-        return obj.original.size
+        if os.path.exists(obj.original.path):
+            return obj.original.size
+        else:
+            return 0
 
     def resolve_links(self, obj):
         links = {

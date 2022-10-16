@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import FileResponse
@@ -142,17 +143,14 @@ def bma_media_view(request, path, accel):
 
         if dbfile.status != "PUBLISHED":
             # file is not published but we might still want to show it
-            if dbfile.owner != request.user and not request.user.is_superuser:
-                logger.debug(
-                    f"File UUID {match.group(1)} is not published and user is not owner or admin, returning 404",
-                )
+            if dbfile.owner != request.user and not request.user.has_perm(
+                "files.view_basefile",
+                dbfile,
+            ):
                 raise Http404()
 
         # check if the file exists in the filesystem
         if not Path(dbfile.original.path).exists():
-            logger.debug(
-                f"File UUID {match.group(1)} does not exist on disk, returning 404",
-            )
             raise Http404()
 
         # OK, show the file
@@ -164,7 +162,7 @@ def bma_media_view(request, path, accel):
             response["X-Accel-Redirect"] = f"/public/{quote(path)}"
         else:
             # we are serving the file locally
-            f = open(dbfile.original.path, "rb")
+            f = open(Path(settings.MEDIA_ROOT) / Path(path), "rb")
             response = FileResponse(f, status=200)
         # all good
         return response
