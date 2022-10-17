@@ -1,7 +1,10 @@
 .filebrowser-container > .file-container > .card { width: 10rem; max-height: 12rem; margin: 1em; overflow: hidden;}
 .filebrowser-container > .file-container > .card > img { max-height: 6rem; }
 .filebrowser-container > .file-container > .card > .card-body > .title { word-break: break-all; }
-.filebrowser-container > .file-container > .card > span { display: none; }
-.filebrowser-container > .file-container > .card.ui-selecting > span { display: block; }
-.filebrowser-container > .file-container > .card.ui-selected > span { display: block; }
+.filebrowser-container > .file-container > .card > span.selected-icon { display: none; }
+.filebrowser-container > .file-container > .card > span.selecting-icon { display: none; }
+.filebrowser-container > .file-container > .card.ui-selecting > span.selecting-icon { display: block; }
+.filebrowser-container > .file-container > .card.ui-selecting > span.selected-icon { display: none; }
+.filebrowser-container > .file-container > .card.ui-selected > span.selecting-icon { display: none; }
+.filebrowser-container > .file-container > .card.ui-selected > span.selected-icon { display: block; }
 .filebrowser-container { width: 100%; }

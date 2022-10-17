@@ -1,4 +1,5 @@
 // getting some closure
+"use strict";
 (async function() {
     function BMAFileBrowser(container, messages) {
         // this ensures a clean object even if the new keyword is forgotten
@@ -9,19 +10,61 @@
         $this.container = container;
         $this.messages = messages;
 
-        // the file template
-        let template = document.createElement('template');
-        template.innerHTML = `
-<div class="card file">
-  <span class="position-absolute top-0 end-0 p-1 bg-success border border-light selected-icon"><i class="fas fa-check"></i></span>
-  <img class="card-img-top">
-  <div class="file-status-icon"></div>
-  <div class="file-title card-body p-1"><i></i> <span class="small title"></span></div>
-  <div class="file-info card-footer p-1 d-inline-flex align-items-center justify-content-evenly">
-    <i class="status"></i>
-    <span class="badge text-bg-dark"></span>
-  </div>
-</div>`;
+        $this.createNode = function(tag, classes, attrs, children) {
+            let elem = document.createElement(tag);
+            if (classes) {
+                if (typeof classes === 'string') {
+                    elem.className = classes;
+                } else {
+                    elem.className = classes.join(' ');
+                };
+            }
+            if (attrs) {
+                Object.assign(elem, attrs);
+            };
+            if (children) {
+                $this.log("adding children to element:");
+                console.log(elem);
+                console.log(children);
+                for (const child of children) {
+                    elem.appendChild(child);
+                };
+            };
+            return elem;
+        };
+
+        $this.getFileTemplate = function() {
+            // the outer div
+            const card = $this.createNode("div", ["card", "file"], {}, [
+                // selected icon
+                $this.createNode("span", ["position-absolute", "top-0", "end-0", "p-1", "bg-success", "border", "border-light", "selected-icon"], {}, [
+                    $this.createNode("i", ["fas", "fa-check"]),
+                ]),
+                // selecting icon
+                $this.createNode("span", ["position-absolute", "top-0", "end-0", "p-1", "bg-secondary", "border", "border-light", "selecting-icon"], {}, [
+                    $this.createNode("i", ["fas", "fa-plus"]),
+                ]),
+            ]);
+
+            // thumbnail
+            card.appendChild($this.createNode("img", "card-img-top"));
+
+            // body
+            const filetitlediv = $this.createNode("div", ["file-title", "card-body", "p-1"]);
+            filetitlediv.appendChild($this.createNode("span", ["small", "title"]));
+            card.appendChild(filetitlediv);
+
+            // footer
+            const filefooterdiv = $this.createNode("div", ["file-info", "card-footer", "p-1", "d-inline-flex", "align-items-center", "justify-content-evenly"], {}, [
+                $this.createNode("i", "status"),
+                $this.createNode("i", "filetype"),
+                $this.createNode("span", ["badge", "text-bg-dark"]),
+            ]);
+            card.appendChild(filefooterdiv);
+
+            // disco
+            return card;
+        };
 
         // getfiles function
         $this.getFiles = async function() {
@@ -33,6 +76,7 @@
             if (el.selectedOptions.length) {
                 // filter by filetype
                 const filetypes = Array.from(el.selectedOptions).map(v=>v.value);
+                let t;
                 for (t of filetypes) {
                     url.searchParams.append("filetypes", t);
                 };
@@ -43,7 +87,7 @@
             if (el.selectedOptions.length) {
                 // filter by file status
                 const statuses = Array.from(el.selectedOptions).map(v=>v.value);
-                for (s of statuses) {
+                for (const s of statuses) {
                     url.searchParams.append("statuses", s);
                 };
             };
@@ -81,13 +125,13 @@
                 });
                 $this.container.querySelector("div.selection > .card-body").innerHTML = size + " bytes in " + selected.length + " files.<br>" + counts["picture"] + " pictures, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
                 let buttons = $this.container.querySelectorAll("div.btn-group.actions > button");
-                for (button of buttons) {
+                for (const button of buttons) {
                     button.removeAttribute("disabled");
                 };
             } else {
                 $this.container.querySelector("div.selection > .card-body").innerHTML = "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents.";
                 let buttons = $this.container.querySelectorAll("div.btn-group.actions > button");
-                for (button of buttons) {
+                for (const button of buttons) {
                     button.setAttribute("disabled", "");
                 };
             };
@@ -96,72 +140,82 @@
 
         // createFileBrowser function
         $this.createFileBrowser = async function() {
-            // create outer div
-            let outer = document.createElement("div");
-            outer.classList.add("filebrowser-container");
+            // create outer and wrapper divs
+            const outer = $this.createNode("div", "filebrowser-container");
+            const toolbar = $this.createNode("div", "btn-toolbar");
+            outer.appendChild(toolbar);
+            const fluid = $this.createNode("div", "container-fluid");
+            toolbar.appendChild(fluid);
+            const nav = $this.createNode("div", ["navbar", "bg-light", "p-2", "pe-0", "border"]);
+            fluid.appendChild(nav);
 
-            // create toolbar and buttongroup
-            let toolbar = document.createElement("div");
-            toolbar.classList.add("btn-toolbar");
-            toolbar.innerHTML = `
-<div class="container-fluid">
-<nav class="navbar bg-light p-2 pe-0 border">
+            // create form
+            const fg = $this.createNode("div", ["form-group", "me-2", "h-25", "border", "p-2"]);
+            nav.appendChild(fg);
+            const form = $this.createNode("form", ["row", "gy-2", "gx-3", "align-items-center"], {"onsubmit": "return false;"});
 
-<div class="form-group me-2 h-25 border p-2">
-  <form class="row gy-2 gx-3 align-items-center">
-  <div class="col-auto">
-    <select name="filetype" class="form-select" multiple>
-      <option value="Picture">Picture</option>
-      <option value="Video">Video</option>
-      <option value="Audio">Audio</option>
-      <option value="Document">Document</option>
-    </select>
- </div>
-  <div class="col-auto">
-    <select name="filestatus" class="form-select" multiple>
-      <option value="PENDING_MODERATION">Pending moderation</option>
-      <option value="UNPUBLISHED">Unpublished</option>
-      <option value="PUBLISHED">Published</option>
-      <option value="PENDING_DELETION">Pending deletion</option>
-    </select>
-  </div>
-  <div class="col-auto">
-    <input type="text" name="search" placeholder="search..."></input>
-  </div>
-  <div class="col-auto">
-    <button name="filter" type="button" class="btn btn-secondary"><i class='fa-solid fa-update'></i> Filter</button>
-  </div>
-</div>
+            // filetype select
+            const ftcol = $this.createNode("div", "col-auto");
+            const ftsel = $this.createNode("select", "form-select", {"name": "filetype", "multiple": "multiple"}, [
+                $this.createNode("option", [], {"value": "Picture", "text": "Picture"}),
+                $this.createNode("option", [], {"value": "Video", "text": "Video"}),
+                $this.createNode("option", [], {"value": "Audio", "text": "Audio"}),
+                $this.createNode("option", [], {"value": "Document", "text": "Document"}),
+            ]);
+            ftcol.appendChild(ftsel);
+            form.appendChild(ftcol);
 
-<div class="card border me-2 totals">
-  <div class="card-header">Totals</div>
-  <div class="card-body">0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents.</div>
-</div>
+            // filestatus select
+            const fscol = $this.createNode("div", "col-auto");
+            const fssel = $this.createNode("select", "form-select", {"name": "filestatus", "multiple": "multiple"});
+            fssel.appendChild($this.createNode("option", [], {"value": "PENDING_MODERATION", "text": "Pending Moderation"}));
+            fssel.appendChild($this.createNode("option", [], {"value": "UNPUBLISHED", "text": "Unpublished"}));
+            fssel.appendChild($this.createNode("option", [], {"value": "PUBLISHED", "text": "Published"}));
+            fssel.appendChild($this.createNode("option", [], {"value": "PENDING_DELETION", "text": "Pending Deletion"}));
+            fscol.appendChild(fssel);
+            form.appendChild(fscol);
 
-<div class="card border me-2 selection">
-  <div class="card-header">Selection
-  <div class="btn-group me-2 actions float-end">
-    <button type="button" class="btn btn-success" disabled><i class='fa-solid fa-cloud-arrow-up'></i></button>
-    <button type="button" class="btn btn-danger" disabled><i class='fa-solid fa-cloud-arrow-down'></i></button>
-    <button type="button" class="btn btn-primary" disabled><i class='fa-solid fa-plus'></i></button>
-  </div>
-</div>
-<div class="card-body">0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents.</div>
-</div>
-</nav>
-</div>`
-            outer.append(toolbar);
+            // search
+            const searchcol = $this.createNode("div", "col-auto");
+            searchcol.appendChild($this.createNode("input", [], {"name": "search", "placeholder": "search..."}));
+            form.appendChild(searchcol);
 
-            let deck = document.createElement("div");
-            deck.classList.add("file-container");
-            deck.classList.add("d-flex");
-            deck.classList.add("align-content-start");
-            deck.classList.add("flex-wrap");
+            // form done
+            fg.appendChild(form);
+            nav.appendChild(fg);
+
+            // totals
+            const totals = $this.createNode("div", ["card", "border", "me-2", "totals"], {}, [
+                $this.createNode("div", "card-header", {"innerHTML": "Totals"}),
+                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents."}),
+            ]);
+            nav.appendChild(totals);
+
+            // selection
+            const selection = $this.createNode("div", ["card", "border", "me-2", "selection"], {}, [
+                $this.createNode("div", "card-header", {"innerHTML": "Selection"}, [
+                    $this.createNode("div", ["btn-group", "me-2", "actions", "float-end"], {}, [
+                        $this.createNode("button", ["btn", "btn-success"], {"disabled": "disabled"}, [
+                            $this.createNode("i", ["fa-solid", "fa-cloud-arrow-up"]),
+                        ]),
+                        $this.createNode("button", ["btn", "btn-danger"], {"disabled": "disabled"}, [
+                            $this.createNode("i", ["fa-solid", "fa-cloud-arrow-down"]),
+                        ]),
+                        $this.createNode("button", ["btn", "btn-primary"], {"disabled": "disabled"}, [
+                            $this.createNode("i", ["fa-solid", "fa-plus"]),
+                        ]),
+                    ]),
+                ]),
+                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents."}),
+            ]);
+            nav.appendChild(selection);
+
+
+            const deck = $this.createNode("div", ["file-container", "d-flex", "align-content-start", "flex-wrap"]);
             outer.append(deck);
 
             // ok, add to the container
             $this.container.append(outer);
-            $this.container.querySelector("button[name='filter']").addEventListener("click", $this.updateFileBrowser);
         };
 
         $this.log = function(message) {
@@ -187,6 +241,7 @@
             if (outer.querySelector("div.card")) {
                 $this.updateStatus("Removing files...", true);
                 let uuids = [];
+                let file;
                 for (file in data) {
                     uuids.push(data[file]["uuid"]);
                 };
@@ -208,6 +263,7 @@
                 "audio": 0,
                 "document": 0,
             };
+            let file;
             for (file in data) {
                 size += parseInt(data[file]["size_bytes"]);
                 counts[data[file]["filetype"]] += 1;
@@ -221,10 +277,11 @@
                         existing.remove();
                     };
                 };
-                let clone = template.content.cloneNode(true).querySelector("div");
+                let template = $this.getFileTemplate();
+                let clone = template.cloneNode(true);
                 clone.querySelector(".title").innerHTML = data[file]["title"];
                 clone.querySelector("img").src = data[file]["thumbnail_url"];
-                clone.querySelector(".card-body.file-title > i").classList.add(...data[file]["filetype_icon"].split(" "));
+                clone.querySelector(".card-footer.file-info > i.filetype").className = data[file]["filetype_icon"];
                 clone.querySelector(".card-footer.file-info > i.status").className = "status " + data[file]["status_icon"];
                 clone.querySelector(".card-footer.file-info > span").innerHTML = data[file]["albums"].length;
                 clone.dataset.bmaFileUuid=data[file]["uuid"];
