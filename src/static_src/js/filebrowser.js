@@ -1,14 +1,21 @@
 // getting some closure
 "use strict";
 (async function() {
-    function BMAFileBrowser(container, messages) {
+    function BMAFileBrowser(container, messages, prefix) {
         // this ensures a clean object even if the new keyword is forgotten
         if (!(this instanceof BMAFileBrowser))  return new BMAFileBrowser(container, messages);
 
         // make $this always refer to this instance of BMAFileBrowser
         let $this = this;
+
+        // save container, messages and prefix
         $this.container = container;
         $this.messages = messages;
+        if (prefix) {
+            $this.prefix = prefix + "-";
+        } else {
+            $this.prefix = "";
+        };
 
         $this.createNode = function(tag, classes, attrs, children) {
             let elem = document.createElement(tag);
@@ -23,15 +30,33 @@
                 Object.assign(elem, attrs);
             };
             if (children) {
-                $this.log("adding children to element:");
-                console.log(elem);
-                console.log(children);
                 for (const child of children) {
                     elem.appendChild(child);
                 };
             };
             return elem;
         };
+
+        // select options in a multiselect
+        $this.selectOptions = function(options, values) {
+            values.forEach(function(v) {
+                options.forEach(function(o) {
+                    if(o.value == v) {
+                        o.selected = true;
+                    };
+                });
+            });
+        };
+
+        // debounce multiple inputs
+        $this.debounce = function(func, timeout = 300) {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => { func.apply(this, args); }, timeout);
+            };
+        };
+        $this.processChange = $this.debounce(() => $this.updateFileBrowser());
 
         $this.getFileTemplate = function() {
             // the outer div
@@ -44,23 +69,19 @@
                 $this.createNode("span", ["position-absolute", "top-0", "end-0", "p-1", "bg-secondary", "border", "border-light", "selecting-icon"], {}, [
                     $this.createNode("i", ["fas", "fa-plus"]),
                 ]),
+                // thumbnail
+                $this.createNode("img", "card-img-top"),
+                // body
+                $this.createNode("div", ["file-title", "card-body", "p-1"], {}, [
+                    $this.createNode("span", ["small", "title"]),
+                ]),
+                // footer
+                $this.createNode("div", ["file-info", "card-footer", "p-1", "d-inline-flex", "align-items-center", "justify-content-evenly"], {}, [
+                    $this.createNode("i", "filetype"),
+                    $this.createNode("i", "status"),
+                    $this.createNode("span", ["badge", "text-bg-dark"]),
+                ]),
             ]);
-
-            // thumbnail
-            card.appendChild($this.createNode("img", "card-img-top"));
-
-            // body
-            const filetitlediv = $this.createNode("div", ["file-title", "card-body", "p-1"]);
-            filetitlediv.appendChild($this.createNode("span", ["small", "title"]));
-            card.appendChild(filetitlediv);
-
-            // footer
-            const filefooterdiv = $this.createNode("div", ["file-info", "card-footer", "p-1", "d-inline-flex", "align-items-center", "justify-content-evenly"], {}, [
-                $this.createNode("i", "status"),
-                $this.createNode("i", "filetype"),
-                $this.createNode("span", ["badge", "text-bg-dark"]),
-            ]);
-            card.appendChild(filefooterdiv);
 
             // disco
             return card;
@@ -72,7 +93,7 @@
             let url = new URL(window.location.protocol + "//" + window.location.host + "/api/v1/json/files/");
 
             // get filetypes element
-            let el = $this.container.querySelector("select[name='filetype']");
+            let el = $this.container.querySelector("select[name='" + $this.prefix + "filetype']");
             if (el.selectedOptions.length) {
                 // filter by filetype
                 const filetypes = Array.from(el.selectedOptions).map(v=>v.value);
@@ -83,7 +104,7 @@
             };
 
             // get filestatus element
-            el = $this.container.querySelector("select[name='filestatus']");
+            el = $this.container.querySelector("select[name='" + $this.prefix + "filestatus']");
             if (el.selectedOptions.length) {
                 // filter by file status
                 const statuses = Array.from(el.selectedOptions).map(v=>v.value);
@@ -93,7 +114,7 @@
             };
 
             // get search element
-            el = $this.container.querySelector("input[name='search']");
+            el = $this.container.querySelector("input[name='" + $this.prefix + "search']");
             if (el.value) {
                 // filter by title/description search
                 url.searchParams.append("search", el.value);
@@ -152,11 +173,12 @@
             // create form
             const fg = $this.createNode("div", ["form-group", "me-2", "h-25", "border", "p-2"]);
             nav.appendChild(fg);
-            const form = $this.createNode("form", ["row", "gy-2", "gx-3", "align-items-center"], {"onsubmit": "return false;"});
+            const form = $this.createNode("form", ["row", "gy-2", "gx-3", "align-items-center"], );
+            form.setAttribute("onsubmit", "return false;");
 
             // filetype select
             const ftcol = $this.createNode("div", "col-auto");
-            const ftsel = $this.createNode("select", "form-select", {"name": "filetype", "multiple": "multiple"}, [
+            const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "filetype", "multiple": "multiple", "onchange": $this.processChange}, [
                 $this.createNode("option", [], {"value": "Picture", "text": "Picture"}),
                 $this.createNode("option", [], {"value": "Video", "text": "Video"}),
                 $this.createNode("option", [], {"value": "Audio", "text": "Audio"}),
@@ -167,18 +189,36 @@
 
             // filestatus select
             const fscol = $this.createNode("div", "col-auto");
-            const fssel = $this.createNode("select", "form-select", {"name": "filestatus", "multiple": "multiple"});
-            fssel.appendChild($this.createNode("option", [], {"value": "PENDING_MODERATION", "text": "Pending Moderation"}));
-            fssel.appendChild($this.createNode("option", [], {"value": "UNPUBLISHED", "text": "Unpublished"}));
-            fssel.appendChild($this.createNode("option", [], {"value": "PUBLISHED", "text": "Published"}));
-            fssel.appendChild($this.createNode("option", [], {"value": "PENDING_DELETION", "text": "Pending Deletion"}));
+            const fssel = $this.createNode("select", "form-select", {"name": $this.prefix + "filestatus", "multiple": "multiple", "onchange": $this.processChange}, [
+                $this.createNode("option", [], {"value": "PENDING_MODERATION", "text": "Pending Moderation"}),
+                $this.createNode("option", [], {"value": "UNPUBLISHED", "text": "Unpublished"}),
+                $this.createNode("option", [], {"value": "PUBLISHED", "text": "Published"}),
+                $this.createNode("option", [], {"value": "PENDING_DELETION", "text": "Pending Deletion"}),
+            ]);
             fscol.appendChild(fssel);
             form.appendChild(fscol);
 
             // search
-            const searchcol = $this.createNode("div", "col-auto");
-            searchcol.appendChild($this.createNode("input", [], {"name": "search", "placeholder": "search..."}));
+            const searchcol = $this.createNode("div", "col-auto", {}, [
+                $this.createNode("input", [], {"name": $this.prefix + "search", "placeholder": "search...", "onchange": $this.processChange}),
+            ]);
             form.appendChild(searchcol);
+
+            // populate initial values
+            const url = new URL(window.location);
+
+            // get initial search value
+            form.querySelector("input[name='" + $this.prefix + "search']").value = url.searchParams.get($this.prefix + "search");
+
+            // get initial filetypes
+            let options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "filetype'] > option"));
+            let values = url.searchParams.getAll($this.prefix + "filetype");
+            $this.selectOptions(options, values);
+
+            // get initial filestatus
+            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "filestatus'] > option"));
+            values = url.searchParams.getAll($this.prefix + "filestatus");
+            $this.selectOptions(options, values);
 
             // form done
             fg.appendChild(form);
@@ -210,7 +250,6 @@
             ]);
             nav.appendChild(selection);
 
-
             const deck = $this.createNode("div", ["file-container", "d-flex", "align-content-start", "flex-wrap"]);
             outer.append(deck);
 
@@ -222,15 +261,47 @@
             console.log($this.container.id + ": " + message);
         };
 
+        $this.updateUrl = function() {
+            const formData = new FormData($this.container.querySelector("form"));
+            const urlParams = new URLSearchParams(formData);
+            const url = new URL(window.location);
+            urlParams.forEach(function(value, key) {
+                url.searchParams.delete(key);
+            });
+            urlParams.forEach(function(value, key) {
+                if (value) {
+                    url.searchParams.append(key, value);
+                };
+            });
+            window.history.pushState(null, '', url.toString());
+        };
+
+        $this.disableForm = function() {
+            $this.container.querySelectorAll("form > div > select, form > div > input").forEach(function(e) {
+                e.setAttribute("disabled", "disabled");
+            });
+        };
+
+        $this.enableForm = function() {
+            $this.container.querySelectorAll("form > div > select, form > div > input").forEach(function(e) {
+                e.removeAttribute("disabled");
+            });
+        };
+
         // updateFileBrowser function
         $this.updateFileBrowser = async function() {
             // get or initiate filebrowser as needed
-            let outer;
-            outer = $this.container.querySelector(".filebrowser-container");
+            let outer = $this.container.querySelector(".filebrowser-container");
             if (!outer) {
                 $this.createFileBrowser();
                 outer = $this.container.querySelector(".filebrowser-container");
             };
+
+            // update browser location to match form contents
+            $this.updateUrl();
+
+            // disable form
+            $this.disableForm();
 
             // get files from server
             $this.updateStatus("Getting data...", true);
@@ -263,8 +334,7 @@
                 "audio": 0,
                 "document": 0,
             };
-            let file;
-            for (file in data) {
+            for (const file in data) {
                 size += parseInt(data[file]["size_bytes"]);
                 counts[data[file]["filetype"]] += 1;
                 let existing = outer.querySelector("div[data-bma-file-uuid='" + data[file]["uuid"] + "']");
@@ -296,6 +366,8 @@
             $this.container.querySelector("div.totals > .card-body").innerHTML = size + " bytes in " + data.length + " files.<br>" + counts["picture"] + " pictures, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
             $this.updateSummary();
             $this.updateStatus("Ready. Showing " + $this.container.querySelectorAll("div.file").length + " files.");
+            // enable form
+            $this.enableForm();
         };
 
         // update status function
@@ -336,11 +408,19 @@
         let containers = document.querySelectorAll(".filebrowser");
         if ( containers ) {
             // loop over containers and make them filebrowsers
+            let i = 0;
             for (const container of containers) {
+                i += 1;
                 let body = document.getElementById(container.dataset.body);
                 let messages = document.getElementById(container.dataset.messages);
+                let prefix = "";
                 if ( body && messages ) {
-                    new BMAFileBrowser(body, messages);
+                    // initialise filebrowser
+                    if (i > 1) {
+                        // all but the first filebrowser gets a prefix for url parameters
+                        prefix = "fb" + i;
+                    };
+                    container._filebrowser = new BMAFileBrowser(body, messages, prefix);
                 } else {
                     throw new Error("body or status element not found");
                 };
