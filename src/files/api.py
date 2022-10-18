@@ -158,6 +158,9 @@ def file_list(request, filters: FileFilters = query):
     if filters.owners:
         files = files.filter(owner__in=filters.owners)
 
+    if filters.licenses:
+        files = files.filter(license__in=filters.licenses)
+
     if filters.size:
         files = files.filter(file_size=filters.size)
 

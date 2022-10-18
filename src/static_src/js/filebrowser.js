@@ -93,7 +93,7 @@
             let url = new URL(window.location.protocol + "//" + window.location.host + "/api/v1/json/files/");
 
             // get filetypes element
-            let el = $this.container.querySelector("select[name='" + $this.prefix + "filetype']");
+            let el = $this.container.querySelector("select[name='" + $this.prefix + "type']");
             if (el.selectedOptions.length) {
                 // filter by filetype
                 const filetypes = Array.from(el.selectedOptions).map(v=>v.value);
@@ -104,12 +104,22 @@
             };
 
             // get filestatus element
-            el = $this.container.querySelector("select[name='" + $this.prefix + "filestatus']");
+            el = $this.container.querySelector("select[name='" + $this.prefix + "status']");
             if (el.selectedOptions.length) {
                 // filter by file status
                 const statuses = Array.from(el.selectedOptions).map(v=>v.value);
                 for (const s of statuses) {
                     url.searchParams.append("statuses", s);
+                };
+            };
+
+            // get license element
+            el = $this.container.querySelector("select[name='" + $this.prefix + "license']");
+            if (el.selectedOptions.length) {
+                // filter by file license
+                const licenses = Array.from(el.selectedOptions).map(v=>v.value);
+                for (const l of licenses) {
+                    url.searchParams.append("licenses", l);
                 };
             };
 
@@ -178,7 +188,7 @@
 
             // filetype select
             const ftcol = $this.createNode("div", "col-auto");
-            const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "filetype", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
+            const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "type", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
                 $this.createNode("option", [], {"value": "Picture", "text": "Picture"}),
                 $this.createNode("option", [], {"value": "Video", "text": "Video"}),
                 $this.createNode("option", [], {"value": "Audio", "text": "Audio"}),
@@ -189,7 +199,7 @@
 
             // filestatus select
             const fscol = $this.createNode("div", "col-auto");
-            const fssel = $this.createNode("select", "form-select", {"name": $this.prefix + "filestatus", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
+            const fssel = $this.createNode("select", "form-select", {"name": $this.prefix + "status", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
                 $this.createNode("option", [], {"value": "PENDING_MODERATION", "text": "Pending Moderation"}),
                 $this.createNode("option", [], {"value": "UNPUBLISHED", "text": "Unpublished"}),
                 $this.createNode("option", [], {"value": "PUBLISHED", "text": "Published"}),
@@ -197,6 +207,16 @@
             ]);
             fscol.appendChild(fssel);
             form.appendChild(fscol);
+
+            // file license select
+            const flcol = $this.createNode("div", "col-auto");
+            const flsel = $this.createNode("select", "form-select", {"name": $this.prefix + "license", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
+                $this.createNode("option", [], {"value": "CC_ZERO_1_0", "text": "Creative Commons CC0 1.0 Universal"}),
+                $this.createNode("option", [], {"value": "CC_BY_4_0", "text": "Creative Commons Attribution 4.0 International"}),
+                $this.createNode("option", [], {"value": "CC_BY_SA_4_0", "text": "Creative Commons Attribution-ShareAlike 4.0 International"}),
+            ]);
+            flcol.appendChild(flsel);
+            form.appendChild(flcol);
 
             // search
             const searchcol = $this.createNode("div", "col-auto", {}, [
@@ -211,13 +231,18 @@
             form.querySelector("input[name='" + $this.prefix + "search']").value = url.searchParams.get($this.prefix + "search");
 
             // get initial filetypes
-            let options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "filetype'] > option"));
-            let values = url.searchParams.getAll($this.prefix + "filetype");
+            let options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "type'] > option"));
+            let values = url.searchParams.getAll($this.prefix + "type");
             $this.selectOptions(options, values);
 
             // get initial filestatus
-            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "filestatus'] > option"));
-            values = url.searchParams.getAll($this.prefix + "filestatus");
+            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "status'] > option"));
+            values = url.searchParams.getAll($this.prefix + "status");
+            $this.selectOptions(options, values);
+
+            // get initial licenses
+            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "license'] > option"));
+            values = url.searchParams.getAll($this.prefix + "license");
             $this.selectOptions(options, values);
 
             // form done
@@ -265,7 +290,8 @@
             const formData = new FormData($this.container.querySelector("form"));
             const urlParams = new URLSearchParams(formData);
             const url = new URL(window.location);
-            urlParams.forEach(function(value, key) {
+            ["type", "status", "license", "search"].forEach(function(key) {
+                key = $this.prefix + key;
                 url.searchParams.delete(key);
             });
             urlParams.forEach(function(value, key) {

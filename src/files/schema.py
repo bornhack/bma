@@ -6,13 +6,12 @@ from typing import List
 from typing import Optional
 
 from django.urls import reverse
-from ninja import Field
 from ninja import ModelSchema
 from ninja import Schema
 
+from .models import LicenseChoices
 from .models import StatusChoices
 from files.models import BaseFile
-from utils.license import LicenseChoices
 from utils.schema import ListFilters
 from utils.schema import SortingChoices
 
@@ -123,9 +122,10 @@ class FileFilters(ListFilters):
     """The filters used for the file_list endpoint."""
 
     sorting: SortingChoices = None
-    albums: List[uuid.UUID] = Field(None, alias="albums")
+    albums: List[uuid.UUID] = None
     statuses: List[StatusChoices] = None
-    owners: List[uuid.UUID] = Field(None, alias="owners")
+    owners: List[uuid.UUID] = None
+    licenses: List[LicenseChoices] = None
     filetypes: List[FileTypeChoices] = None
     size: int = None
     size_lt: int = None

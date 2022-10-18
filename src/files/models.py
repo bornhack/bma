@@ -6,7 +6,6 @@ from polymorphic.models import PolymorphicModel
 
 from .validators import validate_thumbnail_url
 from users.sentinel import get_sentinel_user
-from utils.license import LicenseChoices
 
 
 class StatusChoices(models.TextChoices):
@@ -16,6 +15,17 @@ class StatusChoices(models.TextChoices):
     UNPUBLISHED = ("UNPUBLISHED", "Unpublished")
     PUBLISHED = ("PUBLISHED", "Published")
     PENDING_DELETION = ("PENDING_DELETION", "Pending Deletion")
+
+
+class LicenseChoices(models.TextChoices):
+    """The choices for license for uploaded files."""
+
+    CC_ZERO_1_0 = ("CC_ZERO_1_0", "Creative Commons CC0 1.0 Universal")
+    CC_BY_4_0 = ("CC_BY_4_0", "Creative Commons Attribution 4.0 International")
+    CC_BY_SA_4_0 = (
+        "CC_BY_SA_4_0",
+        "Creative Commons Attribution-ShareAlike 4.0 International",
+    )
 
 
 class BaseFile(PolymorphicModel):
