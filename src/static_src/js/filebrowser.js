@@ -178,7 +178,7 @@
 
             // filetype select
             const ftcol = $this.createNode("div", "col-auto");
-            const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "filetype", "multiple": "multiple", "onchange": $this.processChange}, [
+            const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "filetype", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
                 $this.createNode("option", [], {"value": "Picture", "text": "Picture"}),
                 $this.createNode("option", [], {"value": "Video", "text": "Video"}),
                 $this.createNode("option", [], {"value": "Audio", "text": "Audio"}),
@@ -189,7 +189,7 @@
 
             // filestatus select
             const fscol = $this.createNode("div", "col-auto");
-            const fssel = $this.createNode("select", "form-select", {"name": $this.prefix + "filestatus", "multiple": "multiple", "onchange": $this.processChange}, [
+            const fssel = $this.createNode("select", "form-select", {"name": $this.prefix + "filestatus", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
                 $this.createNode("option", [], {"value": "PENDING_MODERATION", "text": "Pending Moderation"}),
                 $this.createNode("option", [], {"value": "UNPUBLISHED", "text": "Unpublished"}),
                 $this.createNode("option", [], {"value": "PUBLISHED", "text": "Published"}),
