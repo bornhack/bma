@@ -7,6 +7,7 @@ from django.urls import re_path
 
 from .api import api_v1_json
 from files.views import bma_media_view
+from utils.views import csrfview
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -19,6 +20,7 @@ urlpatterns = [
     path("videos/", include("videos.urls", namespace="videos")),
     path("audios/", include("audios.urls", namespace="audios")),
     path("documents/", include("documents.urls", namespace="documents")),
+    path("api/csrf/", csrfview),
 ]
 
 # we are serving media files through nginx using X-Accel-Redirect in prod,

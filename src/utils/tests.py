@@ -97,6 +97,9 @@ class ApiTestBase(TestCase):
         qs = parse_qs(result.query)
         assert "code" in qs
 
+        # the rest doesn't require login
+        cls.client.logout()
+
         # get the code to get the access token
         response = cls.client.post(
             "/o/token/",

@@ -207,3 +207,8 @@ GUARDIAN_GET_CONTENT_TYPE = (
 # django-imagekit settings
 IMAGEKIT_CACHEFILE_DIR = ""
 IMAGEKIT_SPEC_CACHEFILE_NAMER = "imagekit.cachefiles.namers.source_name_dot_hash"
+
+# save csrf tokens in session instead of using double cookie to ease api scripting
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_SECURE = not DEBUG  # noqa: F405
+SESSION_COOKIE_SECURE = not DEBUG  # noqa: F405
