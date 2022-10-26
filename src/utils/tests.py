@@ -121,23 +121,25 @@ class ApiTestBase(TestCase):
         title="some title",
         license="CC_ZERO_1_0",
         attribution="fotoarne",
-        source="the internet",
+        source="https://example.com/something.png",
+        thumbnail_url=None,
         return_full=False,
         expect_status_code=201,
     ):
+        metadata = {
+            "title": title,
+            "license": license,
+            "attribution": attribution,
+            "source": source,
+        }
+        if thumbnail_url:
+            metadata["thumbnail_url"] = thumbnail_url
         with open(filepath, "rb") as f:
             response = cls.client.post(
                 reverse("api-v1-json:upload"),
                 {
                     "f": f,
-                    "metadata": json.dumps(
-                        {
-                            "title": title,
-                            "license": license,
-                            "attribution": attribution,
-                            "source": source,
-                        },
-                    ),
+                    "metadata": json.dumps(metadata),
                 },
                 HTTP_AUTHORIZATION=cls.user1.auth,
             )

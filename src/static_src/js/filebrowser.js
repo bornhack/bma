@@ -17,6 +17,9 @@
             $this.prefix = "";
         };
 
+        $this.baseUrl = window.location.protocol + "//" + window.location.host;
+
+
         $this.createNode = function(tag, classes, attrs, children) {
             let elem = document.createElement(tag);
             if (classes) {
@@ -28,6 +31,13 @@
             }
             if (attrs) {
                 Object.assign(elem, attrs);
+                // assign skips data- and hx- attributes for some reason, set them manually
+                // TODO: maybe skip .assign() and do everything in the loop?
+                for (const key in attrs) {
+                    if (key.startsWith("data-") || key.startsWith("hx-")) {
+                        elem.setAttribute(key, attrs[key]);
+                    };
+                };
             };
             if (children) {
                 for (const child of children) {
@@ -37,8 +47,12 @@
             return elem;
         };
 
+
         // select options in a multiselect
         $this.selectOptions = function(options, values) {
+            options.forEach(function(o) {
+                o.selected = false;
+            });
             values.forEach(function(v) {
                 options.forEach(function(o) {
                     if(o.value == v) {
@@ -47,6 +61,7 @@
                 });
             });
         };
+
 
         // debounce multiple inputs
         $this.debounce = function(func, timeout = 300) {
@@ -58,6 +73,8 @@
         };
         $this.processChange = $this.debounce(() => $this.updateFileBrowser());
 
+
+        // the medium sized file template
         $this.getFileTemplate = function() {
             // the outer div
             const card = $this.createNode("div", ["card", "file"], {}, [
@@ -87,10 +104,12 @@
             return card;
         };
 
+
         // getfiles function
         $this.getFiles = async function() {
             // start building url
-            let url = new URL(window.location.protocol + "//" + window.location.host + "/api/v1/json/files/");
+            let url = new URL($this.baseUrl);
+            url.pathname = "/api/v1/json/files/";
 
             // get filetypes element
             let el = $this.container.querySelector("select[name='" + $this.prefix + "type']");
@@ -139,6 +158,7 @@
             return await response.json();
         };
 
+
         // update summary
         $this.updateSummary = async function(e, selected, unselected) {
             selected = $this.container.querySelectorAll("div.file.ui-selected");
@@ -166,8 +186,33 @@
                     button.setAttribute("disabled", "");
                 };
             };
-
         };
+
+
+        // set form values from URL queryset
+        $this.updateFormFromUrl = function(form) {
+            // populate initial values
+            const url = new URL(window.location);
+
+            // get initial search value
+            form.querySelector("input[name='" + $this.prefix + "search']").value = url.searchParams.get($this.prefix + "search");
+
+            // get initial filetypes
+            let options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "type'] > option"));
+            let values = url.searchParams.getAll($this.prefix + "type");
+            $this.selectOptions(options, values);
+
+            // get initial filestatus
+            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "status'] > option"));
+            values = url.searchParams.getAll($this.prefix + "status");
+            $this.selectOptions(options, values);
+
+            // get initial licenses
+            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "license'] > option"));
+            values = url.searchParams.getAll($this.prefix + "license");
+            $this.selectOptions(options, values);
+        };
+
 
         // createFileBrowser function
         $this.createFileBrowser = async function() {
@@ -189,10 +234,10 @@
             // filetype select
             const ftcol = $this.createNode("div", "col-auto");
             const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "type", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
-                $this.createNode("option", [], {"value": "Picture", "text": "Picture"}),
-                $this.createNode("option", [], {"value": "Video", "text": "Video"}),
-                $this.createNode("option", [], {"value": "Audio", "text": "Audio"}),
-                $this.createNode("option", [], {"value": "Document", "text": "Document"}),
+                $this.createNode("option", [], {"value": "picture", "text": "Picture"}),
+                $this.createNode("option", [], {"value": "video", "text": "Video"}),
+                $this.createNode("option", [], {"value": "audio", "text": "Audio"}),
+                $this.createNode("option", [], {"value": "document", "text": "Document"}),
             ]);
             ftcol.appendChild(ftsel);
             form.appendChild(ftcol);
@@ -224,26 +269,8 @@
             ]);
             form.appendChild(searchcol);
 
-            // populate initial values
-            const url = new URL(window.location);
-
-            // get initial search value
-            form.querySelector("input[name='" + $this.prefix + "search']").value = url.searchParams.get($this.prefix + "search");
-
-            // get initial filetypes
-            let options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "type'] > option"));
-            let values = url.searchParams.getAll($this.prefix + "type");
-            $this.selectOptions(options, values);
-
-            // get initial filestatus
-            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "status'] > option"));
-            values = url.searchParams.getAll($this.prefix + "status");
-            $this.selectOptions(options, values);
-
-            // get initial licenses
-            options = Array.from(form.querySelectorAll("select[name='" + $this.prefix + "license'] > option"));
-            values = url.searchParams.getAll($this.prefix + "license");
-            $this.selectOptions(options, values);
+            // set initial form values from url
+            $this.updateFormFromUrl(form);
 
             // form done
             fg.appendChild(form);
@@ -256,17 +283,20 @@
             ]);
             nav.appendChild(totals);
 
-            // selection
+            // selection and actions
             const selection = $this.createNode("div", ["card", "border", "me-2", "selection"], {}, [
                 $this.createNode("div", "card-header", {"innerHTML": "Selection"}, [
                     $this.createNode("div", ["btn-group", "me-2", "actions", "float-end"], {}, [
-                        $this.createNode("button", ["btn", "btn-success"], {"disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-success"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Approve Files", "disabled": "disabled"}, [
+                            $this.createNode("i", ["fa-solid", "fa-check"]),
+                        ]),
+                        $this.createNode("button", ["btn", "btn-success"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Publish Files", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-cloud-arrow-up"]),
                         ]),
-                        $this.createNode("button", ["btn", "btn-danger"], {"disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-danger"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Unpublish Files", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-cloud-arrow-down"]),
                         ]),
-                        $this.createNode("button", ["btn", "btn-primary"], {"disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-primary"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Add Files To Album", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-plus"]),
                         ]),
                     ]),
@@ -280,12 +310,91 @@
 
             // ok, add to the container
             $this.container.append(outer);
+
+            // create action modal
+            $this.actionmodal = $this.createNode("div", ["modal"], {"id": $this.prefix + "bma-modal", "tabindex": "-1"});
+            $this.populateActionModal();
+
+            const actions = {
+                "Approve Files": "/api/v1/json/files/approve/",
+                "Publish Files": "/api/v1/json/files/publish/",
+                "Unpublish Files": "/api/v1/json/files/unpublish/",
+            };
+
+            $this.actionmodal.addEventListener('show.bs.modal', async event => {
+                const button = event.relatedTarget
+                const action = button.getAttribute('data-bma-action')
+                const selected = $this.container.querySelectorAll("div.file.ui-selected");
+                if (!selected.length) {
+                    throw new Error("No files selected!");
+                };
+                const filelist = $this.createNode("ul")
+                const uuids = [];
+                selected.forEach(file => {
+                    filelist.appendChild($this.createNode("li", [], {"textContent": file.dataset.bmaFileName}));
+                    uuids.push(file.dataset.bmaFileUuid);
+                });
+
+                $this.actionmodal.querySelector("div.modal-body").replaceChildren(filelist);
+
+                // make check request
+                const url = new URL($this.baseUrl);
+                url.pathname = actions[action];
+                url.searchParams.append("check", "true");
+                const response = await fetch(url, {"method": "PATCH", "body": JSON.stringify({"files": uuids}), "headers": {"x-csrftoken": $this.getCsrfToken()}});
+                if (response.ok) {
+                    $this.actionmodal.querySelector("h1").textContent = "Really " + action + "?";
+                    $this.actionmodal.querySelector("button.btn-primary").setAttribute("hx-patch", actions[action]);
+                    $this.actionmodal.querySelector("button.btn-primary").setAttribute("hx-vals", JSON.stringify({"files": uuids}));
+                    $this.actionmodal.querySelector("button.btn-primary").classList.remove("d-none");
+                    htmx.process($this.actionmodal);
+                } else {
+                    $this.actionmodal.querySelector("h1").textContent = "Unable to " + action + "!";
+                    console.log(await response.json());
+                };
+            })
+            $this.actionmodal.addEventListener('hide.bs.modal', async event => {
+                // reset the modal and update filebrowser
+                $this.populateActionModal();
+                $this.updateFileBrowser();
+            });
+            document.querySelector("body").appendChild($this.actionmodal);
         };
 
+
+        // called to create and reset the action modal
+        $this.populateActionModal = function() {
+            $this.actionmodal.replaceChildren(
+                $this.createNode("div", ["modal-dialog", "modal-dialog-scrollable"], {}, [
+                    $this.createNode("div", "modal-content", {}, [
+                        $this.createNode("div", "modal-header", {}, [
+                            $this.createNode("h1", ["modal-title", "fs-5"]),
+                            $this.createNode("button", "btn-close", {"data-bs-dismiss": "modal", "aria-label": "Close"}),
+                        ]),
+                        $this.createNode("div", "modal-body", {"id": $this.prefix + "modal-body"}),
+                        $this.createNode("div", "modal-footer", {}, [
+                            $this.createNode("button", ["btn", "btn-secondary"], {"textContent": "Cancel", "data-bs-dismiss": "modal"}),
+                            $this.createNode("button", ["btn", "btn-primary", "d-none"], {"textContent": "Confirm", "hx-target": "closest div.modal-footer", "hx-swap": "innerHTML"}),
+                        ]),
+                    ]),
+                ]),
+            );
+        };
+
+
+        // return the csrf token from the body tag
+        $this.getCsrfToken = function() {
+            return JSON.parse(document.querySelector("body").getAttribute("hx-headers"))["x-csrftoken"]
+        };
+
+
+        // log a message with the filebrowsers id as prefix
         $this.log = function(message) {
             console.log($this.container.id + ": " + message);
         };
 
+
+        // update the browser urlbar
         $this.updateUrl = function() {
             const formData = new FormData($this.container.querySelector("form"));
             const urlParams = new URLSearchParams(formData);
@@ -302,20 +411,25 @@
             window.history.pushState(null, '', url.toString());
         };
 
+
+        // disable the filter form
         $this.disableForm = function() {
             $this.container.querySelectorAll("form > div > select, form > div > input").forEach(function(e) {
                 e.setAttribute("disabled", "disabled");
             });
         };
 
+
+        // enable the filter form
         $this.enableForm = function() {
             $this.container.querySelectorAll("form > div > select, form > div > input").forEach(function(e) {
                 e.removeAttribute("disabled");
             });
         };
 
-        // updateFileBrowser function
-        $this.updateFileBrowser = async function() {
+
+        // update the files shown in the filebrowser
+        $this.updateFileBrowser = async function(updateUrl) {
             // get or initiate filebrowser as needed
             let outer = $this.container.querySelector(".filebrowser-container");
             if (!outer) {
@@ -323,8 +437,10 @@
                 outer = $this.container.querySelector(".filebrowser-container");
             };
 
-            // update browser location to match form contents
-            $this.updateUrl();
+            if (updateUrl) {
+                // update browser location to match form contents
+                $this.updateUrl();
+            };
 
             // disable form
             $this.disableForm();
@@ -384,6 +500,7 @@
                 clone.dataset.bmaFileLastUpdate=data[file]["updated"];
                 clone.dataset.bmaFileSize=data[file]["size_bytes"];
                 clone.dataset.bmaFileType=data[file]["filetype"];
+                clone.dataset.bmaFileName=data[file]["title"];
                 deck.append(clone);
                 // add this file to selectable
                 $this.container._selectable.add(clone);
@@ -396,7 +513,8 @@
             $this.enableForm();
         };
 
-        // update status function
+
+        // update statusbar
         $this.updateStatus = function(message, busy) {
             if (busy) {
                 $this.messages.innerHTML="<i class='fas fa-spinner fa-spin'></i> ";
@@ -406,31 +524,46 @@
             $this.messages.innerHTML+=message;
         };
 
-        // make sure Selectable is loaded
-        if ( window.Selectable && typeof Selectable === "function" ) {
-            // get the container
-            if ( $this.container ) {
-                $this.updateStatus("Initialising Selectable for " + $this.container.id + "...", true);
-                const selectable = new Selectable({
-                    appendTo: $this.container,
-                    filter: $this.container.querySelectorAll(".card"),
-                    ignore: ".navbar",
-                });
-                // attach the event listener
-                selectable.on('end', $this.updateSummary);
-                $this.updateStatus("Done initialising Selectable for " + $this.container.id + "!", true);
+
+        // init function
+        $this.init = function() {
+            // make sure Selectable is loaded
+            if ( window.Selectable && typeof Selectable === "function" ) {
+                // get the container
+                if ( $this.container ) {
+                    $this.updateStatus("Initialising Selectable for " + $this.container.id + "...", true);
+                    const selectable = new Selectable({
+                        appendTo: $this.container,
+                        filter: $this.container.querySelectorAll(".card"),
+                        ignore: ".navbar",
+                    });
+                    // attach the event listener
+                    selectable.on('end', $this.updateSummary);
+                    $this.updateStatus("Done initialising Selectable for " + $this.container.id + "!", true);
+                } else {
+                    throw "container not found";
+                };
             } else {
-                throw "container not found";
+                throw "Selectable not found";
             };
-        } else {
-            throw "Selectable not found";
+            // render initial contents
+            $this.updateFileBrowser();
+
+            // update filebrowser when browser back/forward buttons are used
+            window.addEventListener('popstate', (event) => {
+                $this.log(`Location changed by browser, updating form and filebrowser, new location: ${document.location}, state: ${JSON.stringify(event.state)}`);
+                // set form values from url
+                $this.updateFormFromUrl($this.container.querySelector("form"));
+                // update filebrowser
+                $this.updateFileBrowser(false);
+            });
         };
 
-        $this.updateFileBrowser();
+        $this.init();
     };
 
-    // init function
-    async function bma_filebrowser_init() {
+    // function to initialise filebrowsers on the page
+    async function bma_create_filebrowsers() {
         let containers = document.querySelectorAll(".filebrowser");
         if ( containers ) {
             // loop over containers and make them filebrowsers
@@ -446,14 +579,19 @@
                         // all but the first filebrowser gets a prefix for url parameters
                         prefix = "fb" + i;
                     };
+                    console.log("Initialising BMA filebrowser...");
                     container._filebrowser = new BMAFileBrowser(body, messages, prefix);
+                    console.log("Done initialised BMA filebrowser!");
                 } else {
                     throw new Error("body or status element not found");
                 };
             };
+        } else {
+            console.log("BMA filebrowser did not find any containers with the .filebrowser class");
         };
     };
-    window.bma_filebrowser_init = bma_filebrowser_init
+    window.bma_create_filebrowsers = bma_create_filebrowsers;
 })();
 
-document.addEventListener("DOMContentLoaded", bma_filebrowser_init);
+// create filebrowsers when the dom has finished loading
+document.addEventListener("DOMContentLoaded", bma_create_filebrowsers);

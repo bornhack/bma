@@ -28,6 +28,15 @@ class LicenseChoices(models.TextChoices):
     )
 
 
+class FileTypeChoices(models.TextChoices):
+    """The filetype filter."""
+
+    picture = ("picture", "Picture")
+    video = ("video", "Video")
+    audio = ("audio", "Audio")
+    document = ("document", "Document")
+
+
 class BaseFile(PolymorphicModel):
     """The polymorphic base model inherited by the Picture, Video, Audio, and Document models."""
 
@@ -76,6 +85,7 @@ class BaseFile(PolymorphicModel):
 
     source = models.URLField(
         help_text="The URL to the original source of this work. Leave blank to consider the BMA URL the original source.",
+        blank=True,
     )
 
     license = models.CharField(

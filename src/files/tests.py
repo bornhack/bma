@@ -1,8 +1,11 @@
+import os
+
 from django.urls import reverse
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.models import get_application_model
 from oauth2_provider.models import get_grant_model
 
+from .models import BaseFile
 from utils.tests import ApiTestBase
 
 Application = get_application_model()
@@ -44,6 +47,7 @@ class TestFilesApi(ApiTestBase):
         data = self.file_upload(title="", return_full=True)
         assert data["title"] == data["original_filename"]
         self.file_upload(license="notalicense", expect_status_code=422)
+        self.file_upload(thumbnail_url="/foo/wrong.tar", expect_status_code=422)
 
     def test_file_list(self):
         """Test the file_list endpoint."""
@@ -187,13 +191,13 @@ class TestFilesApi(ApiTestBase):
         # test file type filter
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            data={"filetypes": ["Picture"]},
+            data={"filetypes": ["picture"]},
             HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert len(response.json()) == 15
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            data={"filetypes": ["Audio", "Video", "Document"]},
+            data={"filetypes": ["audio", "video", "document"]},
             HTTP_AUTHORIZATION=self.user1.auth,
         )
         assert len(response.json()) == 0
@@ -248,12 +252,27 @@ class TestFilesApi(ApiTestBase):
         )
         assert response.status_code == 403
 
-        # approve the file
+        # approve the file, check mode
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve", kwargs={"file_uuid": files[0]})
+            + "?check=true",
+            HTTP_AUTHORIZATION=self.superuser.auth,
+        )
+        assert response.status_code == 202
+
+        # really approve the file
         response = self.client.patch(
             reverse("api-v1-json:file_approve", kwargs={"file_uuid": files[0]}),
             HTTP_AUTHORIZATION=self.superuser.auth,
         )
         assert response.status_code == 200
+
+        # try again with wrong status
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve", kwargs={"file_uuid": files[0]}),
+            HTTP_AUTHORIZATION=self.superuser.auth,
+        )
+        assert response.status_code == 403
 
         # now list UNPUBLISHED files
         response = self.client.get(
@@ -263,7 +282,15 @@ class TestFilesApi(ApiTestBase):
         )
         assert len(response.json()) == 1
 
-        # publish a file
+        # publish a file, check mode
+        response = self.client.patch(
+            reverse("api-v1-json:file_publish", kwargs={"file_uuid": files[0]})
+            + "?check=true",
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 202
+
+        # publish the file
         response = self.client.patch(
             reverse("api-v1-json:file_publish", kwargs={"file_uuid": files[0]}),
             HTTP_AUTHORIZATION=self.user1.auth,
@@ -292,7 +319,15 @@ class TestFilesApi(ApiTestBase):
         )
         assert response.status_code == 403
 
-        # unpublish the file again
+        # unpublish the file, check mode
+        response = self.client.patch(
+            reverse("api-v1-json:file_unpublish", kwargs={"file_uuid": files[0]})
+            + "?check=true",
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 202
+
+        # unpublish the file
         response = self.client.patch(
             reverse("api-v1-json:file_unpublish", kwargs={"file_uuid": files[0]}),
             HTTP_AUTHORIZATION=self.user1.auth,
@@ -332,7 +367,7 @@ class TestFilesApi(ApiTestBase):
             reverse("api-v1-json:file_list"),
             HTTP_AUTHORIZATION=self.user1.auth,
         ).json()[0]
-        url = metadata["url"]
+        url = metadata["links"]["downloads"]["original"]
         # try download of unpublished file without auth
         response = self.client.get(url)
         assert response.status_code == 404
@@ -358,13 +393,18 @@ class TestFilesApi(ApiTestBase):
             "description": "some description",
             "license": "CC_ZERO_1_0",
             "attribution": "some attribution",
+            "thumbnail_url": "/media/foo/bar.png",
         }
+
+        # update with no auth
         response = self.client.put(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             updates,
             content_type="application/json",
         )
         assert response.status_code == 403
+
+        # update with wrong user
         response = self.client.put(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             updates,
@@ -372,6 +412,18 @@ class TestFilesApi(ApiTestBase):
             content_type="application/json",
         )
         assert response.status_code == 403
+
+        # update the file, check mode
+        response = self.client.put(
+            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid})
+            + "?check=true",
+            updates,
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # replace the file metadata
         response = self.client.put(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             updates,
@@ -392,16 +444,44 @@ class TestFilesApi(ApiTestBase):
             else:
                 assert v == original_metadata[k]
 
+        # try with an invalid thumbnail url
+        response = self.client.put(
+            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
+            {"thumbnail_url": "/wrong/value.tiff"},
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 422
+
+        # update instead of replace, first with invalid source url
         response = self.client.patch(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             {"source": "outer space"},
             HTTP_AUTHORIZATION=self.user1.auth,
             content_type="application/json",
         )
+        assert response.status_code == 422
+        # then with a valid url
+        response = self.client.patch(
+            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
+            {"source": "https://example.com/foo.png"},
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
         assert response.status_code == 200
+
         # make sure we updated only the source attribute with the PATCH request
-        assert response.json()["source"] == "outer space"
+        assert response.json()["source"] == "https://example.com/foo.png"
         assert response.json()["attribution"] == "some attribution"
+
+        # update thumbnail to an invalid value
+        response = self.client.patch(
+            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
+            {"thumbnail_url": "/foo/evil.ext"},
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 422
 
     #   def test_post_csrf(self):
     #       """Make sure CSRF is enforced on API views when using django session cookie auth."""
@@ -418,15 +498,28 @@ class TestFilesApi(ApiTestBase):
     def test_file_delete(self):
         """Test deleting a file."""
         self.file_upload()
+        # test with no auth
         response = self.client.delete(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
         )
         assert response.status_code == 403
+
+        # test with wrong auth
         response = self.client.delete(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             HTTP_AUTHORIZATION=f"Bearer {self.user2.tokeninfo['access_token']}",
         )
         assert response.status_code == 403
+
+        # delete file, check mode
+        response = self.client.delete(
+            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid})
+            + "?check=true",
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 202
+
+        # delete file
         response = self.client.delete(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
             HTTP_AUTHORIZATION=self.user1.auth,
@@ -478,3 +571,71 @@ class TestFilesApi(ApiTestBase):
             ),
         )
         assert response.status_code == 403
+
+    def test_file_approve_multiple(self):
+        """Approve multiple files."""
+        for _ in range(10):
+            self.file_upload()
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        files = [f["uuid"] for f in response.json()]
+        # first try with no permissions
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve_multiple"),
+            {"files": files[0:5]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve_multiple") + "?check=true",
+            {"files": files[0:5]},
+            HTTP_AUTHORIZATION=self.superuser.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve_multiple"),
+            {"files": files[0:5]},
+            HTTP_AUTHORIZATION=self.superuser.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # then try approving the same files again
+        response = self.client.patch(
+            reverse("api-v1-json:file_approve_multiple"),
+            {"files": files[0:5]},
+            HTTP_AUTHORIZATION=self.superuser.auth,
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # make sure files are now UNPUBLISHED
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"statuses": ["UNPUBLISHED"]},
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert len(response.json()) == 5
+
+    def test_file_missing_on_disk(self):
+        """Test the case where a file has gone missing from disk for some reason."""
+        self.file_upload()
+        basefile = BaseFile.objects.get(uuid=self.file_uuid)
+        os.unlink(basefile.original.path)
+        response = self.client.get(
+            reverse(
+                "api-v1-json:file_get",
+                kwargs={"file_uuid": self.file_uuid},
+            ),
+            HTTP_AUTHORIZATION=self.user1.auth,
+        )
+        assert response.status_code == 200
+        assert response.json()["size_bytes"] == 0

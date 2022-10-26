@@ -5,8 +5,12 @@ from typing import Union
 
 import magic
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
 from ninja import Query
@@ -15,6 +19,7 @@ from ninja.files import UploadedFile
 
 from .models import BaseFile
 from .schema import FileFilters
+from .schema import FileListSchema
 from .schema import FileOutSchema
 from .schema import FileTypeChoices
 from .schema import FileUpdateSchema
@@ -46,7 +51,7 @@ query = Query(...)
         403: MessageSchema,
         422: MessageSchema,
     },
-    summary="Upload a new file",
+    summary="Upload a new file.",
 )
 def upload(request, f: UploadedFile, metadata: UploadMetadata):
     """API endpoint for file uploads."""
@@ -77,14 +82,22 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
         uploaded_file.title = uploaded_file.original_filename
 
     if not uploaded_file.thumbnail_url:
+        # thumbnail url was not specified, use the default for the filetype
         uploaded_file.thumbnail_url = settings.DEFAULT_THUMBNAIL_URLS[
             uploaded_file.filetype
         ]
 
+    try:
+        uploaded_file.full_clean()
+    except ValidationError:
+        return 422, {"message": "Validation error"}
+
     # save everything
     uploaded_file.save()
 
-    # this has to be done after .save() to ensure the uuid filename and full path is passed to the imagekit namer
+    # if the filetype is picture then use the picture itself as thumbnail,
+    # this has to be done after .save() to ensure the uuid filename and
+    # full path is passed to the imagekit namer
     if (
         uploaded_file.filetype == "picture"
         and uploaded_file.thumbnail_url == settings.DEFAULT_THUMBNAIL_URLS["picture"]
@@ -100,6 +113,249 @@ def upload(request, f: UploadedFile, metadata: UploadMetadata):
 
     # return response
     return 201, uploaded_file
+
+
+@router.patch(
+    "/approve/",
+    response={
+        200: List[FileOutSchema],
+        202: MessageSchema,
+        403: MessageSchema,
+    },
+    summary="Approve multiple files (change status from PENDING_MODERATION to UNPUBLISHED).",
+)
+def file_approve_multiple(request, data: FileListSchema, check: bool = None):
+    """Change the status of files PENDING_MODERATION to UNPUBLISHED."""
+    files = data.dict()["files"]
+    allfiles = BaseFile.objects.filter(uuid__in=files)
+    dbfiles = get_objects_for_user(
+        request.user,
+        "approve_basefile",
+        klass=BaseFile.objects.filter(
+            uuid__in=[str(u) for u in files],
+            status="PENDING_MODERATION",
+        ),
+    )
+    # we want all files to have the right status and the user to have approve_basefile permissions for all files
+    if dbfiles.count() < len(files):
+        return 403, {
+            "message": f"Wrong status or no permission to approve these {allfiles.difference(dbfiles).count()} files (of total {len(files)} files)",
+            "details": {"files": [f.uuid for f in allfiles.difference(dbfiles)]},
+        }
+
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        # not check mode, do the thing
+        for basefile in dbfiles:
+            # use .update() to avoid race conditions
+            BaseFile.objects.filter(uuid=basefile.uuid).update(
+                status="UNPUBLISHED",
+                updated=timezone.now(),
+            )
+            assign_perm("publish_basefile", basefile.owner, basefile)
+            assign_perm("unpublish_basefile", basefile.owner, basefile)
+        # return the response
+        if request.htmx:
+            return HttpResponse(
+                """<button class="btn btn-success" data-bs-dismiss="modal"><i class="fas fa-check"></i> Close</button>""",
+            )
+        else:
+            return BaseFile.objects.filter(
+                uuid__in=dbfiles.values_list("uuid", flat=True),
+            )
+
+
+@router.patch(
+    "/publish/",
+    response={
+        200: List[FileOutSchema],
+        202: MessageSchema,
+        403: MessageSchema,
+    },
+    summary="Publish multiple files (change status from UNPUBLISHED to PUBLISHED).",
+)
+def file_publish_multiple(request, data: FileListSchema, check: bool = None):
+    """Change the status of files from UNPUBLISHED to PUBLISHED."""
+    files = data.dict()["files"]
+    allfiles = BaseFile.objects.filter(uuid__in=files)
+    dbfiles = get_objects_for_user(
+        request.user,
+        "publish_basefile",
+        klass=BaseFile.objects.filter(
+            uuid__in=[str(u) for u in files],
+            status="UNPUBLISHED",
+        ),
+    )
+    # we want all files to have the right status and the user to have approve_basefile permissions for all files
+    if dbfiles.count() < len(files):
+        return 403, {
+            "message": f"Wrong status or no permission to publish these {allfiles.difference(dbfiles).count()} files (of total {len(files)} files)",
+            "details": {"files": [f.uuid for f in allfiles.difference(dbfiles)]},
+        }
+
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        # not check mode, do the thing
+        for basefile in dbfiles:
+            # use .update() to avoid race conditions
+            BaseFile.objects.filter(uuid=basefile.uuid).update(
+                status="PUBLISHED",
+                updated=timezone.now(),
+            )
+        # return the response
+        if request.htmx:
+            return HttpResponse(
+                """<button class="btn btn-success" data-bs-dismiss="modal"><i class="fas fa-check"></i> Close</button>""",
+            )
+        else:
+            return BaseFile.objects.filter(
+                uuid__in=dbfiles.values_list("uuid", flat=True),
+            )
+
+
+@router.patch(
+    "/unpublish/",
+    response={
+        200: List[FileOutSchema],
+        202: MessageSchema,
+        403: MessageSchema,
+    },
+    summary="Unpublish multiple files (change status from PUBLISHED to UNPUBLISHED).",
+)
+def file_unpublish_multiple(request, data: FileListSchema, check: bool = None):
+    """Change the status of files from PUBLISHED to UNPUBLISHED."""
+    files = data.dict()["files"]
+    allfiles = BaseFile.objects.filter(uuid__in=files)
+    dbfiles = get_objects_for_user(
+        request.user,
+        "unpublish_basefile",
+        klass=BaseFile.objects.filter(
+            uuid__in=[str(u) for u in files],
+            status="PUBLISHED",
+        ),
+    )
+    # we want all files to have the right status and the user to have approve_basefile permissions for all files
+    if dbfiles.count() < len(files):
+        return 403, {
+            "message": f"Wrong status or no permission to unpublish these {allfiles.difference(dbfiles).count()} files (of total {len(files)} files)",
+            "details": {"files": [f.uuid for f in allfiles.difference(dbfiles)]},
+        }
+
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        # not check mode, do the thing
+        for basefile in dbfiles:
+            # use .update() to avoid race conditions
+            BaseFile.objects.filter(uuid=basefile.uuid).update(
+                status="UNPUBLISHED",
+                updated=timezone.now(),
+            )
+        # return the response
+        if request.htmx:
+            return HttpResponse(
+                """<button class="btn btn-success" data-bs-dismiss="modal"><i class="fas fa-check"></i> Close</button>""",
+            )
+        else:
+            return BaseFile.objects.filter(
+                uuid__in=dbfiles.values_list("uuid", flat=True),
+            )
+
+
+@router.patch(
+    "/{file_uuid}/approve/",
+    response={
+        200: FileOutSchema,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Approve a file (change status from PENDING_MODERATION to UNPUBLISHED).",
+    url_name="file_approve",
+)
+def file_approve(request, file_uuid: uuid.UUID, check: bool = None):
+    """Approve a file and grant publish/unpublish permissions to the owner."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("approve_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if not basefile.status == "PENDING_MODERATION":
+        return 403, {"message": f"Wrong status: {basefile.status}."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        # initial status is UNPUBLISHED (so the owner can decide when to publish)
+        # use .update() to avoid race conditions
+        BaseFile.objects.filter(uuid=basefile.uuid).update(
+            status="UNPUBLISHED",
+            updated=timezone.now(),
+        )
+        assign_perm("publish_basefile", basefile.owner, basefile)
+        assign_perm("unpublish_basefile", basefile.owner, basefile)
+        basefile.refresh_from_db()
+        return basefile
+
+
+@router.patch(
+    "/{file_uuid}/unpublish/",
+    response={
+        200: FileOutSchema,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Unpublish a file (change status from PUBLISHED to UNPUBLISHED).",
+)
+def file_unpublish(request, file_uuid: uuid.UUID, check: bool = None):
+    """Change the status of a file to UNPUBLISHED."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("unpublish_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        BaseFile.objects.filter(uuid=basefile.uuid).update(
+            status="UNPUBLISHED",
+            updated=timezone.now(),
+        )
+        basefile.refresh_from_db()
+        return basefile
+
+
+@router.patch(
+    "/{file_uuid}/publish/",
+    response={
+        200: FileOutSchema,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+        422: MessageSchema,
+    },
+    summary="Publish a file (change status from UNPUBLISHED to PUBLISHED).",
+)
+def file_publish(request, file_uuid: uuid.UUID, check: bool = None):
+    """Change the status of a file to PUBLISHED."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("publish_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        BaseFile.objects.filter(uuid=basefile.uuid).update(
+            status="PUBLISHED",
+            updated=timezone.now(),
+        )
+        basefile.refresh_from_db()
+        return basefile
 
 
 @router.get(
@@ -197,6 +453,7 @@ def file_list(request, filters: FileFilters = query):
     "/{file_uuid}/",
     response={
         200: FileOutSchema,
+        202: MessageSchema,
         403: MessageSchema,
         404: MessageSchema,
         422: MessageSchema,
@@ -208,6 +465,7 @@ def file_list(request, filters: FileFilters = query):
     "/{file_uuid}/",
     response={
         200: FileOutSchema,
+        202: MessageSchema,
         403: MessageSchema,
         404: MessageSchema,
         422: MessageSchema,
@@ -215,99 +473,65 @@ def file_list(request, filters: FileFilters = query):
     operation_id="files_api_file_update_patch",
     summary="Update the metadata of a file.",
 )
-def file_update(request, file_uuid: uuid.UUID, metadata: FileUpdateSchema):
+def file_update(
+    request,
+    file_uuid: uuid.UUID,
+    metadata: FileUpdateSchema,
+    check: bool = None,
+):
     """Update (PATCH) or replace (PUT) a file object."""
     basefile = get_object_or_404(BaseFile, uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
     if request.method == "PATCH":
-        # we are updating the object, we do not want defaults for absent fields
-        exclude_unset = True
+        try:
+            with transaction.atomic():
+                # we are updating the object, we do not want defaults for absent fields
+                BaseFile.objects.filter(uuid=basefile.uuid).update(
+                    **metadata.dict(exclude_unset=True), updated=timezone.now()
+                )
+                basefile.refresh_from_db()
+                basefile.full_clean()
+        except ValidationError:
+            return 422, {"message": "Validation error"}
     else:
-        # we are replacing the object, we do want defaults for absent fields
-        exclude_unset = False
-    for attr, value in metadata.dict(exclude_unset=exclude_unset).items():
-        setattr(basefile, attr, value)
-    basefile.save()
-    return basefile
-
-
-@router.patch(
-    "/{file_uuid}/approve/",
-    response={
-        200: FileOutSchema,
-        403: MessageSchema,
-        404: MessageSchema,
-        422: MessageSchema,
-    },
-    summary="Approve a file.",
-    url_name="file_approve",
-)
-def file_approve(request, file_uuid: uuid.UUID):
-    """Approve a file and grant publish/unpublish permissions to the owner."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if not request.user.has_perm("approve_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    # initial status is UNPUBLISHED (so the owner can decide when to publish)
-    basefile.status = "UNPUBLISHED"
-    basefile.save()
-    assign_perm("publish_basefile", basefile.owner, basefile)
-    assign_perm("unpublish_basefile", basefile.owner, basefile)
-    return basefile
-
-
-@router.patch(
-    "/{file_uuid}/unpublish/",
-    response={
-        200: FileOutSchema,
-        403: MessageSchema,
-        404: MessageSchema,
-        422: MessageSchema,
-    },
-    summary="Unpublish a file.",
-)
-def file_unpublish(request, file_uuid: uuid.UUID):
-    """Change the status of a file to UNPUBLISHED."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if not request.user.has_perm("unpublish_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    basefile.status = "UNPUBLISHED"
-    basefile.save()
-    return basefile
-
-
-@router.patch(
-    "/{file_uuid}/publish/",
-    response={
-        200: FileOutSchema,
-        403: MessageSchema,
-        404: MessageSchema,
-        422: MessageSchema,
-    },
-    summary="Publish a file.",
-)
-def file_publish(request, file_uuid: uuid.UUID):
-    """Change the status of a file to PUBLISHED."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if not request.user.has_perm("publish_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    basefile.status = "PUBLISHED"
-    basefile.save()
+        try:
+            with transaction.atomic():
+                # we are replacing the object, we do want defaults for absent fields
+                BaseFile.objects.filter(uuid=basefile.uuid).update(
+                    **metadata.dict(exclude_unset=False), updated=timezone.now()
+                )
+                basefile.refresh_from_db()
+                basefile.full_clean()
+        except ValidationError:
+            return 422, {"message": "Validation error"}
     return basefile
 
 
 @router.delete(
     "/{file_uuid}/",
-    response={204: None, 403: MessageSchema, 404: MessageSchema},
-    summary="Delete a file.",
+    response={
+        204: None,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+    },
+    summary="Delete a file (change status to PENDING_DELETION).",
 )
-def file_delete(request, file_uuid: uuid.UUID):
+def file_delete(request, file_uuid: uuid.UUID, check: bool = None):
     """Mark a file for deletion."""
     basefile = get_object_or_404(BaseFile, uuid=file_uuid)
     if not request.user.has_perm("delete_basefile", basefile):
         return 403, {"message": "Permission denied."}
-    # we don't let users fully delete files for now
-    # basefile.delete()
-    basefile.status = "PENDING_DELETION"
-    basefile.save()
-    return 204, None
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    else:
+        # we don't let users fully delete files for now
+        # basefile.delete()
+        basefile.status = "PENDING_DELETION"
+        basefile.save()
+        return 204, None

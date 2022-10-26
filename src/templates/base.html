@@ -32,9 +32,12 @@
     {% bootstrap_javascript %}
 
     <!-- htmx -->
-    <script src="{% static "js/vendor/htmx.v1.8.0.min.js" %}" defer></script>
+    <script src="{% static "js/vendor/htmx/htmx.v1.8.0.min.js" %}" defer></script>
     {% django_htmx_script %}
+    <!-- https://htmx.org/extensions/json-enc/ -->
+    <script src="{% static 'js/vendor/htmx/json-enc.js' %}" defer></script>
 
+    <!-- slideshows -->
     <script src="{% static "js/vendor/spotlight.v0.7.8.bundle.js" %}" defer></script>
 
     <!-- https://github.com/Mobius1/Selectable -->
@@ -49,7 +52,7 @@
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="d-flex flex-column min-vh-100 bma-no-js {% block body-extra-classes %}{% endblock %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+  <body class="d-flex flex-column min-vh-100 bma-no-js {% block body-extra-classes %}{% endblock %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}' hx-ext="json-enc">
     {% block body %}
       <header>
         <!-- Fixed navbar -->

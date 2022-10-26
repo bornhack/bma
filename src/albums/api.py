@@ -99,47 +99,73 @@ def album_list(request, filters: AlbumFilters = query):
 
 @router.put(
     "/{album_uuid}/",
-    response={200: AlbumOutSchema, 403: MessageSchema, 404: MessageSchema},
+    response={
+        200: AlbumOutSchema,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+    },
     operation_id="albums_api_album_update_put",
     summary="Replace an album.",
 )
 @router.patch(
     "/{album_uuid}/",
-    response={200: AlbumOutSchema, 403: MessageSchema, 404: MessageSchema},
+    response={
+        200: AlbumOutSchema,
+        202: MessageSchema,
+        403: MessageSchema,
+        404: MessageSchema,
+    },
     operation_id="albums_api_album_update_patch",
     summary="Update an album.",
 )
-def album_update(request, album_uuid: uuid.UUID, payload: AlbumInSchema):
+def album_update(
+    request,
+    album_uuid: uuid.UUID,
+    payload: AlbumInSchema,
+    check: bool = None,
+):
     """Update (PATCH) or replace (PUT) an Album."""
     album = get_object_or_404(Album, uuid=album_uuid)
     if not request.user.has_perm("change_album", album):
+        # no permission
         return 403, {"message": "Permission denied."}
-    # include defaults for optional fields absent in api call?
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
     if request.method == "PATCH":
-        # we do not want defaults for absent fields
-        exclude_unset = True
+        # we are updating the object, we do not want defaults for absent fields
+        data = payload.dict(exclude_unset=True)
+        # handle the m2m seperate
+        del data["files"]
+        Album.objects.filter(uuid=album.uuid).update(**data)
+        album.refresh_from_db()
     else:
-        # we want defaults for absent fields
-        exclude_unset = False
-    # loop over and set values, treat m2m special
-    for attr, value in payload.dict(exclude_unset=exclude_unset).items():
-        if attr == "files":
-            # use .set() to save the m2m
-            album.files.set(value)
-        else:
-            setattr(album, attr, value)
-    album.save()
+        # we are replacing the object, we do want defaults for absent fields
+        for attr, value in payload.dict(exclude_unset=False).items():
+            if attr == "files":
+                # handle the m2m seperate
+                continue
+            else:
+                setattr(album, attr, value)
+        album.save()
+    if "files" in payload.dict():
+        album.files.set(payload.dict()["files"])
     return album
 
 
 @router.delete(
     "/{album_uuid}/",
-    response={204: None, 403: MessageSchema, 404: MessageSchema},
+    response={202: MessageSchema, 204: None, 403: MessageSchema, 404: MessageSchema},
     summary="Delete an album.",
 )
-def album_delete(request, album_uuid: uuid.UUID):
+def album_delete(request, album_uuid: uuid.UUID, check: bool = None):
     album = get_object_or_404(Album, uuid=album_uuid)
     if not request.user.has_perm("delete_album", album):
+        # no permission
         return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
     album.delete()
     return 204, None
