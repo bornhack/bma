@@ -4,6 +4,6 @@ codecov==2.1.12
 coverage==6.5.0
 django-debug-toolbar==3.7.0
 factory-boy==3.2.1
-flake8==5.0.4
+flake8==6.0.0
 isort==5.10.1
 pre-commit==2.20.0
