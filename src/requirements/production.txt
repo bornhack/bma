@@ -11,7 +11,7 @@ django-polymorphic==3.1.0
 django-taggit==3.0.0
 environs[django]==9.5.0
 fontawesomefree==6.2.0
-orjson==3.8.1
+orjson==3.8.3
 Pillow==9.3.0
 psycopg2-binary==2.9.5
 python-magic==0.4.27
