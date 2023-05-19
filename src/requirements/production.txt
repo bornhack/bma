@@ -13,5 +13,5 @@ environs[django]==9.5.0
 fontawesomefree==6.3.0
 orjson==3.8.12
 Pillow==9.3.0
-psycopg2-binary==2.9.5
+psycopg2-binary==2.9.6
 python-magic==0.4.27
