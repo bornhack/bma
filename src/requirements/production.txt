@@ -10,7 +10,7 @@ django-oauth-toolkit==2.2.0
 django-polymorphic==3.1.0
 django-taggit==3.1.0
 environs[django]==9.5.0
-fontawesomefree==6.3.0
+fontawesomefree==6.4.0
 orjson==3.8.12
 Pillow==9.3.0
 psycopg2-binary==2.9.5
