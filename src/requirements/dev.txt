@@ -1,5 +1,5 @@
 -r production.txt
-black==22.10.0
+black==23.7.0
 coverage==7.2.5
 django-debug-toolbar==3.8.1
 factory-boy==3.2.1
