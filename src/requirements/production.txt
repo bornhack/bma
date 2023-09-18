@@ -6,7 +6,7 @@ django-guardian==2.4.0
 django-htmx==1.13.0
 django-imagekit==4.1.0
 django-ninja==0.22.2
-django-oauth-toolkit==2.2.0
+django-oauth-toolkit==2.3.0
 django-polymorphic==3.1.0
 django-taggit==4.0.0
 environs[django]==9.5.0
