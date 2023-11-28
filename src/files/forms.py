@@ -4,7 +4,7 @@ from .models import BaseFile
 
 
 class UploadForm(forms.ModelForm):
-    files = forms.FileField(widget=forms.ClearableFileInput(attrs={"multiple": True}))
+    files = forms.FileField(widget=forms.ClearableFileInput())
 
     class Meta:
         model = BaseFile
