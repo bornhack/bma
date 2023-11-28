@@ -1,5 +1,5 @@
 dealer==2.1.0
-Django==4.1.10
+Django==4.2.7
 django-allauth==0.54.0
 django-bootstrap5==23.3
 django-guardian==2.4.0
