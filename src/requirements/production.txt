@@ -8,7 +8,7 @@ django-imagekit==4.1.0
 django-ninja==0.22.2
 django-oauth-toolkit==2.3.0
 django-polymorphic==3.1.0
-django-taggit==4.0.0
+django-taggit==5.0.1
 environs[django]==9.5.0
 fontawesomefree==6.4.2
 orjson==3.9.10
