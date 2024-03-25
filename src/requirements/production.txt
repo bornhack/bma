@@ -1,6 +1,6 @@
 dealer==2.1.0
 Django==5.0.3
-django-allauth==0.58.2
+django-allauth==0.61.1
 django-bootstrap5==23.3
 django-guardian==2.4.0
 django-htmx==1.17.2
