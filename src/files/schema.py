@@ -1,4 +1,7 @@
 import os
+from utils.schema import RequestMetadataSchema
+from django.utils import timezone
+from guardian.shortcuts import get_perms, get_user_perms, get_group_perms
 import uuid
 from pathlib import Path
 from typing import List
@@ -11,12 +14,14 @@ from ninja import Schema
 from .models import FileTypeChoices
 from .models import LicenseChoices
 from .models import StatusChoices
-from files.models import BaseFile
-from utils.schema import ListFilters
-from utils.schema import SortingChoices
+from files.models import BaseFile, StatusChoices
+from utils.filters import SortingChoices
+from utils.schema import ApiMessageSchema, ApiResponseSchema, ObjectPermissionSchema
+from utils.permissions import get_object_permissions_schema
+from utils.request import context_request
 
 
-class UploadMetadata(ModelSchema):
+class UploadRequestSchema(ModelSchema):
     """File metatata."""
 
     license: LicenseChoices
@@ -37,14 +42,44 @@ class UploadMetadata(ModelSchema):
         ]
 
 
-class FileOutSchema(ModelSchema):
+class FileUpdateRequestSchema(ModelSchema):
+    title: Optional[str] = ""
+    description: Optional[str] = ""
+    source: Optional[str] = ""
+    license: Optional[str] = ""
+    attribution: Optional[str] = ""
+    thumbnail_url: Optional[str] = ""
+
+    class Config:
+        model = BaseFile
+        model_fields = [
+            "title",
+            "description",
+            "source",
+            "license",
+            "attribution",
+            "thumbnail_url",
+        ]
+
+
+class MultipleFileRequestSchema(Schema):
+    """The schema used for requests involving multiple files."""
+    files: List[uuid.UUID]
+
+
+"""Response schemas below here."""
+
+
+class FileResponseSchema(ModelSchema):
     albums: List[uuid.UUID] = []
     filename: str
     links: dict
+    filetype: str
     filetype_icon: str
+    status: str
     status_icon: str
     size_bytes: int
-    filetype: str
+    permissions: ObjectPermissionSchema
 
     class Config:
         model = BaseFile
@@ -63,19 +98,23 @@ class FileOutSchema(ModelSchema):
             "thumbnail_url",
         ]
 
-    def resolve_albums(self, obj):
+    @staticmethod
+    def resolve_albums(obj, request):
         return [str(x) for x in obj.albums.values_list("uuid", flat=True)]
 
-    def resolve_filename(self, obj):
+    @staticmethod
+    def resolve_filename(obj, request):
         return Path(obj.original.path).name
 
-    def resolve_size_bytes(self, obj):
+    @staticmethod
+    def resolve_size_bytes(obj, request):
         if os.path.exists(obj.original.path):
             return obj.original.size
         else:
             return 0
 
-    def resolve_links(self, obj):
+    @staticmethod
+    def resolve_links(obj, request):
         links = {
             "self": reverse("api-v1-json:file_get", kwargs={"file_uuid": obj.uuid}),
             "approve": reverse(
@@ -112,40 +151,20 @@ class FileOutSchema(ModelSchema):
                 pass
         return links
 
+    @staticmethod
+    def resolve_status(obj, request):
+        return StatusChoices[obj.status].label
 
-class FileUpdateSchema(ModelSchema):
-    title: Optional[str] = ""
-    description: Optional[str] = ""
-    source: Optional[str] = ""
-    license: Optional[str] = ""
-    attribution: Optional[str] = ""
-    thumbnail_url: Optional[str] = ""
-
-    class Config:
-        model = BaseFile
-        model_fields = [
-            "title",
-            "description",
-            "source",
-            "license",
-            "attribution",
-            "thumbnail_url",
-        ]
+    @staticmethod
+    def resolve_permissions(obj, request):
+        return get_object_permissions_schema(obj, request)
 
 
-class FileFilters(ListFilters):
-    """The filters used for the file_list endpoint."""
-
-    sorting: SortingChoices = None
-    albums: List[uuid.UUID] = None
-    statuses: List[StatusChoices] = None
-    owners: List[uuid.UUID] = None
-    licenses: List[LicenseChoices] = None
-    filetypes: List[FileTypeChoices] = None
-    size: int = None
-    size_lt: int = None
-    size_gt: int = None
+class SingleFileResponseSchema(ApiResponseSchema):
+    """The schema used to return a response with a single file object."""
+    bma_response: FileResponseSchema
 
 
-class FileListSchema(Schema):
-    files: List[uuid.UUID]
+class MultipleFileResponseSchema(ApiResponseSchema):
+    """The schema used to return a response with multiple file objects."""
+    bma_response: List[FileResponseSchema]

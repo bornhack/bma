@@ -1,5 +1,5 @@
 from ninja.operation import PathView
-
+from .request import context_request
 
 class ExemptOauthFromCSRFMiddleware:
     """This middleware disables CSRF auth for non-session authed requests for Ninja views.
@@ -36,3 +36,19 @@ class ExemptOauthFromCSRFMiddleware:
         if isinstance(klass, PathView):
             # disable CSRF check for this request
             request._dont_enforce_csrf_checks = True
+
+
+class RequestContextVarMiddleware:
+    """This middleware saves the current request object in a ContextVar so it can be accessed from anywhere."""
+
+    def __init__(self, get_response):
+        """Boilerplate."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """Boilerplate."""
+        return self.get_response(request)
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        """Save the current request in the context_request ContextVar."""
+        context_request.set(request)

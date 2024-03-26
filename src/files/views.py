@@ -2,6 +2,7 @@ import logging
 import re
 from pathlib import Path
 from urllib.parse import quote
+from users.models import User
 
 from django.conf import settings
 from django.contrib import messages
@@ -141,13 +142,9 @@ def bma_media_view(request, path, accel):
             )
             raise Http404()
 
-        if dbfile.status != "PUBLISHED":
-            # file is not published but we might still want to show it
-            if dbfile.owner != request.user and not request.user.has_perm(
-                "files.view_basefile",
-                dbfile,
-            ):
-                raise Http404()
+        if not request.user.has_perm("files.view_basefile", dbfile) and not User.get_anonymous().has_perm("files.view_basefile", dbfile):
+            # neither the current user nor the anonymous user has permissions to view this file
+            raise Http404()
 
         # check if the file exists in the filesystem
         if not Path(dbfile.original.path).exists():

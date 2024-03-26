@@ -94,9 +94,9 @@
                 ]),
                 // footer
                 $this.createNode("div", ["file-info", "card-footer", "p-1", "d-inline-flex", "align-items-center", "justify-content-evenly"], {}, [
-                    $this.createNode("i", "filetype"),
-                    $this.createNode("i", "status"),
-                    $this.createNode("span", ["badge", "text-bg-dark"]),
+                    $this.createNode("i", "filetype", {"data-toggle": "tooltip", "data-placement": "bottom"}),
+                    $this.createNode("i", "status", {"data-toggle": "tooltip", "data-placement": "bottom"}),
+                    $this.createNode("span", ["badge", "text-bg-dark"], {"data-toggle": "tooltip", "data-placement": "bottom"}),
                 ]),
             ]);
 
@@ -163,6 +163,7 @@
         $this.updateSummary = async function(e, selected, unselected) {
             selected = $this.container.querySelectorAll("div.file.ui-selected");
             if (selected.length) {
+                // at least 1 file is selected
                 let size = 0;
                 let counts = {
                     "picture": 0,
@@ -180,11 +181,13 @@
                     button.removeAttribute("disabled");
                 };
             } else {
+                // selection is empty
                 $this.container.querySelector("div.selection > .card-body").innerHTML = "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents.";
                 let buttons = $this.container.querySelectorAll("div.btn-group.actions > button");
                 for (const button of buttons) {
                     button.setAttribute("disabled", "");
                 };
+                $('[data-toggle="tooltip"]').tooltip("hide");
             };
         };
 
@@ -287,16 +290,16 @@
             const selection = $this.createNode("div", ["card", "border", "me-2", "selection"], {}, [
                 $this.createNode("div", "card-header", {"innerHTML": "Selection"}, [
                     $this.createNode("div", ["btn-group", "me-2", "actions", "float-end"], {}, [
-                        $this.createNode("button", ["btn", "btn-success"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Approve Files", "disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-success"], {"data-toggle": "tooltip", "title": "Approve Files", "data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Approve Files", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-check"]),
                         ]),
-                        $this.createNode("button", ["btn", "btn-success"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Publish Files", "disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-success"], {"data-toggle": "tooltip", "title": "Publish Files", "data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Publish Files", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-cloud-arrow-up"]),
                         ]),
-                        $this.createNode("button", ["btn", "btn-danger"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Unpublish Files", "disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-danger"], {"data-toggle": "tooltip", "title": "Unpublish Files", "data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Unpublish Files", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-cloud-arrow-down"]),
                         ]),
-                        $this.createNode("button", ["btn", "btn-primary"], {"data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Add Files To Album", "disabled": "disabled"}, [
+                        $this.createNode("button", ["btn", "btn-primary"], {"data-toggle": "tooltip", "title": "Add Files To Album", "data-bs-toggle": "modal", "data-bs-target": "#" + $this.prefix + "bma-modal", "data-bma-action": "Add Files To Album", "disabled": "disabled"}, [
                             $this.createNode("i", ["fa-solid", "fa-plus"]),
                         ]),
                     ]),
@@ -311,6 +314,9 @@
             // ok, add to the container
             $this.container.append(outer);
 
+            // enable tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
             // create action modal
             $this.actionmodal = $this.createNode("div", ["modal"], {"id": $this.prefix + "bma-modal", "tabindex": "-1"});
             $this.populateActionModal();
@@ -322,13 +328,16 @@
             };
 
             $this.actionmodal.addEventListener('show.bs.modal', async event => {
-                const button = event.relatedTarget
-                const action = button.getAttribute('data-bma-action')
+                $('[data-toggle="tooltip"]').tooltip("hide");
+                const button = event.relatedTarget;
+                // TODO blur() doesn't work, button still has focus after modal is hidden
+                button.blur();
+                const action = button.getAttribute('data-bma-action');
                 const selected = $this.container.querySelectorAll("div.file.ui-selected");
                 if (!selected.length) {
                     throw new Error("No files selected!");
                 };
-                const filelist = $this.createNode("ul")
+                const filelist = $this.createNode("ul");
                 const uuids = [];
                 selected.forEach(file => {
                     filelist.appendChild($this.createNode("li", [], {"textContent": file.dataset.bmaFileName}));
@@ -419,7 +428,6 @@
             });
         };
 
-
         // enable the filter form
         $this.enableForm = function() {
             $this.container.querySelectorAll("form > div > select, form > div > input").forEach(function(e) {
@@ -447,7 +455,8 @@
 
             // get files from server
             $this.updateStatus("Getting data...", true);
-            let data = await $this.getFiles();
+            let response = await $this.getFiles();
+            let data = response.bma_response;
             $this.updateStatus("Processing " + data.length + " files...", true);
 
             // remove files that are in the filebrowser but not in the json
@@ -455,7 +464,10 @@
                 $this.updateStatus("Removing files...", true);
                 let uuids = [];
                 let file;
+                //console.log(typeof(data));
+                //console.log(data);
                 for (file in data) {
+                    console.log("processing file " + file);
                     uuids.push(data[file]["uuid"]);
                 };
                 let files = outer.querySelectorAll("div.file");
@@ -491,20 +503,34 @@
                 };
                 let template = $this.getFileTemplate();
                 let clone = template.cloneNode(true);
+                // set title and thumbnail
                 clone.querySelector(".title").innerHTML = data[file]["title"];
                 clone.querySelector("img").src = data[file]["thumbnail_url"];
-                clone.querySelector(".card-footer.file-info > i.filetype").className = data[file]["filetype_icon"];
-                clone.querySelector(".card-footer.file-info > i.status").className = "status " + data[file]["status_icon"];
-                clone.querySelector(".card-footer.file-info > span").innerHTML = data[file]["albums"].length;
+                // set footer icon for filetype
+                let fi = clone.querySelector(".card-footer.file-info > i.filetype");
+                fi.className = data[file]["filetype_icon"];
+                fi.setAttribute("title", data[file]["filetype"]);
+                // set footer icon for file status
+                fi = clone.querySelector(".card-footer.file-info > i.status");
+                fi.className = "status " + data[file]["status_icon"];
+                fi.setAttribute("title", data[file]["status"]);
+                // set footer icon for album count
+                fi = clone.querySelector(".card-footer.file-info > span");
+                fi.innerHTML = data[file]["albums"].length;
+                fi.setAttribute("title", "This " + data[file]["filetype"] + " is in " + data[file]["albums"].length + " albums");
+                // add file metadata attributes
                 clone.dataset.bmaFileUuid=data[file]["uuid"];
                 clone.dataset.bmaFileLastUpdate=data[file]["updated"];
                 clone.dataset.bmaFileSize=data[file]["size_bytes"];
                 clone.dataset.bmaFileType=data[file]["filetype"];
                 clone.dataset.bmaFileName=data[file]["title"];
+                clone.dataset.bmaFilePermissions=data[file]["effective_permissions"];
                 deck.append(clone);
                 // add this file to selectable
                 $this.container._selectable.add(clone);
             };
+            // update all the footer icon tooltips
+            $('[data-toggle="tooltip"]').tooltip();
 
             $this.container.querySelector("div.totals > .card-body").innerHTML = size + " bytes in " + data.length + " files.<br>" + counts["picture"] + " pictures, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
             $this.updateSummary();

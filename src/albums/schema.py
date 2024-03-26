@@ -7,29 +7,28 @@ from ninja import ModelSchema
 from ninja import Schema
 
 from albums.models import Album
-from utils.schema import ListFilters
+from utils.schema import ApiMessageSchema, ApiResponseSchema, ObjectPermissionSchema
 
 
-class AlbumInSchema(ModelSchema):
-    """Schema for Album create operations."""
+class AlbumRequestSchema(ModelSchema):
+    """Schema for Album create or update operations."""
 
     title: str = ""
     description: str = ""
-    files: List[str] = []
+    files: List[uuid.UUID] = []
 
     class Config:
         model = Album
         model_fields = ["title", "description", "files"]
 
 
-class LinkSchema(Schema):
-    self: str = None
+"""Response schemas below here."""
 
 
-class AlbumOutSchema(ModelSchema):
-    """Schema for outputting Albums in list/detail operations."""
+class AlbumResponseSchema(ModelSchema):
+    """Schema for outputting Albums in API operations."""
 
-    links: LinkSchema
+    links: dict
 
     class Config:
         model = Album
@@ -43,13 +42,18 @@ class AlbumOutSchema(ModelSchema):
             "files",
         ]
 
-    def resolve_links(self, obj):
+    @staticmethod
+    def resolve_links(obj, request):
         return {
             "self": reverse("api-v1-json:album_get", kwargs={"album_uuid": obj.uuid}),
         }
 
 
-class AlbumFilters(ListFilters):
-    """The filters used for the album_list endpoint."""
+class SingleAlbumResponseSchema(ApiResponseSchema):
+    """The schema used to return a response with a single album object."""
+    response: AlbumResponseSchema
 
-    files: List[uuid.UUID] = Field(None, alias="files")
+
+class MultipleAlbumResponseSchema(ApiResponseSchema):
+    """The schema used to return a response with multiple album objects."""
+    response: List[AlbumResponseSchema]

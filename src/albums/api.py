@@ -11,10 +11,10 @@ from ninja import Query
 from ninja import Router
 
 from .models import Album
-from .schema import AlbumFilters
-from .schema import AlbumInSchema
-from .schema import AlbumOutSchema
-from utils.schema import MessageSchema
+from .filters import AlbumFilters
+from .schema import AlbumRequestSchema
+from .schema import SingleAlbumResponseSchema, MultipleAlbumResponseSchema
+from utils.schema import ApiMessageSchema
 
 logger = logging.getLogger("bma")
 
@@ -27,10 +27,10 @@ query = Query(...)
 
 @router.post(
     "/albums/",
-    response={201: AlbumOutSchema},
+    response={201: SingleAlbumResponseSchema},
     summary="Create a new album",
 )
-def album_create(request, payload: AlbumInSchema):
+def album_create(request, payload: AlbumRequestSchema):
     """Use this endpoint to create a new album, with or without files."""
     album = Album()
     for k, v in payload.dict().items():
@@ -51,7 +51,7 @@ def album_create(request, payload: AlbumInSchema):
 
 @router.get(
     "/{album_uuid}/",
-    response={200: AlbumOutSchema, 404: MessageSchema},
+    response={200: SingleAlbumResponseSchema, 404: ApiMessageSchema},
     summary="Return an album.",
     auth=None,
 )
@@ -62,7 +62,7 @@ def album_get(request, album_uuid: uuid.UUID):
 
 @router.get(
     "/",
-    response={200: List[AlbumOutSchema]},
+    response={200: MultipleAlbumResponseSchema},
     summary="Return a list of albums.",
     auth=None,
 )
@@ -100,10 +100,10 @@ def album_list(request, filters: AlbumFilters = query):
 @router.put(
     "/{album_uuid}/",
     response={
-        200: AlbumOutSchema,
-        202: MessageSchema,
-        403: MessageSchema,
-        404: MessageSchema,
+        200: SingleAlbumResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
     },
     operation_id="albums_api_album_update_put",
     summary="Replace an album.",
@@ -111,10 +111,10 @@ def album_list(request, filters: AlbumFilters = query):
 @router.patch(
     "/{album_uuid}/",
     response={
-        200: AlbumOutSchema,
-        202: MessageSchema,
-        403: MessageSchema,
-        404: MessageSchema,
+        200: SingleAlbumResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
     },
     operation_id="albums_api_album_update_patch",
     summary="Update an album.",
@@ -122,7 +122,7 @@ def album_list(request, filters: AlbumFilters = query):
 def album_update(
     request,
     album_uuid: uuid.UUID,
-    payload: AlbumInSchema,
+    payload: AlbumRequestSchema,
     check: bool = None,
 ):
     """Update (PATCH) or replace (PUT) an Album."""
@@ -156,7 +156,7 @@ def album_update(
 
 @router.delete(
     "/{album_uuid}/",
-    response={202: MessageSchema, 204: None, 403: MessageSchema, 404: MessageSchema},
+    response={202: ApiMessageSchema, 204: None, 403: ApiMessageSchema, 404: ApiMessageSchema},
     summary="Delete an album.",
 )
 def album_delete(request, album_uuid: uuid.UUID, check: bool = None):

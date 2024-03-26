@@ -18,6 +18,5 @@ class VideoAdmin(admin.ModelAdmin):
         "status",
         "original_filename",
         "original",
-        "tags",
     ]
     list_filter = ["tags"]

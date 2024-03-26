@@ -56,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    "utils.middleware.RequestContextVarMiddleware",
     "django.middleware.common.CommonMiddleware",
     "utils.middleware.ExemptOauthFromCSRFMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -204,6 +205,7 @@ LOGGING = {
 GUARDIAN_GET_CONTENT_TYPE = (
     "polymorphic.contrib.guardian.get_polymorphic_base_content_type"
 )
+#GUARDIAN_AUTO_PREFETCH = True
 
 # django-imagekit settings
 IMAGEKIT_CACHEFILE_DIR = ""

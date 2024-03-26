@@ -1,31 +1,44 @@
 from django.db import models
-from ninja import Schema
+from ninja import Schema, ModelSchema
+from typing import Union, Optional, Any, List
+import datetime
+from django.utils import timezone
+from .request import context_request
+
+class RequestMetadataSchema(Schema):
+    """The schema used for the request object in the root of all responses."""
+    request_time: datetime.datetime
+    username: Optional[str]
+    client_ip: Optional[str]
 
 
-class SortingChoices(models.TextChoices):
-    """The sorting options."""
+class ApiMessageSchema(Schema):
+    """The schema used for all API responses which are just messages."""
 
-    title_asc = ("title_asc", "Title (ascending)")
-    title_desc = ("title_desc", "Title (descending)")
-    description_asc = ("description_asc", "Description (ascending)")
-    description_desc = ("description_desc", "Description (descending)")
-    created_asc = ("created_asc", "Created (ascending)")
-    created_desc = ("created_desc", "Created (descending)")
-    updated_asc = ("updated_asc", "Updated (ascending)")
-    updated_desc = ("updated_desc", "Updated (descending)")
-
-
-class ListFilters(Schema):
-    """Filters shared between the file_list and album_list endpoints."""
-
-    limit: int = 100
-    offset: int = None
-    search: str = None
-    sorting: SortingChoices = None
-
-
-class MessageSchema(Schema):
-    """The schema used for all API messages."""
-
-    message: str
+    bma_request: RequestMetadataSchema
+    message: str = None
     details: dict = None
+
+    @staticmethod
+    def resolve_bma_request(obj, context):
+        request = context["request"]
+        username = request.user.username
+        ip = request.META["REMOTE_ADDR"]
+        return RequestMetadataSchema(
+            request_time=timezone.now(),
+            username=username,
+            # TODO proxy x-forwarded-for etc support
+            client_ip=ip,
+        )
+
+
+class ApiResponseSchema(ApiMessageSchema, Schema):
+    """The schema used for all API responses."""
+    bma_response: Optional[Any]
+
+
+class ObjectPermissionSchema(Schema):
+    """The schema used to include current users permissions for objects."""
+    user_permissions: List[str]
+    group_permissions: List[str]
+    effective_permissions: List[str]

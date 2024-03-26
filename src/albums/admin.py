@@ -12,6 +12,5 @@ class AlbumAdmin(admin.ModelAdmin):
         "updated",
         "title",
         "description",
-        "tags",
     ]
     list_filter = ["owner"]
