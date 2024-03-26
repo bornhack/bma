@@ -9,7 +9,7 @@ django-ninja==1.1.0
 django-oauth-toolkit==2.3.0
 django-polymorphic==3.1.0
 django-taggit==5.0.1
-environs[django]==9.5.0
+environs[django]==11.0.0
 fontawesomefree==6.5.1
 orjson==3.9.15
 Pillow==10.2.0
