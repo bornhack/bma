@@ -1,5 +1,5 @@
 dealer==2.1.0
-Django==5.0.3
+Django==5.0.4
 django-allauth==0.61.1
 django-bootstrap5==23.4
 django-cors-headers==4.3.1
