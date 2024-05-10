@@ -8,10 +8,17 @@ from .models import BaseFile
 class UploadForm(forms.ModelForm[BaseFile]):
     """The file upload form."""
 
-    files = MultipleFileField()  # type: ignore[assignment]
+    files = MultipleFileField(label="Select file(s) *")  # type: ignore[assignment]
 
     class Meta:
         """Set model and fields."""
 
         model = BaseFile
         fields = ("license", "attribution")
+        labels = {
+            "license": "License *",
+            "attribution": "Attribution *",
+        }
+        widgets = {
+            "attribution": forms.TextInput(attrs={"placeholder": "Attribution"}),
+        }

@@ -156,7 +156,7 @@ class BaseFile(PolymorphicModel):
         max_length=255,
         choices=LicenseChoices.choices,
         blank=False,
-        help_text="The license for this file. The license can not be changed after the file is uploaded.",
+        help_text="The license for this file. The license can not be changed after the file(s) is uploaded.",
     )
 
     attribution = models.CharField(
