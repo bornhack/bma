@@ -236,7 +236,7 @@ BOOTSTRAP5 = {
         "crossorigin": "anonymous",
     },
     "javascript_url": {
-        "url": "/static/js/vendor/bootstrap-v5.2.3.min.js",
+        "url": "/static/js/vendor/bootstrap-v5.2.3.bundle.min.js",
         "integrity": "sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4",
         "crossorigin": "anonymous",
     },
