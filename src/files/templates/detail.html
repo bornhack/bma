@@ -14,7 +14,7 @@
       </div>
       <div class="row">
         <div class="col">
-        {% if object.medium.url %}
+        {% if object.medium.url is defined %}
           <img src="{{ object.medium.url }}" class="w-100"/>
         {% else %}
           <i class="fa-regular fa-eye-slash fa-9x"></i>
