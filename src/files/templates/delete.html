@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% block title %}File details{% endblock title %}
+
+{% block content %}
+
+  <div class="row d-flex justify-content-center">
+    <div class="col-8">
+
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Delete file</h5>
+        </div>
+        <div class="card-body">
+          <div class="row d-flex justify-content-center">
+            <div class="col-8 mt-3 mb-3">
+              <div class="row mb-5">
+                <div class="col text-center">
+                {% if object.small.url %}
+                  <img src="{{ object.small.url }}" class="w-100"/>
+                {% else %}
+                  <i class="fa-regular fa-eye-slash fa-9x"></i>
+                  <p class="lead">No preview yet</p>
+                {% endif %}
+                </div>
+              </div>
+              <div class="row d-flex justify-content-center">
+                <div class="col">
+                    <form method="post">{% csrf_token %}
+                        <p>Are you sure you want to delete "{{ object.title }}"?</p>
+                        {{ form }}
+                        <div class="d-grid gap-2">
+                          <input class="btn btn-danger" type="submit" value="Delete file">
+                          <a href="{% url 'files:detail' pk=object.uuid %}" class="btn btn-primary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+{% endblock content %}

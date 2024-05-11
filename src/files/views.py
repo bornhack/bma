@@ -12,7 +12,8 @@ from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpRequest
 from django.http import HttpResponse
-from django.views.generic import DetailView
+from django.urls import reverse_lazy
+from django.views.generic import DeleteView, DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
 from django_filters.views import FilterView
@@ -56,6 +57,22 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
 
     template_name = "detail.html"
     model = BaseFile
+
+    def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
+        """Check permissions before returning the file."""
+        basefile = super().get_object(queryset=queryset)
+        if not self.request.user.has_perm("files.view_basefile", basefile) and basefile.status != "PUBLISHED":
+            # file is not PUBLISHED, and the current user does not have permissions to view this file
+            raise PermissionDenied
+        return basefile  # type: ignore[no-any-return]
+
+
+class FileDeleteView(DeleteView):  # type: ignore[type-arg]
+    """File delete view. Delete a single file."""
+
+    template_name = "delete.html"
+    model = BaseFile
+    success_url = reverse_lazy('files:file_list')
 
     def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
