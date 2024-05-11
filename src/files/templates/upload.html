@@ -11,7 +11,7 @@
         </div>
         <div class="card-body">
           <div class="row">
-            <div class="col">
+            <div class="col mt-3">
                 <p class="fs-3">Metadata</p>
                 {% csrf_token %}
                 {% for field in form %}
@@ -22,7 +22,7 @@
             </div>
           </div>
           <div class="row">
-            <div class="col">
+            <div class="col mt-3">
                 <p class="fs-3">Files</p>
                 {% csrf_token %}
                 {% for field in form %}
@@ -40,7 +40,7 @@
           </div>
         </div>
         <div class="card-footer">
-            <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload Selected Files</button>
+            <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload files</button>
         </div>
       </div>
     </div>
