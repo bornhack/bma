@@ -18,6 +18,13 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownActionsButton1">
               <li><a class="dropdown-item" href="#">[Add to album]</a></li>
+              {% if request.user == object.uploader %}
+                {% if object.status == "UNPUBLISHED" %}
+                <li><a class="dropdown-item" href="#">Publish</a></li>
+                {% elif object.status == "PUBLISHED" %}
+                <li><a class="dropdown-item" href="#">Unpublish</a></li>
+                {% endif %}
+              {% endif %}
               <li><a class="dropdown-item" href="#">Delete</a></li>
             </ul>
           </div>
@@ -109,8 +116,11 @@
                   <h5 class="card-title">Tags</h5>
                 </div>
                 <div class="card-body" style="max-height:25em; overflow-y:auto;">
-                  <p>List all tags..</p>
+                  {% if object.tags|length > 0 %}
                   <p>{{ object.tags }}</p>
+                  {% else %}
+                  <p>No tags yet. How about adding one?</p>
+                  {% endif %}
                 </div>
               </div>
             </div>
