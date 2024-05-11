@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% block title %}File details{% endblock title %}
+
+{% block content %}
+
+  <div class="row d-flex justify-content-center">
+    <div class="col-8">
+
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Update information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row d-flex justify-content-center">
+            <div class="col-8 mt-3 mb-3">
+              <div class="row d-flex justify-content-center">
+                <div class="col">
+                    <form method="post">{% csrf_token %}
+                          {% for field in form %}
+                              {% bootstrap_field field %}
+                          {% endfor %}
+                        <div class="d-grid gap-2">
+                          <input class="btn btn-success" type="submit" value="Update file">
+                          <a href="{% url 'files:detail' pk=object.uuid %}" class="btn btn-primary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+{% endblock content %}

@@ -58,7 +58,7 @@
                   <h5 class="card-title">Information</h5>
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                  <a href="#" class="text-muted">
+                  <a href="{% url 'files:update' pk=object.uuid %}" class="text-muted">
                     <i class="fa-solid fa-pen-to-square"></i>
                     <small>Edit</small>
                   </a>

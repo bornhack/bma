@@ -15,3 +15,13 @@ class UploadForm(forms.ModelForm[BaseFile]):
 
         model = BaseFile
         fields = ("license", "attribution")
+
+
+class UpdateForm(forms.ModelForm[BaseFile]):
+    """The file update form."""
+
+    class Meta:
+        """Set model and fields."""
+
+        model = BaseFile
+        fields = ("title", "attribution", "description")

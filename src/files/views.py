@@ -13,14 +13,17 @@ from django.http import Http404
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView, DetailView
+from django.views.generic import DeleteView
+from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
+from django.views.generic import UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from guardian.shortcuts import get_objects_for_user
 
 from .filters import FileFilter
+from .forms import UpdateForm
 from .forms import UploadForm
 from .models import BaseFile
 from .tables import FileTable
@@ -72,12 +75,28 @@ class FileDeleteView(DeleteView):  # type: ignore[type-arg]
 
     template_name = "delete.html"
     model = BaseFile
-    success_url = reverse_lazy('files:file_list')
+    success_url = reverse_lazy("files:file_list")
 
     def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
         basefile = super().get_object(queryset=queryset)
-        if not self.request.user.has_perm("files.view_basefile", basefile) and basefile.status != "PUBLISHED":
+        if not self.request.user.has_perm("files.delete_basefile", basefile):
+            # file is not PUBLISHED, and the current user does not have permissions to view this file
+            raise PermissionDenied
+        return basefile  # type: ignore[no-any-return]
+
+
+class FileUpdateView(UpdateView):  # type: ignore[type-arg]
+    """File update view. Update a single files attributes."""
+
+    template_name = "update.html"
+    model = BaseFile
+    form_class = UpdateForm
+
+    def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
+        """Check permissions before returning the file."""
+        basefile = super().get_object(queryset=queryset)
+        if not self.request.user.has_perm("files.delete_basefile", basefile):
             # file is not PUBLISHED, and the current user does not have permissions to view this file
             raise PermissionDenied
         return basefile  # type: ignore[no-any-return]
