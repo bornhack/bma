@@ -13,9 +13,20 @@ jQuery(document).ready(function () {
 // use global var for the formData objects
 var formdatas = [];
 
+async function enableUploadButton() {
+    // show upload button if required fields are filled
+    let select = document.getElementById("id_license");
+    let license = select.options[select.selectedIndex].value;
+    let attribution = document.getElementById("id_attribution").value;
+    if (license && attribution && formdatas.length) {
+        document.getElementById("btnupload").disabled=false;
+    } else {
+        document.getElementById("btnupload").disabled=true;
+    };
+}
+
 async function UpdateFiles(e) {
     // the file picker was changed
-    document.getElementById("btnupload").disabled=true;
     var filesArr = Array.prototype.slice.call(e.target.files);
     // loop over chosen files and hash each
     // TODO: maybe this needs to be batched to some sensible number of parallels
@@ -33,13 +44,7 @@ async function UpdateFiles(e) {
     UpdatePreviews(formdatas);
 
     // previews might still be loading but maybe the upload is ready to be submitted
-    // show upload button if required fields are filled
-    let select = document.getElementById("id_license");
-    let license = select.options[select.selectedIndex].value;
-    let attribution = document.getElementById("id_attribution").value;
-    if (license && attribution && formdatas.length) {
-        document.getElementById("btnupload").disabled=false;
-    };
+    enableUploadButton();
 }
 
 async function digestDone(f, index, digest) {
@@ -149,8 +154,6 @@ async function UpdateStatus(digest, icon, message) {
 
 async function uploadFiles() {
     console.log("inside uploadFiles()");
-    // disable upload button
-    document.getElementById("btnupload").setAttribute("disabled", "");
     let previews = pw.querySelectorAll(".preview");
     console.log("showing spinners ...");
     // show spinners
