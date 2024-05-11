@@ -16,7 +16,7 @@
             <div class="col-8 mt-3 mb-3">
               <div class="row mb-5">
                 <div class="col text-center">
-                {% if object.small.url %}
+                {% if object.small.url is defined %}
                   <img src="{{ object.small.url }}" class="w-100"/>
                 {% else %}
                   <i class="fa-regular fa-eye-slash fa-9x"></i>
