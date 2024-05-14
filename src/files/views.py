@@ -8,10 +8,12 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
+from django.forms import Form
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpRequest
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
@@ -75,15 +77,13 @@ class FileDeleteView(DeleteView):  # type: ignore[type-arg]
 
     template_name = "delete.html"
     model = BaseFile
-    success_url = reverse_lazy("files:file_list")
 
-    def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
-        """Check permissions before returning the file."""
-        basefile = super().get_object(queryset=queryset)
-        if not self.request.user.has_perm("files.delete_basefile", basefile):
-            # file is not PUBLISHED, and the current user does not have permissions to view this file
+    def form_valid(self, form: Form) -> HttpResponseRedirect:
+        """Check permissions before soft deleting file."""
+        if not self.request.user.has_perm("files.delete_basefile", self.object):
             raise PermissionDenied
-        return basefile  # type: ignore[no-any-return]
+        self.object.update_status(new_status="PENDING_DELETION")
+        return HttpResponseRedirect(reverse_lazy("files:detail", kwargs={"pk": self.object.uuid}))
 
 
 class FileUpdateView(UpdateView):  # type: ignore[type-arg]
@@ -96,8 +96,7 @@ class FileUpdateView(UpdateView):  # type: ignore[type-arg]
     def get_object(self, queryset: QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
         basefile = super().get_object(queryset=queryset)
-        if not self.request.user.has_perm("files.delete_basefile", basefile):
-            # file is not PUBLISHED, and the current user does not have permissions to view this file
+        if not self.request.user.has_perm("files.change_basefile", basefile):
             raise PermissionDenied
         return basefile  # type: ignore[no-any-return]
 

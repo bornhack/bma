@@ -33,21 +33,18 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownActionsButton1">
               <li><a class="dropdown-item" href="#">[Add to album]</a></li>
-              {% if request.user == object.uploader %}
-                {% if object.status == "UNPUBLISHED" %}
+                {% if object.status == "UNPUBLISHED" and perms.files.publish_basefile %}
                 <li><a class="dropdown-item" href="#">Publish</a></li>
-                {% elif object.status == "PUBLISHED" %}
+                {% elif object.status == "PUBLISHED" and perms.files.unpublish_basefile %}
                 <li><a class="dropdown-item" href="#">Unpublish</a></li>
-                {% else %}
-                <li><a class="dropdown-item disabled" href="#">Publish</a></li>
                 {% endif %}
-              {% endif %}
+              {% if perms.files.delete_basefile %}
               <li><a class="dropdown-item" href="{% url 'files:delete' pk=object.uuid %}">Delete</a></li>
+              {% endif %}
             </ul>
           </div>
         </div>
       </div>
-
 
       <div class="row">
         <div class="col mb-3">
@@ -58,10 +55,12 @@
                   <h5 class="card-title">Information</h5>
                 </div>
                 <div class="col-6 d-flex justify-content-end">
+                  {% if perms.files.change_basefile %}
                   <a href="{% url 'files:update' pk=object.uuid %}" class="text-muted">
                     <i class="fa-solid fa-pen-to-square"></i>
                     <small>Edit</small>
                   </a>
+                  {% endif %}
                 </div>
               </div>
             </div>
