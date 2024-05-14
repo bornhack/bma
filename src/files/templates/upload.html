@@ -1,73 +1,56 @@
-{% extends "manage_base.html" %}
+{% extends "base.html" %}
 {% load django_bootstrap5 %}
 {% block title %}Upload Files{% endblock title %}
 
-{% block manage_content %}
-  <h3>Upload Files</h3>
-  <div id="upload-box">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">Upload Metadata</h5>
-          </div>
-          <div class="card-body">
-            <p class="card-text">
-              {% csrf_token %}
-              {% for field in form %}
-                {% if field.name != "files" %}
-                  {% bootstrap_field field %}
-                {% endif %}
-              {% endfor %}
-            </p>
-          </div>
+{% block content %}
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-lg-6 col-sm-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Upload</h5>
         </div>
-      </div>
-      <div class="col">
-        <div class="row">
-          <div class="col">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title">Add Files To Upload</h5>
-              </div>
-              <div class="card-body">
-                <p class="card-text">
-                  {% csrf_token %}
-                  {% for field in form %}
-                    {% if field.name == "files" %}
-                      {% bootstrap_field field %}
-                    {% endif %}
-                  {% endfor %}
-                </p>
-              </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col mt-3">
+                <p class="fs-3">Metadata</p>
+                {% csrf_token %}
+                {% for field in form %}
+                  {% if field.name != "files" %}
+                    {% bootstrap_field field %}
+                  {% endif %}
+                {% endfor %}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mt-3">
+                <p class="fs-3">Files</p>
+                {% csrf_token %}
+                {% for field in form %}
+                  {% if field.name == "files" %}
+                    {% bootstrap_field field %}
+                  {% endif %}
+                {% endfor %}
+                <small class="text-muted">* Required</small>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col">
+              <div id="preview-wrapper" class="row gy-3"></div>
             </div>
           </div>
         </div>
-        <div class="row mt-3">
-          <div class="col">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title">Summary</h5>
-              </div>
-              <div class="card-body">
-                <p class="card-text">
-                  a bunch of files selected, this many bytes, blabla
-                  <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload Selected Files</button>
-                </p>
-              </div>
-            </div>
-          </div>
+        <div class="card-footer">
+            <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload files</button>
         </div>
       </div>
     </div>
-    <hr>
-    <div id="preview-wrapper" class="row gy-4"></div>
   </div>
+
 
   {# the preview template #}
   <template id="preview-template">
-    <div class='col-sm-3 preview'>
-      <div class='card h-100 w-20'>
+    <div class='col-sm-4 preview'>
+      <div class='card h-100'>
         <div class='card-body'>
           <h5 class='card-title'></h5>
           <p class='card-text'></p>
@@ -89,4 +72,4 @@
     </div>
   </template>
 
-{% endblock manage_content %}
+{% endblock content %}
