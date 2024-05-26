@@ -11,13 +11,14 @@ from allauth.socialaccount.providers.oauth2.views import OAuth2LoginView
 from django.conf import settings
 from django.http import HttpRequest
 
-from .provider import BornHackProvider
+from .client import BornHackOAuth2Client
 
 
 class BornHackViewAdapter(OAuth2Adapter):
     """View adapter class for the oauth2_login and oauth2_callback views."""
 
-    provider_id = BornHackProvider.id
+    provider_id = "bornhack"
+    client_class = BornHackOAuth2Client
 
     # Accessed by Django
     access_token_url = f"{settings.OAUTH_SERVER_BASEURL}/o/token/"

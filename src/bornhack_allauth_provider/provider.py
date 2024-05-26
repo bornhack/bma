@@ -1,7 +1,8 @@
 """This module contains the BornHackProvider class and BornHackAccount classes."""
-from allauth.socialaccount import providers
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
+
+from .adapters import BornHackSocialAccountAdapter
 
 
 class BornHackAccount(ProviderAccount):
@@ -18,6 +19,7 @@ class BornHackProvider(OAuth2Provider):
     id = "bornhack"
     name = "BornHack"
     account_class = BornHackAccount
+    oauth2_adapter_class = BornHackSocialAccountAdapter
 
     def extract_uid(self, data: dict[str, dict[str, str]]) -> str:
         """Get user_id from the user object."""
@@ -37,4 +39,4 @@ class BornHackProvider(OAuth2Provider):
         return ["profile:read"]
 
 
-providers.registry.register(BornHackProvider)
+provider_classes = [BornHackProvider]
