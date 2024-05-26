@@ -58,7 +58,11 @@
               <ul class="splide__list">
                 {% for file in object.files.all %}
                 <li class="splide__slide">
+                  {% if file.large_thumbnail.url %}
                   <img src="{{ file.large_thumbnail.url }}" alt="">
+                  {% else %}
+                    <i class="fa-regular fa-eye-slash fa-9x"></i>
+                  {% endif %}
                 </li>
                 {% endfor %}
               </ul>
