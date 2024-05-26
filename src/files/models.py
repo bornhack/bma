@@ -272,12 +272,10 @@ class BaseFile(PolymorphicModel):
                 downloads.update(
                     {
                         "small_thumbnail": self.small_thumbnail.url,
-                        "medium_thumbnail": self.medium_thumbnail.url,
                         "large_thumbnail": self.large_thumbnail.url,
                         "small": self.small.url,
                         "medium": self.medium.url,
                         "large": self.large.url,
-                        "slideshow": self.slideshow.url,
                     }
                 )
         links["downloads"] = downloads

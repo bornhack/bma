@@ -19,44 +19,37 @@ class Picture(BaseFile):  # type: ignore[django-manager-missing]
 
     small_thumbnail = ImageSpecField(
         source="original",
-        processors=[ResizeToFit(100, 100)],
+        processors=[ResizeToFit(150, 150)],
         format="JPEG",
-    )
-
-    medium_thumbnail = ImageSpecField(
-        source="original",
-        processors=[ResizeToFit(200, 200)],
-        format="JPEG",
+        options={"quality": 60},
     )
 
     large_thumbnail = ImageSpecField(
         source="original",
         processors=[ResizeToFit(300, 300)],
         format="JPEG",
+        options={"quality": 60},
     )
 
     small = ImageSpecField(
         source="original",
-        processors=[ResizeToFit(700, 700)],
+        processors=[ResizeToFit(600, 600)],
         format="JPEG",
+        options={"quality": 60},
     )
 
     medium = ImageSpecField(
         source="original",
-        processors=[ResizeToFit(1000, 1000)],
+        processors=[ResizeToFit(1200, 1200)],
         format="JPEG",
+        options={"quality": 60},
     )
 
     large = ImageSpecField(
         source="original",
-        processors=[ResizeToFit(1500, 1500)],
+        processors=[ResizeToFit(2400, 2400)],
         format="JPEG",
-    )
-
-    slideshow = ImageSpecField(
-        source="original",
-        processors=[ResizeToFit(2400, 1600)],
-        format="JPEG",
+        options={"quality": 60},
     )
 
     tags = TaggableManager(
