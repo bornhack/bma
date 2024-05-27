@@ -3,7 +3,7 @@
 {% block title %}Upload Files{% endblock title %}
 
 {% block content %}
-  <div class="row d-flex justify-content-center align-items-center">
+  <div class="row d-flex justify-content-end align-items-start">
     <div class="col-lg-6 col-sm-8">
       <div class="card">
         <div class="card-header">
@@ -41,6 +41,41 @@
         </div>
         <div class="card-footer">
             <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload files</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">License explainer</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col mt-3">
+              <ul>
+                <li>CC0 1.0 Universal</li>
+                <ul>
+                  <li>By marking the work with a CC0 public domain
+                 dedication, the creator is giving up their copyright and allowing reusers to
+                 distribute, remix, adapt, and build upon the material in any medium or format, even
+                 for commercial purposes.</li>
+                </ul>
+                <li>Creative Commons Attribution 4.0 International</li>
+                <ul>
+                  <li>Requires that reusers give credit to the creator. It allows reusers to distribute,
+                 remix, adapt, and build upon the material in any medium or format, even for commercial
+                 purposes.</li>
+                </ul>
+                <li>Creative Commons Attribution-ShareAlike 4.0 International</li>
+                <ul>
+                  <li>Requires that reusers give credit to the creator. It allows reusers to
+                 distribute, remix, adapt, and build upon the material in any medium or format, even
+                 for commercial purposes. If others remix, adapt, or build upon the material, they must
+                 license the modified material under identical terms.</li>
+                </ul>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
