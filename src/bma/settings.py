@@ -157,6 +157,7 @@ MEDIA_URL = "media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Allauth
 # avoid socialaccount_state bug / session cookie name conflicts
 SESSION_COOKIE_NAME = "bma_sessionid"
 SITE_ID = 1
@@ -165,9 +166,11 @@ AUTH_USER_MODEL = "users.User"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_USER_MODEL_EMAIL_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
+SOCIALACCOUNT_ONLY = True
 TAGGIT_CASE_INSENSITIVE = True
 IMAGEKIT_USE_MEMCACHED_SAFE_CACHE_KEY = False
 GALLERY_MANAGER_DEFAULT_PAGINATE_COUNT = 20
