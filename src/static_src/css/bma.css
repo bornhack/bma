@@ -9,3 +9,7 @@ main > .container {
     object-fit: cover;
     text-align: center;
 }
+
+.license-card .card-title {
+  min-height: 2.5em;
+}
