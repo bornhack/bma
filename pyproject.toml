@@ -15,7 +15,7 @@ dependencies = [
     "dealer==2.1.0",
     "demoji==1.1.0",
     "Django==5.0.6",
-    "django-allauth[socialaccount]==0.63.2",
+    "django-allauth[socialaccount]==0.63.3",
     "django-bootstrap5==24.2",
     "django-cors-headers==4.3.1",
     "django-filter==24.2",
