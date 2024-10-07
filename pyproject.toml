@@ -29,7 +29,7 @@ dependencies = [
     "django-tables2==2.7.0",
     "django-taggit==5.0.1",
     "environs[django]==11.0.0",
-    "fontawesomefree==6.5.1",
+    "fontawesomefree==6.6.0",
     "orjson==3.10.5",
     "Pillow==10.4.0",
     "psycopg2-binary==2.9.9",
