@@ -4,18 +4,18 @@ default_language_version:
 exclude: "^.*\b(migrations)\b.*$"
 repos:
   - repo: "https://github.com/adamchainz/django-upgrade"
-    rev: "1.16.0"
+    rev: "1.21.0"
     hooks:
       - id: "django-upgrade"
         args: ['--target-version', '5.0']
   - repo: "https://github.com/astral-sh/ruff-pre-commit"
-    rev: "v0.2.2"
+    rev: "v0.6.9"
     hooks:
       - id: "ruff"
         args: ["--fix"]
       - id: "ruff-format"
   - repo: "https://github.com/pre-commit/mirrors-mypy"
-    rev: 'v1.1.1'
+    rev: 'v1.11.2'
     hooks:
       - id: "mypy"
         exclude: "src/.*/tests.py"
