@@ -11,11 +11,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 
 import django_stubs_ext
+from utils.ninjafix import monkeypatch_ninja_uuid_converter
 
 from .environment_settings import *  # noqa: F403
 
 # intialise django_stubs_ext
 django_stubs_ext.monkeypatch()
+
+# https://github.com/vitalik/django-ninja/issues/1266
+monkeypatch_ninja_uuid_converter()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
