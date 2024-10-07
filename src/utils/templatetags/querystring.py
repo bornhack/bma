@@ -11,7 +11,6 @@ from typing import Any
 from django import template
 from django.http import QueryDict
 from django.template.context import RequestContext
-from django.utils.itercompat import is_iterable
 
 register = template.Library()
 
@@ -43,10 +42,10 @@ def querystring(
         if value is None:
             if key in query_dict:
                 del query_dict[key]
-        elif is_iterable(value) and not isinstance(value, str):
+        elif isinstance(value, Iterable) and not isinstance(value, str):
             query_dict.setlist(key, value)
         else:
-            query_dict[key] = value  # type: ignore[assignment]
+            query_dict[key] = value
     if not query_dict:
         return ""
     query_string = query_dict.urlencode()
