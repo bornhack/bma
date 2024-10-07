@@ -27,6 +27,7 @@ services:
           - BMA_CREATOR_GROUP_NAME=creators
           - BMA_MODERATOR_GROUP_NAME=moderators
           - BMA_CURATOR_GROUP_NAME=curators
+          - BMA_INITIAL_GROUPS=curators
     db:
         image: postgis/postgis:14-3.3-alpine
         environment:
