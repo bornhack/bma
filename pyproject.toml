@@ -14,7 +14,7 @@ classifiers = [
 dependencies = [
     "dealer==2.1.0",
     "demoji==1.1.0",
-    "Django==5.1.1",
+    "Django==5.1.2",
     "django-allauth[socialaccount]==65.0.2",
     "django-bootstrap5==24.3",
     "django-cors-headers==4.4.0",
