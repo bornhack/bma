@@ -10,6 +10,7 @@ services:
         command: python src/manage.py runserver 0.0.0.0:8000
         volumes:
           - ..:/app
+          - ../persist:/persist
         depends_on:
           - db
         environment:
