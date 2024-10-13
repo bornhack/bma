@@ -39,17 +39,17 @@
       <div class="card">
         <h5 class="card-header">Albums</h5>
         <div class="card-body">
-        <div class="lead">Per page:
-        <div class="btn-group" role="group" aria-label="Per page">
-          <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-          <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-          <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
-        </div>
-        </div>
-        {% if request.user.is_curator %}
-        <a href="{% url 'albums:album_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Album</a>
-        {% endif %}
-        {% render_table table %}
+          <div class="lead">Per page:
+            <div class="btn-group" role="group" aria-label="Per page">
+              <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
+              <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
+              <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
+            </div>
+            {% if request.user.is_curator %}
+              <p class="float-end"><a href="{% url 'albums:album_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Album</a></p>
+            {% endif %}
+          </div>
+          {% render_table table %}
         </div>
       </div>
     </div>

@@ -18,14 +18,16 @@
         <div class="card-body">
           <form method="get">
             <div class="row">
-              <div class="btn-group" role="group">
+              <div class="btn-group btn-group-sm" role="group">
                 <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
                 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
               </div>
             </div>
-            {% bootstrap_form filter.form %}
+            <div class="row mt-3">
+              {% bootstrap_form filter.form %}
+            </div>
             <div class="row">
-              <div class="btn-group" role="group">
+              <div class="btn-group btn-group-sm" role="group">
                 <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
                 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
               </div>

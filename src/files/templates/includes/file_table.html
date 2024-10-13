@@ -1,13 +1,13 @@
 {% load querystring %}
-{% load django_bootstrap5 %}
+{% load widget_tweaks %}
 {% load render_table from django_tables2 %}
         <form action="{% url 'files:file_multiple_action' %}" method="POST">
         <div class="row">
           <div class="col">
+            <input type="hidden" name="fromurl" value="{{ request.path }}{% querystring %}"></input>
             <div class="input-group">
               <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
-              <input type="hidden" name="fromurl" value="{{ request.path }}{% querystring %}"></input>
-              {% bootstrap_field file_action_form.action show_label=False %}
+              {% render_field file_action_form.action show_label=False class+="form-select" %}
               <button type="submit" class="btn btn-success">Do it</button>
             </div>
           </div>
