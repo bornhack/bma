@@ -31,7 +31,7 @@ dependencies = [
     "environs[django]==11.0.0",
     "fontawesomefree==6.6.0",
     "orjson==3.10.7",
-    "Pillow==10.4.0",
+    "Pillow==11.0.0",
     "psycopg2-binary==2.9.9",
     "python-magic==0.4.27",
 ]
