@@ -1,0 +1,146 @@
+Dropzone.autoDiscover = false;
+const UC = new UploadClient();
+var dropzone = undefined;
+var ImageEditorModal = undefined;
+var ImageEditor = undefined;
+var ImageEditorOrgFile = undefined;
+tui.usageStatistics = false
+jQuery(document).ready(function () {
+  //Init the editor
+  ImageEditorModal = new bootstrap.Modal(document.getElementById('image-editor-modal'));
+  ImageEditor = new tui.ImageEditor(document.querySelector('#my-image-editor'), {
+    includeUI: {
+      theme: {
+        "common.bi.image": '',
+      },
+    },
+    usageStatistics: false,
+  });
+
+  $('.tui-image-editor-header-buttons').hide();
+  $('.tui-image-editor-header-logo').hide();
+
+  //Bind upload action
+  $('#btnupload').bind('click', () => dropzone.processQueue());
+
+  //Save image from editor
+  $('#editor-save-image').bind('click', () => {
+    const data = ImageEditor.toDataURL();
+    var blob = dataURItoBlob(data);
+    const file = new File([blob], `edited-` + ImageEditorOrgFile.name, {
+      type: "image/jpeg",
+      lastModified: new Date(),
+    });
+    file.upload = {
+      chunked: false,
+    };
+    dropzone.addFile(file);
+    dropzone.emit("addedfiles", dropzone.files);
+    ImageEditorOrgFile = undefined;
+    ImageEditorModal.hide();
+  });
+  $('#editor-save-new-image').bind('click', () => {
+    const data = ImageEditor.toDataURL();
+    var blob = dataURItoBlob(data);
+    const file = new File([blob], `edited-` + ImageEditorOrgFile.name, {
+      type: "image/jpeg",
+      lastModified: new Date(),
+    });
+    file.upload = {
+      chunked: false,
+    };
+    dropzone.addFile(ImageEditorOrgFile);
+    dropzone.addFile(file);
+    dropzone.emit("addedfiles", dropzone.files);
+    ImageEditorOrgFile = undefined;
+    ImageEditorModal.hide();
+  });
+
+  //Init Dropzone
+  dropzone = new Dropzone("#my-dropzone", {
+    url: "/api/v1/json/files/upload/",
+    paramName: "f",
+    autoProcessQueue: false,
+    complete: file => { //Function overwritten to allow for later processing
+      file.previewElement.classList.remove("dz-processing");
+      file.previewElement.classList.remove("dz-complete");
+      file.previewElement.classList.remove("dz-success");
+      file.previewElement.classList.add("dz-processing");
+    },
+  });
+
+  //Event triggered just before starting upload
+  //Add the extra fields here
+  dropzone.on("sending", (_file, _xhr, formData) => {
+    let metadata = {};
+    let license = document.getElementById("id_license");
+    metadata.license = license.options[license.selectedIndex].value;
+    metadata.attribution = document.getElementById("id_attribution").value;
+
+    // TODO: parse tags following the same rules as the default parser in
+    // https://django-taggit.readthedocs.io/en/latest/custom_tagging.html#using-a-custom-tag-string-parser
+    tags = document.getElementById("id_tags").value.trim();
+    if (tags.length > 0) {
+      metadata.tags = document.getElementById("id_tags").value.split(" ");
+    };
+
+    formData.append('metadata', JSON.stringify(metadata));
+  });
+
+  //Event triggered when the file is added
+  dropzone.on("thumbnail", file => {
+    file.previewElement.addEventListener("click", function() {
+      console.log("Starting editor");
+      ImageEditor.loadImageFromURL(file.dataURL,file.name).then( () => {
+        ImageEditor.resetZoom();
+        ImageEditorModal.show();
+        ImageEditor.ui.resizeEditor();
+        ImageEditor.ui.activeMenuEvent();
+        ImageEditor.ui.clearHistory()
+        ImageEditorOrgFile = file;
+        dropzone.removeFile(file);
+      })
+    })
+    formdatas.push(file.name)
+    enableUploadButton();
+  });
+
+  //Event triggered after file is uploaded
+  dropzone.on("success", file => {
+    const resp = JSON.parse(file.xhr.response);
+    const uuid = resp.bma_response.uuid;
+
+    //Queue file for jobs fetching and processing
+    UC.addToQueue(uuid, file);
+
+    //Example how to read exif
+    //UC.exif(file).then(exif => console.log(exif));
+
+    //Make BMA scripts happy
+    const index = formdatas.indexOf(file.name);
+    if (index !== -1) {
+      formdatas.splice(index, 1);
+    }
+    //Trigger BMA script enableUploadButton
+    enableUploadButton();
+  });
+
+  //Event triggered after its done uploading a batch
+  dropzone.on("complete", _file => {
+    UC.processNext();
+    dropzone.processQueue();
+  })
+});
+
+
+function dataURItoBlob(dataURI) {
+	var byteString = atob(dataURI.split(",")[1]);
+	var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+
+	var ab = new ArrayBuffer(byteString.length);
+	var ia = new Uint8Array(ab);
+	for (var i = 0; i < byteString.length; i++) {
+	  ia[i] = byteString.charCodeAt(i);
+	}
+	return new Blob([ab], { type: mimeString });
+}

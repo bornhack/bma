@@ -56,7 +56,7 @@ logger = logging.getLogger("bma")
 class FileUploadView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
     """The upload view of many files. Uses the API and a js client to upload."""
 
-    template_name = "upload.html"
+    template_name = "upload2.html"
     form_class = UploadForm
 
 
