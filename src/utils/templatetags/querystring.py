@@ -4,7 +4,6 @@ Taken from https://github.com/django/django/commit/e67d3580edbee1a4b58d408752937
 Remove when django 5.1 is out
 """
 
-
 from collections.abc import Iterable
 from typing import Any
 

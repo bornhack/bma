@@ -1,11 +1,11 @@
 """The API of fileness."""
+
 import logging
 import operator
 import uuid
 from functools import reduce
 
 import magic
-from audios.models import Audio
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -14,17 +14,21 @@ from django.db import transaction
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from documents.models import Document
 from guardian.shortcuts import get_objects_for_user
 from ninja import Query
 from ninja import Router
 from ninja.files import UploadedFile
-from pictures.models import Picture
+
+from audios.models import Audio
+from documents.models import Document
+from images.models import Image
 from tags.models import BmaTag
 from tags.models import TaggedFile
 from tags.schema import MultipleTagRequestSchema
 from tags.schema import MultipleTagResponseSchema
 from utils.api import FileApiResponseType
+from utils.auth import BMAuthBearer
+from utils.auth import permit_anonymous_api_use
 from utils.schema import ApiMessageSchema
 from videos.models import Video
 
@@ -62,14 +66,14 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     """API endpoint for file uploads."""
     # make sure the uploading user is in the creators group
     creator_group, created = Group.objects.get_or_create(name=settings.BMA_CREATOR_GROUP_NAME)
-    if created or creator_group not in request.user.groups.all():  # type: ignore[union-attr]
+    if created or creator_group not in request.user.groups.all():
         return 403, {"message": "Missing upload permissions"}
 
     # find the filetype using libmagic by reading the first bit of the file
     mime = magic.from_buffer(f.read(512), mime=True)
 
-    if mime in settings.ALLOWED_PICTURE_TYPES:
-        from pictures.models import Picture as Model
+    if mime in settings.ALLOWED_IMAGE_TYPES:
+        from images.models import Image as Model
     elif mime in settings.ALLOWED_VIDEO_TYPES:
         from videos.models import Video as Model
     elif mime in settings.ALLOWED_AUDIO_TYPES:
@@ -86,7 +90,7 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
 
     # initiate the model instance
     uploaded_file = Model(
-        uploader=request.user,  # type: ignore[misc]
+        uploader=request.user,
         original=f,
         original_filename=str(f.name),
         file_size=f.size,
@@ -105,6 +109,7 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     try:
         uploaded_file.full_clean()
     except ValidationError:
+        logger.exception("Upload validation error")
         return 422, {"message": "Validation error"}
 
     # save everything
@@ -121,6 +126,9 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     # assign permissions (publish_basefile and unpublish_basefile are assigned after moderation)
     uploaded_file.add_initial_permissions()
 
+    # create jobs
+    uploaded_file.create_jobs()
+
     # all good
     return 201, {"bma_response": uploaded_file, "message": f"File {uploaded_file.uuid} uploaded OK!"}
 
@@ -130,7 +138,7 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     "/",
     response={200: MultipleFileResponseSchema},
     summary="Return a list of metadata for files.",
-    auth=None,
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
 )
 def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResponseType:  # noqa: C901,PLR0912
     """Return a list of metadata for files."""
@@ -163,8 +171,8 @@ def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResp
         query = models.Q()
         for filetype in filters.filetypes:
             # this could probably be more clever somehow
-            if filetype == FileTypeChoices.picture:
-                query |= models.Q(instance_of=Picture)
+            if filetype == FileTypeChoices.image:
+                query |= models.Q(instance_of=Image)
             elif filetype == FileTypeChoices.video:
                 query |= models.Q(instance_of=Video)
             elif filetype == FileTypeChoices.audio:
@@ -208,7 +216,7 @@ def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResp
     if filters.limit:
         files = files[: filters.limit]
 
-    return 200, {"bma_response": files}
+    return 200, {"bma_response": files, "message": f"{files.count()} files found."}
 
 
 ############## GENERIC FILE ACTION ############################################
@@ -434,7 +442,7 @@ def unpublish_files(
         404: ApiMessageSchema,
     },
     summary="Return the metadata of a file.",
-    auth=None,
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
 )
 def file_get(request: HttpRequest, file_uuid: uuid.UUID) -> FileApiResponseType:
     """Return a file object."""
@@ -555,7 +563,7 @@ def file_tag(
 
     # make sure the tagging user is in the curators group
     curator_group, created = Group.objects.get_or_create(name=settings.BMA_CURATOR_GROUP_NAME)
-    if created or curator_group not in request.user.groups.all():  # type: ignore[union-attr]
+    if created or curator_group not in request.user.groups.all():
         return 403, {"message": "Missing tagging permissions"}
 
     # add the tag(s) to the file and return
@@ -584,7 +592,7 @@ def file_untag(
 
     # make sure the tagging user is in the curators group
     curator_group, created = Group.objects.get_or_create(name=settings.BMA_CURATOR_GROUP_NAME)
-    if created or curator_group not in request.user.groups.all():  # type: ignore[union-attr]
+    if created or curator_group not in request.user.groups.all():
         return 403, {"message": "Missing untagging permissions"}
 
     # remove the tagging(s) from the file (if present) and return

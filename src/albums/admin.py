@@ -1,4 +1,5 @@
 """ModelAdmin for the Album model."""
+
 from django.contrib import admin
 
 from .models import Album

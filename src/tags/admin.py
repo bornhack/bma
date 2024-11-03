@@ -1,4 +1,5 @@
 """Admin module for the tags app."""
+
 from django.contrib import admin
 
 from .models import TaggedFile

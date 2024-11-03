@@ -1,4 +1,5 @@
 """The albums API."""
+
 import logging
 import operator
 import uuid
@@ -10,7 +11,10 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Query
 from ninja import Router
+
 from utils.api import AlbumApiResponseType
+from utils.auth import BMAuthBearer
+from utils.auth import permit_anonymous_api_use
 from utils.schema import ApiMessageSchema
 
 from .filters import AlbumFilters
@@ -72,7 +76,7 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
     "/{album_uuid}/",
     response={200: SingleAlbumResponseSchema, 404: ApiMessageSchema},
     summary="Return an album.",
-    auth=None,
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
 )
 def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseType:
     """Return an album."""
@@ -84,7 +88,7 @@ def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseTy
     "/",
     response={200: MultipleAlbumResponseSchema},
     summary="Return a list of albums.",
-    auth=None,
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
 )
 def album_list(request: HttpRequest, filters: AlbumFilters = query) -> AlbumApiResponseType:
     """Return a list of albums."""

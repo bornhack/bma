@@ -1,4 +1,5 @@
 """API schemas used across multiple apps."""
+
 import datetime
 import logging
 from typing import Any
@@ -37,7 +38,7 @@ class RequestMetadataSchema(Schema):
 
 def get_request_metadata_schema(request: HttpRequest) -> RequestMetadataSchema:
     """Init and populate an instance of the schema."""
-    return RequestMetadataSchema.construct(  # type: ignore[no-any-return]
+    return RequestMetadataSchema.construct(
         request_time=timezone.now(), username=request.user.username, client_ip=request.META["REMOTE_ADDR"]
     )
 
@@ -52,7 +53,7 @@ class ApiMessageSchema(Schema):
     @staticmethod
     def resolve_bma_request(obj: dict[str, str], context: dict[str, HttpRequest]) -> RequestMetadataSchema:
         """Populate and return a RequestMetadataSchema object for the bma_request field."""
-        return RequestMetadataSchema.construct()  # type: ignore[no-any-return]
+        return RequestMetadataSchema.construct()
 
 
 class ApiResponseSchema(ApiMessageSchema):

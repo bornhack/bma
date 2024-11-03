@@ -1,16 +1,19 @@
 """API definition and error handlers."""
+
 import logging
 
-from albums.api import router as albums_router
 from django.http import Http404
 from django.http import HttpRequest
 from django.http import HttpResponse
-from files.api import router as files_router
 from ninja import NinjaAPI
 from ninja.errors import AuthenticationError
 from ninja.errors import HttpError
 from ninja.errors import ValidationError
-from ninja.security import django_auth
+
+from albums.api import router as albums_router
+from files.api import router as files_router
+from jobs.api import router as jobs_router
+from utils.auth import BMAuthBearer
 from utils.parser import ORJSONParser
 from utils.parser import ORJSONRenderer
 from utils.schema import get_request_metadata_schema
@@ -20,16 +23,17 @@ logger = logging.getLogger("bma")
 # define the v1 api for JSON
 api_v1_json = NinjaAPI(
     version="1",
-    # we require CSRF but disable it for non-session auth requests
-    # inside ExemptOauthFromCSRFMiddleware
     parser=ORJSONParser(),
     renderer=ORJSONRenderer(),
     urls_namespace="api-v1-json",
-    auth=django_auth,
+    # the default is for all endpoints to require Bearer auth,
+    # but some endpoints override this to also permit anonymous use
+    auth=BMAuthBearer(),
 )
 
 api_v1_json.add_router("/files/", files_router, tags=["files"])
 api_v1_json.add_router("/albums/", albums_router, tags=["albums"])
+api_v1_json.add_router("/jobs/", jobs_router, tags=["jobs"])
 
 
 @api_v1_json.exception_handler(ValidationError)

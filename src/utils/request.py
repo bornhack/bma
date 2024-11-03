@@ -8,6 +8,7 @@ To use the request object when it isn't available:
 
 Highly experimental code. May blow up at any time.
 """
+
 import contextvars
 
 context_request = contextvars.ContextVar("request", default=None)

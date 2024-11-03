@@ -1,4 +1,5 @@
 """The shared filters used in the files and albums API endpoints."""
+
 from django.db import models
 from ninja import Schema
 

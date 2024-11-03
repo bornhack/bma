@@ -1,13 +1,14 @@
 """Schemas for album API calls."""
+
 import uuid
 from collections.abc import Sequence
 
 from django.http import HttpRequest
 from django.urls import reverse
 from ninja import ModelSchema
-from utils.schema import ApiResponseSchema
 
 from albums.models import Album
+from utils.schema import ApiResponseSchema
 
 
 class AlbumRequestSchema(ModelSchema):

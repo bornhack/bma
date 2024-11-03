@@ -124,6 +124,9 @@ async function UpdatePreviews(formdatas) {
                 originalImage.src = e.target.result;
                 // when the image is done loading generate the thumbnail
                 originalImage.addEventListener("load", function () {
+                    // save width and height for later
+                    fd.width=originalImage.width;
+                    fd.height=originalImage.height;
                     var thumbnailImage = createThumbnail(originalImage);
                     thumbnailImage.className = "card-img-top";
                     div = pw.querySelector('[data-digest="' + fd.digest + '"]');
@@ -183,6 +186,11 @@ async function uploadFiles() {
     for (let fd of formdatas) {
         console.log("adding digest to metadata ...");
         metadata.digest = fd.digest;
+        console.log("adding width and height of images ...")
+        if (fd.width) {
+            metadata.width = fd.width;
+            metadata.height = fd.height;
+        };
         console.log(metadata);
         console.log("adding metadata to formdata ...");
         fd.append("metadata", JSON.stringify(metadata));

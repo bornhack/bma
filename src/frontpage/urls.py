@@ -1,4 +1,5 @@
 """The frontpage URLs."""
+
 from django.urls import path
 
 from frontpage.views import FrontpageTemplateView

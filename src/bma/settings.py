@@ -8,9 +8,11 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+
 from pathlib import Path
 
 import django_stubs_ext
+
 from utils.ninjafix import monkeypatch_ninja_uuid_converter
 
 from .environment_settings import *  # noqa: F403
@@ -50,12 +52,13 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "django_tables2",
+    "pictures",
     # bma apps
     "bornhack_allauth_provider",
     "users",
     "utils",
     "files",
-    "pictures",
+    "images",
     "videos",
     "audios",
     "documents",
@@ -64,15 +67,14 @@ INSTALLED_APPS = [
     "widgets",
     "tags",
     "hitcounter",
+    "jobs",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "utils.middleware.ExemptOauthFromCSRFMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "allauth.account.middleware.AccountMiddleware",
@@ -85,7 +87,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
-    "oauth2_provider.backends.OAuth2Backend",
+    # "oauth2_provider.backends.OAuth2Backend",
     "guardian.backends.ObjectPermissionBackend",
 ]
 
@@ -176,9 +178,9 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
 SOCIALACCOUNT_ONLY = True
+
+# taggit
 TAGGIT_CASE_INSENSITIVE = True
-IMAGEKIT_USE_MEMCACHED_SAFE_CACHE_KEY = False
-GALLERY_MANAGER_DEFAULT_PAGINATE_COUNT = 20
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
@@ -219,16 +221,12 @@ LOGGING = {
 
 GUARDIAN_GET_CONTENT_TYPE = "polymorphic.contrib.guardian.get_polymorphic_base_content_type"
 
-# django-imagekit settings
-IMAGEKIT_CACHEFILE_DIR = ""
-IMAGEKIT_SPEC_CACHEFILE_NAMER = "imagekit.cachefiles.namers.source_name_dot_hash"
-
 # save csrf tokens in session instead of using double cookie to ease api scripting
 CSRF_USE_SESSIONS = True
 CSRF_COOKIE_SECURE = not DEBUG  # noqa: F405
 SESSION_COOKIE_SECURE = not DEBUG  # noqa: F405
 
-if DEBUG:  # noqa: F405
+if DEBUG_TOOLBAR:  # noqa: F405
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", *MIDDLEWARE]
     INTERNAL_IPS = [
@@ -251,3 +249,20 @@ BOOTSTRAP5 = {
 }
 
 HITCOUNT_HITCOUNT_MODEL = "utils.HitCount"
+
+PICTURES = {
+    "BREAKPOINTS": {
+        "xs": 0,
+        "sm": 576,
+        "md": 768,
+        "lg": 992,
+        "xl": 1200,
+        "xxl": 1400,
+    },
+    "GRID_COLUMNS": 5,
+    "CONTAINER_WIDTH": 2000,
+    "FILE_TYPES": ["WEBP", "PNG"],
+    "PIXEL_DENSITIES": [1, 2],
+    "USE_PLACEHOLDERS": False,
+    "PROCESSOR": "images.picture_processor.dummy_processor",
+}

@@ -1,4 +1,5 @@
 """AppConfig for the documents app."""
+
 from django.apps import AppConfig
 
 

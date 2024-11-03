@@ -1,8 +1,10 @@
 """The filters used for the tag_list API endpoint and django-filters for regular views."""
+
 import uuid
 from typing import ClassVar
 
 import django_filters
+
 from utils.filters import ListFilters
 
 from .models import BmaTag

@@ -1,4 +1,5 @@
 """This module defines the table used to show files."""
+
 import django_tables2 as tables
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -14,6 +15,7 @@ class FileTable(tables.Table):
     albums = tables.Column(verbose_name="Albums")
     uploader = tables.Column(linkify=True)
     hitcount = tables.Column(verbose_name="Hits")
+    jobs = tables.Column(verbose_name="Jobs")
 
     def render_albums(self, record: BaseFile) -> str:
         """Render albums as a list of links."""
@@ -34,6 +36,10 @@ class FileTable(tables.Table):
             output = "N/A"
         return mark_safe(output)  # noqa: S308
 
+    def render_jobs(self, record: BaseFile) -> str:
+        """Render the jobs column."""
+        return f"{record.jobs.filter(finished=False).count()} / {record.jobs.filter(finished=True).count()}"
+
     class Meta:
         """Define model, template, fields."""
 
@@ -50,6 +56,7 @@ class FileTable(tables.Table):
             "file_size",
             "tags",
             "hitcount",
+            "jobs",
             "approved",
             "published",
             "deleted",

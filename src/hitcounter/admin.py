@@ -2,6 +2,7 @@
 
 Most of this code is originally borrowed from https://github.com/thornomad/django-hitcount/
 """
+
 from typing import Any
 
 from django.contrib import admin

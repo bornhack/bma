@@ -1,4 +1,5 @@
 """The filters used for album list endpoints."""
+
 import uuid
 from typing import ClassVar
 
@@ -6,8 +7,9 @@ import django_filters
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
-from files.models import BaseFile
 from ninja import Field
+
+from files.models import BaseFile
 from utils.filters import ListFilters
 
 from .models import Album

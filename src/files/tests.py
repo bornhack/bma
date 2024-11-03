@@ -1,4 +1,5 @@
 """Tests for the files API."""
+
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -7,6 +8,7 @@ from django.urls import reverse
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.models import get_application_model
 from oauth2_provider.models import get_grant_model
+
 from utils.tests import ApiTestBase
 
 from .models import BaseFile
@@ -20,7 +22,7 @@ class TestFilesApi(ApiTestBase):
     """Test for methods in the files API."""
 
     def test_api_auth_bearer_token(self) -> None:
-        """Test getting a token."""
+        """Test getting a token, and that the authorized_tokens view works with token auth."""
         response = self.client.get("/o/authorized_tokens/", headers={"authorization": self.creator2.auth})
         assert response.status_code == 200
         assert "revoke" in response.content.decode("utf-8")
@@ -200,7 +202,7 @@ class TestFilesApi(ApiTestBase):
         # test file type filter
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            data={"filetypes": ["picture"]},
+            data={"filetypes": ["image"]},
             headers={"authorization": self.creator2.auth},
         )
         assert len(response.json()["bma_response"]) == 20
@@ -1143,7 +1145,7 @@ class TestFileViews(ApiTestBase):
         self.client.login(username="creator2", password="secret")
         response = self.client.get(reverse("files:file_detail", kwargs={"file_uuid": self.files[0]}))
         content = response.content.decode()
-        assert "<h3>Picture creator2 file 0</h3>" in content
+        assert "<h3>Image creator2 file 0</h3>" in content
 
     ######### FILE TAG LIST ####################################
 
@@ -1165,7 +1167,7 @@ class TestFileViews(ApiTestBase):
         # test GET
         response = self.client.get(url)
         content = response.content.decode()
-        assert f"Add Tags to picture {self.files[0]}" in content
+        assert f"Add Tags to image {self.files[0]}" in content
 
         # add new tags
         data = {"tags": "testtag1 testtag2"}

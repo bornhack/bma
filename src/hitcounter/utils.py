@@ -2,12 +2,14 @@
 
 Most of this code is originally borrowed from https://github.com/thornomad/django-hitcount/
 """
+
 from ipaddress import ip_address as validate_ip
 from typing import NamedTuple
 
-from albums.models import AlbumType
 from django.conf import settings
 from django.http import HttpRequest
+
+from albums.models import AlbumType
 from files.models import BaseFileType
 from tags.models import BmaTagType
 

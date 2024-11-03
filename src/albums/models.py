@@ -1,4 +1,6 @@
 """The album model."""
+# mypy: disable-error-code="var-annotated"
+
 import logging
 import uuid
 from typing import TypeAlias
@@ -10,11 +12,12 @@ from django.db import models
 from django.db.models import F
 from django.urls import reverse
 from django.utils import timezone
-from files.models import BaseFile
 from guardian.models import GroupObjectPermissionBase
 from guardian.models import UserObjectPermissionBase
 from guardian.shortcuts import assign_perm
 from psycopg2.extras import DateTimeTZRange
+
+from files.models import BaseFile
 from users.sentinel import get_sentinel_user
 
 from .managers import AlbumManager

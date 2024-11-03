@@ -1,10 +1,12 @@
 """Managers for the Album model."""
+
 from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Count
 from django.db.models import Q
 from django.utils import timezone
+
 from files.models import BaseFile
 
 if TYPE_CHECKING:

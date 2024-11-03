@@ -1,4 +1,5 @@
 """This module defines the base models used in the rest of the models."""
+
 import uuid
 
 from django.db import models

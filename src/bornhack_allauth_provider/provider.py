@@ -1,4 +1,5 @@
 """This module contains the BornHackProvider class and BornHackAccount classes."""
+
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
 

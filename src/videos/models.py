@@ -1,10 +1,12 @@
 """The Video model."""
+
 from django.db import models
+
 from files.models import BaseFile
 from utils.upload import get_upload_path
 
 
-class Video(BaseFile):  # type: ignore[django-manager-missing]
+class Video(BaseFile):
     """The Video model."""
 
     original = models.FileField(

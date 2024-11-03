@@ -1,4 +1,6 @@
 """Custom taggit models for user-specific tagging of UUID model items."""
+# mypy: disable-error-code="var-annotated"
+
 from typing import TypeAlias
 
 import demoji

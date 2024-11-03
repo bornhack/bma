@@ -1,4 +1,5 @@
 """Custom model manager and queryset for the BaseFile model."""
+
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -7,6 +8,7 @@ from django.utils import timezone
 from guardian.shortcuts import get_objects_for_user
 from polymorphic.managers import PolymorphicManager
 from polymorphic.managers import PolymorphicQuerySet
+
 from users.models import UserType
 
 if TYPE_CHECKING:

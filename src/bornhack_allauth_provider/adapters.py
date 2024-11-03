@@ -1,4 +1,5 @@
 """The BornHackSocialAccountAdapter takes care of populating fields in the BMA User model from the BornHack profile."""
+
 from allauth.account.utils import user_field
 from allauth.account.utils import user_username
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
@@ -12,6 +13,7 @@ from django.contrib.auth.models import Group
 from django.forms import Form
 from django.http import HttpRequest
 from django.urls import reverse
+
 from users.models import User
 
 from .client import BornHackOAuth2Client

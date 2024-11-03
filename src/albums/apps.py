@@ -1,4 +1,5 @@
 """AppConfig for the albums app."""
+
 from django.apps import AppConfig
 
 

@@ -1,4 +1,5 @@
 """A numbered slugifyer which skips existing slugs."""
+
 from django.utils.text import slugify
 
 

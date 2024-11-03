@@ -1,4 +1,5 @@
 """URL configuration for the BornHack allauth provider."""
+
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 
 from .provider import BornHackProvider

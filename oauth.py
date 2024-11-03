@@ -8,7 +8,9 @@ Create a user, login, go to /o/applications/ and create a new application:
 Then call this script with <hostname> <username> <password> <client_id>
 ./oauth.py http://127.0.0.1:8080 admin admin some_client_id
 
+Only works with local users, not social users.
 """
+
 import base64
 import hashlib
 import secrets
@@ -26,14 +28,17 @@ client_id = sys.argv[4]
 
 s = requests.Session()
 csrf = s.get(host + "/api/csrf/")
+
 csrf = s.post(
-    host + "/accounts/login/?next=/api/csrf/",
+    # set next to /api/csrf/ so getting the next csrftoken is easy
+    host + "/admin/login/?next=/api/csrf/",
     data={
         "csrfmiddlewaretoken": csrf.text.strip(),
-        "login": username,
+        "username": username,
         "password": password,
     },
 )
+
 alphabet = string.ascii_uppercase + string.digits
 code_verifier = "".join(secrets.choice(alphabet) for i in range(43 + secrets.randbelow(86)))
 code_verifier_base64 = base64.urlsafe_b64encode(code_verifier.encode("utf-8"))

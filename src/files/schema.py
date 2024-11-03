@@ -1,16 +1,17 @@
 """API schemas for the BaseFile model."""
+
 import uuid
 from pathlib import Path
 
 from django.http import HttpRequest
 from ninja import ModelSchema
 from ninja import Schema
+
+from files.models import BaseFile
 from tags.schema import TagResponseSchema
 from utils.permissions import get_object_permissions_schema
 from utils.schema import ApiResponseSchema
 from utils.schema import ObjectPermissionSchema
-
-from files.models import BaseFile
 
 from .models import LicenseChoices
 
@@ -24,6 +25,8 @@ class UploadRequestSchema(ModelSchema):
     tags: list[str] = []  # noqa: RUF012
     thumbnail_url: str = ""
     title: str = ""
+    width: int | None = None
+    height: int | None = None
 
     class Config:
         """Specify the model fields to allow."""
@@ -94,6 +97,8 @@ class FileResponseSchema(ModelSchema):
     license_name: str
     license_url: str
     tags: list[TagResponseSchema]
+    jobs_unfinished: list[uuid.UUID]
+    jobs_finished: list[uuid.UUID]
 
     class Config:
         """Specify the model fields to include."""
@@ -141,6 +146,16 @@ class FileResponseSchema(ModelSchema):
     def resolve_permissions(obj: BaseFile, context: dict[str, HttpRequest]) -> ObjectPermissionSchema:
         """Get the value for the permissions field with all file permissions."""
         return get_object_permissions_schema(obj, context["request"])
+
+    @staticmethod
+    def resolve_jobs_unfinished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
+        """Get the number of unfinished jobs for this file."""
+        return obj.jobs.filter(finished=False).values_list("uuid", flat=True)  # type: ignore[no-any-return]
+
+    @staticmethod
+    def resolve_jobs_finished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
+        """Get the number of finished jobs for this file."""
+        return obj.jobs.filter(finished=True).values_list("uuid", flat=True)  # type: ignore[no-any-return]
 
 
 class SingleFileResponseSchema(ApiResponseSchema):

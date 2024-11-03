@@ -166,7 +166,7 @@
                 // at least 1 file is selected
                 let size = 0;
                 let counts = {
-                    "picture": 0,
+                    "image": 0,
                     "video": 0,
                     "audio": 0,
                     "document": 0,
@@ -175,14 +175,14 @@
                     size += parseInt(file.dataset.bmaFileSize);
                     counts[file.dataset.bmaFileType] += 1;
                 });
-                $this.container.querySelector("div.selection > .card-body").innerHTML = size + " bytes in " + selected.length + " files.<br>" + counts["picture"] + " pictures, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
+                $this.container.querySelector("div.selection > .card-body").innerHTML = size + " bytes in " + selected.length + " files.<br>" + counts["image"] + " images, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
                 let buttons = $this.container.querySelectorAll("div.btn-group.actions > button");
                 for (const button of buttons) {
                     button.removeAttribute("disabled");
                 };
             } else {
                 // selection is empty
-                $this.container.querySelector("div.selection > .card-body").innerHTML = "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents.";
+                $this.container.querySelector("div.selection > .card-body").innerHTML = "0 bytes in 0 files<br>0 images, 0 videos, 0 audios, 0 documents.";
                 let buttons = $this.container.querySelectorAll("div.btn-group.actions > button");
                 for (const button of buttons) {
                     button.setAttribute("disabled", "");
@@ -237,7 +237,7 @@
             // filetype select
             const ftcol = $this.createNode("div", "col-auto");
             const ftsel = $this.createNode("select", "form-select", {"name": $this.prefix + "type", "multiple": "multiple", "onchange": $this.updateFileBrowser}, [
-                $this.createNode("option", [], {"value": "picture", "text": "Picture"}),
+                $this.createNode("option", [], {"value": "image", "text": "Image"}),
                 $this.createNode("option", [], {"value": "video", "text": "Video"}),
                 $this.createNode("option", [], {"value": "audio", "text": "Audio"}),
                 $this.createNode("option", [], {"value": "document", "text": "Document"}),
@@ -271,7 +271,7 @@
             // totals
             const totals = $this.createNode("div", ["card", "border", "me-2", "totals"], {}, [
                 $this.createNode("div", "card-header", {"innerHTML": "Totals"}),
-                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents."}),
+                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 images, 0 videos, 0 audios, 0 documents."}),
             ]);
             nav.appendChild(totals);
 
@@ -293,7 +293,7 @@
                         ]),
                     ]),
                 ]),
-                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 pictures, 0 videos, 0 audios, 0 documents."}),
+                $this.createNode("div", "card-body", {"innerHTML": "0 bytes in 0 files<br>0 images, 0 videos, 0 audios, 0 documents."}),
             ]);
             nav.appendChild(selection);
 
@@ -470,7 +470,7 @@
             $this.updateStatus("Adding files...", true);
             let size = 0;
             let counts = {
-                "picture": 0,
+                "image": 0,
                 "video": 0,
                 "audio": 0,
                 "document": 0,
@@ -527,7 +527,7 @@
             // update all the footer icon tooltips
             $('[data-toggle="tooltip"]').tooltip();
 
-            $this.container.querySelector("div.totals > .card-body").innerHTML = size + " bytes in " + data.length + " files.<br>" + counts["picture"] + " pictures, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
+            $this.container.querySelector("div.totals > .card-body").innerHTML = size + " bytes in " + data.length + " files.<br>" + counts["image"] + " images, " + counts["video"] + " videos, " + counts["audio"] + " audios, " + counts["document"] + " documents.";
             $this.updateSummary();
             $this.updateStatus("Ready. Showing " + $this.container.querySelectorAll("div.file").length + " files.");
             // enable form

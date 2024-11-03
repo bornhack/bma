@@ -1,4 +1,5 @@
 """This module contains the parsers used in the API."""
+
 from typing import Any
 
 import orjson

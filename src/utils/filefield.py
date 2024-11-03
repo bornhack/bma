@@ -2,6 +2,7 @@
 
 This code is all borrowed from https://docs.djangoproject.com/en/5.0/topics/http/file-uploads/#id5
 """
+
 from typing import Any
 
 from django import forms

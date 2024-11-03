@@ -6,6 +6,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 from guardian.shortcuts import get_objects_for_user
+
 from utils.admin import file_admin
 
 from .models import BaseFile
@@ -51,75 +52,57 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         """Called by the admin to check if the user has permission to view this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("view_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("view_basefile", obj)
 
     def has_change_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to change this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("change_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("change_basefile", obj)
 
     def has_delete_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called to check if the user has permission to really (non-soft) delete this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("delete_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("delete_basefile", obj)
 
     def has_approve_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to approve this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("approve_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("approve_basefile", obj)
 
     def has_unapprove_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to unapprove this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("unapprove_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("unapprove_basefile", obj)
 
     def has_publish_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to publish this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("publish_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("publish_basefile", obj)
 
     def has_unpublish_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to unpublish this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("unpublish_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("unpublish_basefile", obj)
 
     def has_softdelete_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to softdelete this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("softdelete_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("softdelete_basefile", obj)
 
     def has_undelete_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to undelete this type of/this specific object."""
         if obj is None:
             return True
-        if request.user.has_perm("undelete_basefile", obj):
-            return True
-        return False
+        return request.user.has_perm("undelete_basefile", obj)
 
-    def send_message(self, request: HttpRequest, selected: int, valid: int, updated: int, action: str) -> None:  # noqa: PLR0913
+    def send_message(self, request: HttpRequest, selected: int, valid: int, updated: int, action: str) -> None:
         """Return a message to the user."""
         # set status
         status = (messages.SUCCESS if updated == valid else messages.WARNING) if updated else messages.ERROR

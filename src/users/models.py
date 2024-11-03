@@ -1,4 +1,5 @@
 """The custom User model used in the BMA project."""
+
 import uuid
 from typing import ClassVar
 from typing import TypeAlias
@@ -36,8 +37,13 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
         help_text="The date and time when this user was first created on BMA.",
     )
 
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="The date and time when this user object was last updated.",
+    )
+
     # prompt for extra fields in createsuperuser
-    REQUIRED_FIELDS: ClassVar[list[str]] = ["handle", "display_name"]  # type: ignore[misc]
+    REQUIRED_FIELDS: ClassVar[list[str]] = ["handle", "display_name"]
 
     def get_absolute_url(self) -> str:
         """Return the URL for the users public profile."""

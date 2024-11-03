@@ -42,7 +42,7 @@ OAUTH_SERVER_BASEURL="http://127.0.0.1:8000"
 
 NGINX_PROXY=False
 
-ALLOWED_PICTURE_TYPES={
+ALLOWED_IMAGE_TYPES={
     "image/jpeg": ["jpg", "jpe", "jpeg"],
     "image/bmp": ["bmp"],
     "image/svg+xml": ["svg"],
@@ -74,7 +74,7 @@ ALLOWED_DOCUMENT_TYPES={
 # filetype icons
 FILETYPE_ICONS = {
     "basefile": "fas fa-file",
-    "picture": "fas fa-file-image",
+    "image": "fas fa-file-image",
     "video": "fas fa-file-video",
     "audio": "fas fa-file-audio",
     "document": "fas fa-file-lines",
@@ -83,7 +83,7 @@ FILETYPE_ICONS = {
 # status icons
 DEFAULT_THUMBNAIL_URLS = {
     "basefile": "/static/images/file-solid.png",
-    "picture": "/static/images/file-image-solid.png",
+    "image": "/static/images/file-image-solid.png",
     "video": "/static/images/file-video-solid.png",
     "audio": "/static/images/file-audio-solid.png",
     "document": "/static/images/file-alt-solid.png",

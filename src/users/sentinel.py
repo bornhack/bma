@@ -1,4 +1,5 @@
 """This module contains code to create or return a 'sentinel user' to use in place of deleted users."""
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

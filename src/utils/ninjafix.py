@@ -1,4 +1,5 @@
 """Workaround https://github.com/vitalik/django-ninja/issues/1266 for now."""
+
 from typing import Any
 
 

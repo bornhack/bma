@@ -5,9 +5,6 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
-from albums.forms import AlbumAddFilesForm
-from albums.forms import AlbumRemoveFilesForm
-from albums.models import Album
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -31,6 +28,10 @@ from django.views.generic import TemplateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from guardian.shortcuts import get_objects_for_user
+
+from albums.forms import AlbumAddFilesForm
+from albums.forms import AlbumRemoveFilesForm
+from albums.models import Album
 from hitcounter.utils import count_hit
 from tags.filters import TagFilter
 from tags.forms import TagForm
@@ -39,6 +40,7 @@ from tags.models import BmaTag
 from tags.models import TaggedFile
 from tags.tables import TaggingTable
 from tags.tables import TagTable
+from utils.auth import support_authbearer_user
 from utils.mixins import CuratorGroupRequiredMixin
 
 from .filters import FileFilter
@@ -99,8 +101,13 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
         return basefile  # type: ignore[no-any-return]
 
 
-def bma_media_view(request: HttpRequest, path: str, *, accel: bool) -> FileResponse | HttpResponse:
-    """Serve media files using nginx x-accel-redirect, or serve directly for dev use."""
+@support_authbearer_user
+def bma_media_view(*, request: HttpRequest, path: str, accel: bool) -> FileResponse | HttpResponse:
+    """Serve media files using nginx x-accel-redirect, or serve directly for dev use.
+
+    This view is used in browsers as well as by api clients, so it permits both regular
+    sessioncookie based auth and api token auth.
+    """
     # get last uuid from the path
     match = re.match(
         r"^.*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*$",
@@ -127,6 +134,7 @@ def bma_media_view(request: HttpRequest, path: str, *, accel: bool) -> FileRespo
 
     # check if the file exists in the filesystem
     if not Path(dbfile.original.path).exists():
+        logger.debug(f"File does not exist on dist: {dbfile.original.path}")
         raise Http404
 
     # count the hit
@@ -261,7 +269,7 @@ class FileTagCreateView(CuratorGroupRequiredMixin, FileViewMixin, FormView):  # 
         return redirect(self.file)
 
 
-class FileTagDetailView(TagViewMixin, SingleTableMixin, ListView):  # type: ignore[type-arg]
+class FileTagDetailView(TagViewMixin, SingleTableMixin, ListView):  # type: ignore[type-arg,misc]
     """File tag detail view. Shows a list of taggings of a tag on a file."""
 
     table_class = TaggingTable

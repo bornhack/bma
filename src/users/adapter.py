@@ -1,4 +1,5 @@
 """AllAuth DefaultAccountAdapter subclass used to deny local BMA account creation. Only social accounts are allowed."""
+
 from allauth.account.adapter import DefaultAccountAdapter
 from django.http import HttpRequest
 

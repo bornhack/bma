@@ -1,4 +1,5 @@
 """AppConfig for bornhack_allauth_provider app."""
+
 from django.apps import AppConfig
 
 

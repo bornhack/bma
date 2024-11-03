@@ -1,4 +1,5 @@
 """AppConfig for the videos app."""
+
 from django.apps import AppConfig
 
 

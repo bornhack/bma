@@ -29,6 +29,7 @@ def bma_startup(sender: WSGIHandler, **kwargs: dict[str, str]) -> None:
     if created:
         logger.info(f"Created creator group {settings.BMA_CREATOR_GROUP_NAME}")
 
+    # all done
     logger.debug(
         "bma_startup() done, disconnecting bma_startup_signal from django.core.signals.request_started signal..."
     )

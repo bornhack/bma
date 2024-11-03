@@ -1,5 +1,6 @@
 """This file contains the main BMA model BaseFile and related classes."""
-import contextlib
+# mypy: disable-error-code="var-annotated"
+
 import logging
 import uuid
 from typing import TypeAlias
@@ -18,6 +19,7 @@ from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 from taggit.managers import TaggableManager
 from taggit.utils import _parse_tags
+
 from tags.managers import BMATagManager
 from tags.models import TaggedFile
 from users.models import UserType
@@ -52,14 +54,14 @@ class LicenseChoices(models.TextChoices):
 class FileTypeChoices(models.TextChoices):
     """The filetype filter."""
 
-    picture = ("picture", "Picture")
+    image = ("image", "Image")
     video = ("video", "Video")
     audio = ("audio", "Audio")
     document = ("document", "Document")
 
 
 class BaseFile(PolymorphicModel):
-    """The polymorphic base model inherited by the Picture, Video, Audio, and Document models."""
+    """The polymorphic base model inherited by the Image, Video, Audio, and Document models."""
 
     class Meta:
         """Define custom permissions for the BaseFile and inherited models."""
@@ -198,7 +200,7 @@ class BaseFile(PolymorphicModel):
     @property
     def source(self) -> str:
         """Consider the BMA canonical URL the source if no other source has been specified."""
-        return self.original_source if self.original_source else self.get_absolute_url()
+        return self.original_source if self.original_source else self.get_absolute_url()  # type: ignore[no-any-return]
 
     def get_absolute_url(self) -> str:
         """The detail url for the file."""
@@ -236,18 +238,6 @@ class BaseFile(PolymorphicModel):
                 links["unpublish"] = reverse(
                     "api-v1-json:unpublish_file",
                     kwargs={"file_uuid": self.uuid},
-                )
-        if self.filetype == "picture":
-            # maybe file is missing from disk so suppress OSError
-            with contextlib.suppress(OSError):
-                downloads.update(
-                    {
-                        "small_thumbnail": self.small_thumbnail.url,
-                        "large_thumbnail": self.large_thumbnail.url,
-                        "small": self.small.url,
-                        "medium": self.medium.url,
-                        "large": self.large.url,
-                    }
                 )
         links["downloads"] = downloads
         return links
@@ -298,17 +288,11 @@ class BaseFile(PolymorphicModel):
 
     def permitted(self, user: UserType | AnonymousUser) -> bool:
         """Convenience method to determine if viewing this file is permitted for a user."""
-        if user.has_perm("files.view_basefile", self) or all([self.approved, self.published]):
-            return True
-        return False
+        return user.has_perm("files.view_basefile", self) or all([self.approved, self.published])
 
     def set_initial_thumbnail(self) -> None:
         """Set initial thumbnail for this file."""
-        # if the filetype is picture then use the pictures large_thumbnail as thumbnail,
-        if self.filetype == "picture" and self.thumbnail_url == settings.DEFAULT_THUMBNAIL_URLS["picture"]:
-            # use the large_thumbnail size as default
-            self.thumbnail_url = self.large_thumbnail.url
-            self.save(update_fields=["thumbnail_url", "updated"])
+        # if the filetype is image then use the images large_thumbnail as thumbnail,
 
     def parse_and_add_tags(self, tags: str, tagger: UserType) -> None:
         """Parse a string of one or more tags and add tags to the file."""

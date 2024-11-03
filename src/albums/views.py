@@ -1,4 +1,5 @@
 """Album views."""
+
 import logging
 from typing import Any
 
@@ -18,11 +19,12 @@ from django.views.generic import FormView
 from django.views.generic import UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
+from guardian.shortcuts import get_objects_for_user
+
 from files.filters import FileFilter
 from files.forms import FileMultipleActionForm
 from files.models import BaseFile
 from files.tables import FileTable
-from guardian.shortcuts import get_objects_for_user
 from hitcounter.utils import count_hit
 from utils.mixins import CuratorGroupRequiredMixin
 

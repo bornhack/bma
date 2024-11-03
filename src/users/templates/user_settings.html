@@ -9,24 +9,50 @@
     <table class="table">
       <tbody>
         <tr>
-          <th>UUID</th>
+          <th>BornHack Username</th>
+          <td>{{ user.username }}</td>
+        </tr>
+        <tr>
+          <th>BMA UUID</th>
           <td>{{ user.pk }}</td>
         </tr>
         <tr>
-          <th>Handle</th>
+          <th>BMA Handle</th>
           <td>{{ user.handle }}</td>
         </tr>
-      <tr>
-        <th>Member Since</th>
-        <td>{{ user.created_at }}</td>
-      </tr>
+        <tr>
+          <th>BMA Member Since</th>
+          <td>{{ user.created_at }}</td>
+        </tr>
         <tr>
           <th>Description</th>
           <td>
-            <a href="{{ user.description }}">{{ user.description|default:"N/A" }}</a>
+            {{ user.description|default:"N/A" }}
+          </td>
+        </tr>
+        <tr>
+          <th>API Clients</th>
+          <td>
+            <table class="table table-sm table-borderless">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Access Tokens</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for client in request.user.oauth2_provider_application.all %}
+                <tr>
+                  <td>{{ client.name }}</td>
+                  <td>{{ client.accesstoken_set.count }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </td>
         </tr>
       </tbody>
     </table>
+    <a href="{% url 'user_settings_update' %}" class="btn btn-primary"><i class="fas fa-edit"></i> Update</a>
   </div>
 {% endblock main_content %}

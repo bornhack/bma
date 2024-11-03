@@ -1,4 +1,5 @@
 """AppConfig for the audios app."""
+
 from django.apps import AppConfig
 
 

@@ -1,4 +1,5 @@
 """AppConfig for the utils app."""
+
 from django.apps import AppConfig
 
 

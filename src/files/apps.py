@@ -1,4 +1,5 @@
 """AppConfig for the files app."""
+
 from django.apps import AppConfig
 
 

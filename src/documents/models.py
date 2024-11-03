@@ -1,10 +1,12 @@
 """The Document model."""
+
 from django.db import models
+
 from files.models import BaseFile
 from utils.upload import get_upload_path
 
 
-class Document(BaseFile):  # type: ignore[django-manager-missing]
+class Document(BaseFile):
     """The Document model."""
 
     original = models.FileField(

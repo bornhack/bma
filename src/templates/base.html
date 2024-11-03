@@ -95,7 +95,8 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons %} {{ request.user.username }}</a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="{% url 'account_logout' %}">Logout</a></li>
+                    <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out"></i> Logout</a></li>
                   </ul>
                 </li>
                 {% endif %}

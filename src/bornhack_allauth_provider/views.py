@@ -1,4 +1,5 @@
 """This module contains the BornHackViewAdapter class for the oauth2 login and callback views."""
+
 from typing import Any
 
 import requests

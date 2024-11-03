@@ -1,4 +1,5 @@
 """AppConfig for the frontpage app."""
+
 from django.apps import AppConfig
 
 

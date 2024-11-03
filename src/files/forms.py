@@ -1,7 +1,9 @@
 """The file upload form."""
+
 from typing import ClassVar
 
 from django import forms
+
 from utils.filefield import MultipleFileField
 
 from .models import BaseFile

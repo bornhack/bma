@@ -1,6 +1,8 @@
 """API schema for tags."""
+
 from ninja import ModelSchema
 from ninja import Schema
+
 from utils.schema import ApiResponseSchema
 
 from .models import BmaTag

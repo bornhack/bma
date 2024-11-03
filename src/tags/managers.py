@@ -1,13 +1,14 @@
 """Custom taggit manager to include tagging user in lookup_kwargs, which is used to find through relations."""
+
 from typing import Any
 
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import Count
 from taggit.managers import _TaggableManager
-from users.models import UserType
 
 from tags.models import BmaTag
+from users.models import UserType
 
 
 class BMATagManager(_TaggableManager):

@@ -1,11 +1,13 @@
 """The filters used for the file_list API endpoint and django-filters for regular views."""
+
 import uuid
 from typing import ClassVar
 
 import django_filters
-from albums.models import Album
 from django.db import models
 from django.utils import timezone
+
+from albums.models import Album
 from tags.models import BmaTag
 from users.models import User
 from utils.filters import ListFilters

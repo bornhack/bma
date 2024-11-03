@@ -1,4 +1,5 @@
 """AppConfig for the hitcounter model."""
+
 from django.apps import AppConfig
 
 

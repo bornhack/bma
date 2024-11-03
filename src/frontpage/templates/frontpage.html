@@ -9,21 +9,21 @@
         <div class="col-md-12 col-sm-10">
           <div class="row">
             <div class="col-12">
-              <h3>Recent pictures</h3>
+              <h3>Recent images</h3>
               <hr/>
             </div>
           </div>
           <div class="row">
             <div class="col-12">
               <div class="row">
-                {% for picture in 6_last_pictures %}
+                {% for image in 6_last_images %}
                   <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
                     <img
-                      src="{{ picture.large_thumbnail.url }}"
+                      src="{{ image.large_thumbnail.url }}"
                       class="w-100 rounded mb-4"
-                      alt="{{ picture.name }}">
+                      alt="{{ image.name }}">
                     </img>
-                    <small class="text-wrap">{{ picture.title }}</small>
+                    <small class="text-wrap">{{ image.title }}</small>
                   </div>
                 {% endfor %}
               </div>
@@ -111,17 +111,17 @@
       </div>
       <div class="row">
         <div class="col-8">
-          {% for picture in 6_last_pictures %}
+          {% for image in 6_last_images %}
             <div class="row">
               <div class="col-4">
-                <img src="{{ picture.large_thumbnail.url }}" class="w-75"></img>
+                <img src="{{ image.large_thumbnail.url }}" class="w-75"></img>
               </div>
               <div class="col-8">
                 <div class="row">
-                  <strong>{{ picture.name }}</strong>
+                  <strong>{{ image.name }}</strong>
                 </div>
                 <div class="row">
-                  <p>{{ picture.description }}</p>
+                  <p>{{ image.description }}</p>
                 </div>
               </div>
             </div>

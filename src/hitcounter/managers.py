@@ -2,6 +2,7 @@
 
 Most of this code is originally borrowed from https://github.com/thornomad/django-hitcount/
 """
+
 from datetime import timedelta
 from typing import Any
 

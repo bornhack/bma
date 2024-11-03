@@ -1,10 +1,12 @@
 """The Audio model."""
+
 from django.db import models
+
 from files.models import BaseFile
 from utils.upload import get_upload_path
 
 
-class Audio(BaseFile):  # type: ignore[django-manager-missing]
+class Audio(BaseFile):
     """The Audio model."""
 
     original = models.FileField(

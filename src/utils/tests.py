@@ -1,4 +1,5 @@
 """Unit tests base class."""
+
 import base64
 import hashlib
 import json
@@ -17,6 +18,7 @@ from django.urls import reverse
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.models import get_application_model
 from oauth2_provider.models import get_grant_model
+
 from users.factories import UserFactory
 
 Application = get_application_model()
@@ -141,6 +143,8 @@ class ApiTestBase(TestCase):
         thumbnail_url: str = "",
         return_full: bool = False,
         expect_status_code: int = 201,
+        width: int | None = 800,
+        height: int | None = 600,
     ) -> str | dict[str, str]:
         """The upload method used by many tests."""
         metadata = {
@@ -155,6 +159,9 @@ class ApiTestBase(TestCase):
             metadata["description"] = description
         if tags:
             metadata["tags"] = tags
+        if width:
+            metadata["width"] = width
+            metadata["height"] = height
         with Path(filepath).open("rb") as f:
             response = cls.client.post(
                 reverse("api-v1-json:upload"),
