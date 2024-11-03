@@ -32,7 +32,7 @@ dependencies = [
     "environs[django]==11.0.0",
     "fontawesomefree==6.6.0",
     "orjson==3.10.7",
-    "psycopg2-binary==2.9.9",
+    "psycopg2-binary==2.9.10",
 ]
 description = "BornHack Media Archive Django project"
 name = "bma"
