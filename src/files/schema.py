@@ -21,6 +21,7 @@ class UploadRequestSchema(ModelSchema):
 
     description: str = ""
     license: LicenseChoices
+    mimetype: str
     original_source: str = ""
     tags: list[str] = []  # noqa: RUF012
     thumbnail_url: str = ""
@@ -29,18 +30,10 @@ class UploadRequestSchema(ModelSchema):
     height: int | None = None
 
     class Config:
-        """Specify the model fields to allow."""
+        """Specify trivial model fields."""
 
         model = BaseFile
-        model_fields = (
-            "attribution",  # required
-            "description",  # optional
-            "license",  # required
-            "original_source",  # optional
-            "thumbnail_url",  # optional
-            "tags",  # optional
-            "title",  # optional
-        )
+        model_fields = ("attribution",)
 
 
 class FileUpdateRequestSchema(ModelSchema):
