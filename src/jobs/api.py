@@ -46,14 +46,14 @@ query: Query = Query(...)  # type: ignore[type-arg]
 )
 def job_settings(request: HttpRequest) -> JobSettingsResponseType:
     """API endpoint for returning the settings of the BMA server."""
-    response = {
+    response: dict[str, list[tuple[str, str]] | dict[str, dict[str, str]]] = {
         "filetypes": {
-            "images": settings.ALLOWED_IMAGE_TYPES,
-            "videos": settings.ALLOWED_VIDEO_TYPES,
-            "audios": settings.ALLOWED_AUDIO_TYPES,
-            "documents": settings.ALLOWED_DOCUMENT_TYPES,
+            "images": dict(settings.ALLOWED_IMAGE_TYPES),
+            "videos": dict(settings.ALLOWED_VIDEO_TYPES),
+            "audios": dict(settings.ALLOWED_AUDIO_TYPES),
+            "documents": dict(settings.ALLOWED_DOCUMENT_TYPES),
         },
-        "licenses": dict(LicenseChoices.choices),
+        "licenses": LicenseChoices.choices,
     }
     return 200, {"bma_response": {"settings": response}}
 
@@ -124,7 +124,7 @@ def assign_file_jobs(request: HttpRequest, assign: JobRequestSchema, filters: Jo
     """Assign jobs for a file to the calling user."""
     # clear old assigned unfinished jobs here
     BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
-        user=None, client_uuid=None, useragent=None
+        user=None, client_uuid=None, useragent=""
     )
 
     # get all jobs

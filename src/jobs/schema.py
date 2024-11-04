@@ -50,6 +50,7 @@ class ImageConversionJobResponseSchema(JobResponseSchema):
     """Schema used for representing an image conversion job in a response."""
 
     filetype: str
+    mimetype: str
     width: int
     height: int
     custom_aspect_ratio: bool
@@ -82,7 +83,7 @@ class MultipleJobResponseSchema(ApiResponseSchema):
 class SettingsSchema(Schema):
     """The schema used to represent settings in responses."""
 
-    settings: dict[str, dict[str, str | dict[str, list[str]]]]
+    settings: dict[str, dict[str, str | dict[str, str]]]
 
 
 class SettingsResponseSchema(Schema):

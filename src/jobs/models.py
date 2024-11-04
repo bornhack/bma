@@ -17,6 +17,14 @@ def validate_image_filetype(value: str) -> None:
         raise ValidationError(f"The filetype '{value}' is not an enabled django-pictures filetype in settings.")  # noqa: TRY003
 
 
+class FiletypeUnsupportedError(Exception):
+    """Exception raised when an unsupported filetype is used."""
+
+    def __init__(self, filetype: str) -> None:
+        """Exception raised when an unsupported filetype is used."""
+        super().__init__(f"Unsupported filetype: {filetype}")
+
+
 #################### JOBS #########################################
 
 
@@ -119,6 +127,13 @@ class ImageConversionJob(BaseJob):
         filename = f"{self.width}w.{self.filetype.lower()}"
         return path, filename
 
+    def mimetype(self) -> str:
+        """Get the value for the mimetype field."""
+        for mimetype, extension in settings.ALLOWED_IMAGE_TYPES.items():
+            if self.filetype.lower() == extension:
+                return mimetype
+        raise FiletypeUnsupportedError(filetype=self.filetype)
+
 
 class ImageExifExtractionJob(BaseJob):
-    """Model to contain image exif exctraction jobs."""
+    """Model to contain image exif exctraction jobs. No extra fields."""
