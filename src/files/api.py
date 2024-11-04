@@ -5,7 +5,6 @@ import operator
 import uuid
 from functools import reduce
 
-import magic
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -69,22 +68,21 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     if created or creator_group not in request.user.groups.all():
         return 403, {"message": "Missing upload permissions"}
 
-    # find the filetype using libmagic by reading the first bit of the file
-    mime = magic.from_buffer(f.read(512), mime=True)
+    # get the file metadata
+    data = metadata.dict()
 
-    if mime in settings.ALLOWED_IMAGE_TYPES:
+    if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
         from images.models import Image as Model
-    elif mime in settings.ALLOWED_VIDEO_TYPES:
+    elif data["mimetype"] in settings.ALLOWED_VIDEO_TYPES:
         from videos.models import Video as Model
-    elif mime in settings.ALLOWED_AUDIO_TYPES:
+    elif data["mimetype"] in settings.ALLOWED_AUDIO_TYPES:
         from audios.models import Audio as Model
-    elif mime in settings.ALLOWED_DOCUMENT_TYPES:
+    elif data["mimetype"] in settings.ALLOWED_DOCUMENT_TYPES:
         from documents.models import Document as Model
     else:
         return 422, {"message": "File type not supported"}
+    del data["mimetype"]
 
-    # get the file metadata
-    data = metadata.dict()
     # handle tags seperately, and skip empty tags
     tags = [tag for tag in data.pop("tags", []) if tag]
 

@@ -136,6 +136,7 @@ class ApiTestBase(TestCase):
         filepath: str = settings.BASE_DIR / "static_src/images/logo_wide_black_500_RGB.png",
         title: str = "some title",
         file_license: str = "CC_ZERO_1_0",
+        mimetype: str = "image/png",
         attribution: str = "fotoarne",
         description: str = "",
         original_source: str = "https://example.com/something.png",
@@ -151,6 +152,7 @@ class ApiTestBase(TestCase):
             "title": title,
             "license": file_license,
             "attribution": attribution,
+            "mimetype": mimetype,
             "original_source": original_source,
         }
         if thumbnail_url:
