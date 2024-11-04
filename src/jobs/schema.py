@@ -83,7 +83,8 @@ class MultipleJobResponseSchema(ApiResponseSchema):
 class SettingsSchema(Schema):
     """The schema used to represent settings in responses."""
 
-    settings: dict[str, dict[str, str | dict[str, str]]]
+    filetypes: dict[str, dict[str, str]]
+    licenses: dict[str, str]
 
 
 class SettingsResponseSchema(Schema):
