@@ -92,6 +92,8 @@ class FileResponseSchema(ModelSchema):
     tags: list[TagResponseSchema]
     jobs_unfinished: list[uuid.UUID]
     jobs_finished: list[uuid.UUID]
+    # move to seperate ImageResponseSchema pls
+    exif: dict[str, dict[str, str]] | None = None
 
     class Config:
         """Specify the model fields to include."""
