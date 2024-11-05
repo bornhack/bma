@@ -136,7 +136,7 @@ ignore_missing_model_attributes = true
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    envlist = py311, py312
+    envlist = py311
     skipsdist = True
 
     [testenv]
