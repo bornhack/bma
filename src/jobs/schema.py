@@ -17,20 +17,16 @@ class JobRequestSchema(Schema):
     client_uuid: uuid.UUID
 
 
-class ImageConversionJobResponseSchema(Schema):
-    """Schema used for representing an image conversion job in a response."""
+class JobResponseSchema(Schema):
+    """Base schema for representing an image conversion job in a response."""
 
-    job_uuid: uuid.UUID
-    filetype: str
-    width: int
-    aspect_ratio_numerator: int | None = None
-    aspect_ratio_denominator: int | None = None
-    job_type: str
     basefile_uuid: uuid.UUID
-    user_uuid: uuid.UUID | None = None
     client_uuid: uuid.UUID | None = None
-    useragent: str | None = None
     finished: bool
+    job_type: str
+    job_uuid: uuid.UUID
+    user_uuid: uuid.UUID | None = None
+    useragent: str | None = None
 
     @staticmethod
     def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
@@ -50,33 +46,20 @@ class ImageConversionJobResponseSchema(Schema):
         return obj.user_id  # type: ignore[no-any-return]
 
 
-class ExifExtractionJobResponseSchema(Schema):
+class ImageConversionJobResponseSchema(JobResponseSchema):
+    """Schema used for representing an image conversion job in a response."""
+
+    filetype: str
+    mimetype: str
+    width: int
+    height: int
+    custom_aspect_ratio: bool
+
+
+class ExifExtractionJobResponseSchema(JobResponseSchema):
     """Schema used for representing an exif metadata extraction job in a response."""
 
-    job_uuid: uuid.UUID
-    job_type: str
-    basefile_uuid: uuid.UUID
-    user_uuid: uuid.UUID | None = None
-    client_uuid: uuid.UUID | None = None
-    useragent: str | None = None
-    finished: bool
-
-    @staticmethod
-    def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
-        """Get the value for the job_uuid field."""
-        return obj.uuid  # type: ignore[no-any-return]
-
-    @staticmethod
-    def resolve_basefile_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
-        """Get the value for the basefile_uuid field."""
-        if isinstance(obj, dict) and "basefile_uuid" in obj:
-            return obj["basefile_uuid"]  # type: ignore[no-any-return]
-        return obj.basefile_id  # type: ignore[no-any-return]
-
-    @staticmethod
-    def resolve_user_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
-        """Get the value for the user_uuid field."""
-        return obj.user_id  # type: ignore[no-any-return]
+    # this job schema has no extra fields
 
 
 class SingleJobResponseSchema(ApiResponseSchema):
@@ -100,7 +83,8 @@ class MultipleJobResponseSchema(ApiResponseSchema):
 class SettingsSchema(Schema):
     """The schema used to represent settings in responses."""
 
-    settings: dict[str, dict[str, str | dict[str, list[str]]]]
+    filetypes: dict[str, dict[str, str]]
+    licenses: dict[str, str]
 
 
 class SettingsResponseSchema(Schema):

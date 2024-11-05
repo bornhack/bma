@@ -43,34 +43,39 @@ LICENSES=[
 
 NGINX_PROXY=env.bool("DJANGO_NGINX_PROXY", default="{{ django_nginx_proxy }}")
 
+# permit these image mimetypes, and use this extension for them
 ALLOWED_IMAGE_TYPES={
-    "image/jpeg": ["jpg", "jpe", "jpeg"],
-    "image/bmp": ["bmp"],
-    "image/gif": ["gif"],
-    "image/svg+xml": ["svg"],
-    "image/tiff": ["tif", "tiff"],
-    "image/png": ["png"],
+    "image/jpeg": "jpg",
+    "image/bmp": "bmp",
+    "image/gif": "gif",
+    "image/svg+xml": "svg",
+    "image/tiff": "tif",
+    "image/png": "png",
+    "image/webp": "webp",
 }
 
+# permit these video mimetypes, and use this extension for them
 ALLOWED_VIDEO_TYPES={
-    "video/mpeg": ["mp2", "mpa", "mpe", "mpeg", "mpg", "mpv2"],
-    "video/mp4": ["mp4"],
-    "video/quicktime": ["mov", "qt"],
-    "video/x-ms-asf": ["asf", "asr", "asx"],
+    "video/mpeg": "mp2",
+    "video/mp4": "mp4",
+    "video/quicktime": "mov",
+    "video/x-ms-asf": "asf",
 }
 
+# permit these audio mimetypes, and use this extension for them
 ALLOWED_AUDIO_TYPES={
-    "audio/basic": ["snd", "au"],
-    "audio/mid": ["mid", "rmi"],
-    "audio/mpeg": ["mp3"],
-    "audio/x-aiff": ["aif", "aifc", "aiff"],
-    "audio/x-pn-realaudio": ["ra", "ram"],
-    "audio/x-wav": ["wav"],
+    "audio/basic": "au",
+    "audio/mid": "mid",
+    "audio/mpeg": "mp3",
+    "audio/x-aiff": "aif",
+    "audio/x-pn-realaudio": "ram",
+    "audio/x-wav": "wav",
 }
 
+# permit these document mimetypes, and use this extension for them
 ALLOWED_DOCUMENT_TYPES={
-    "text/plain": ["txt"],
-    "application/pdf": ["pdf"],
+    "text/plain": "txt",
+    "application/pdf": "pdf",
 }
 
 # LOGGING

@@ -1,5 +1,8 @@
 """The Image model."""
+
 # mypy: disable-error-code="var-annotated"
+import math
+from fractions import Fraction
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -45,9 +48,14 @@ class Image(BaseFile):
         help_text="EXIF data for the image in JSON format.",
     )
 
+    @property
+    def aspect_ratio(self) -> Fraction:
+        """Return job AR as a Fraction."""
+        return Fraction(self.width, self.height)
+
     def create_jobs(self) -> None:
         """Create jobs for missing versions for this image."""
-        # exif data
+        # get exif data?
         if self.exif is None:
             job, created = ImageExifExtractionJob.objects.get_or_create(
                 basefile=self,
@@ -61,11 +69,23 @@ class Image(BaseFile):
                 continue
             # file missing, a new job must be created
             _, (_, filetype, ratio, _, width), _ = version.deconstruct()
+            if version.height:
+                height = version.height
+            else:
+                height = self.calculate_version_height(width=width, ratio=ratio if ratio else self.aspect_ratio)
             job, created = ImageConversionJob.objects.get_or_create(
                 basefile=self,
-                width=width,
-                filetype=filetype,
-                aspect_ratio_numerator=ratio.split("/")[0] if ratio else None,
-                aspect_ratio_denominator=ratio.split("/")[1] if ratio else None,
                 path=version.name,
+                width=width,
+                height=height,
+                custom_aspect_ratio=bool(ratio),
+                filetype=filetype,
             )
+
+    def calculate_version_height(self, width: int, ratio: Fraction) -> int:
+        """Calculate the height for an image version."""
+        if ratio != self.aspect_ratio:
+            # custom aspect ratio
+            return math.floor(width / ratio)
+        # maintain original AR
+        return math.floor(width / self.aspect_ratio)

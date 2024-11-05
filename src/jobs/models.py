@@ -17,6 +17,14 @@ def validate_image_filetype(value: str) -> None:
         raise ValidationError(f"The filetype '{value}' is not an enabled django-pictures filetype in settings.")  # noqa: TRY003
 
 
+class FiletypeUnsupportedError(Exception):
+    """Exception raised when an unsupported filetype is used."""
+
+    def __init__(self, filetype: str) -> None:
+        """Exception raised when an unsupported filetype is used."""
+        super().__init__(f"Unsupported filetype: {filetype}")
+
+
 #################### JOBS #########################################
 
 
@@ -90,43 +98,42 @@ class ImageConversionJob(BaseJob):
 
     width = models.PositiveIntegerField(help_text="The desired width of the converted image.")
 
+    height = models.PositiveIntegerField(help_text="The desired height of the converted image.")
+
     filetype = models.CharField(
         max_length=10,
         validators=[validate_image_filetype],
         help_text="The desired file type for this job.",
     )
 
-    aspect_ratio_numerator = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="The numerator part of the desired aspect ratio of the image. Leave blank to keep original AR.",
-    )
-
-    aspect_ratio_denominator = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="The denominator part of the desired aspect ratio of the image. Leave blank to keep original AR.",
+    custom_aspect_ratio = models.BooleanField(
+        default=False,
+        help_text="True if this job needs cropping to a custom AR, False if no crop is needed.",
     )
 
     @property
-    def aspect_ratio(self) -> Fraction | None:
-        """Return image AR as a Fraction."""
-        try:
-            return Fraction(self.aspect_ratio_numerator, self.aspect_ratio_denominator)
-        except TypeError:
-            return None
+    def aspect_ratio(self) -> Fraction:
+        """Return job AR as a Fraction."""
+        return Fraction(self.width, self.height)
 
     def get_result_path(self) -> tuple[Path, str]:
         """Return the path and filename for the job result."""
         orig = Path(self.basefile.original.path)
         path = orig.parent / orig.stem
-        if self.aspect_ratio:
-            path /= f"{self.aspect_ratio_numerator}_{self.aspect_ratio_denominator}"
-        # make sure the result path exists
+        if self.custom_aspect_ratio:
+            # add /4_3/ to the path for AR 4/3
+            path /= str(self.aspect_ratio).replace("/", "_")
         path.mkdir(parents=True, exist_ok=True)
         filename = f"{self.width}w.{self.filetype.lower()}"
         return path, filename
 
+    def mimetype(self) -> str:
+        """Get the value for the mimetype field."""
+        for mimetype, extension in settings.ALLOWED_IMAGE_TYPES.items():
+            if self.filetype.lower() == extension:
+                return mimetype
+        raise FiletypeUnsupportedError(filetype=self.filetype)
+
 
 class ImageExifExtractionJob(BaseJob):
-    """Model to contain image exif exctraction jobs."""
+    """Model to contain image exif exctraction jobs. No extra fields."""
