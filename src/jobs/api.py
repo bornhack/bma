@@ -180,6 +180,10 @@ def upload_result(
     if job.job_type == "ImageConversionJob":
         path, filename = job.get_result_path()
         FileSystemStorage(location=path).save(filename, f)
+        logger.debug(
+            f"Job {job.pk} wrote {(path/filename).stat().st_size} bytes {job.width}x{job.height}"
+            f"{job.mimetype} image to path {path / filename}"
+        )
     elif job.job_type == "ImageExifExtractionJob":
         exif = json.load(f)
         basefile.exif = exif

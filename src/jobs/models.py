@@ -127,6 +127,7 @@ class ImageConversionJob(BaseJob):
         filename = f"{self.width}w.{self.filetype.lower()}"
         return path, filename
 
+    @property
     def mimetype(self) -> str:
         """Get the value for the mimetype field."""
         for mimetype, extension in settings.ALLOWED_IMAGE_TYPES.items():
