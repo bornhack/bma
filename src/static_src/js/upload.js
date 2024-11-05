@@ -1,10 +1,14 @@
 Dropzone.autoDiscover = false;
-const UC = new UploadClient();
+const authToken = "0WsLj6k4oIRk8t430VBOAlyZzIrX1d";
+const baseURL = "";
+const UC = new UploadClient(authToken);
+
 var dropzone = undefined;
 var ImageEditorModal = undefined;
 var ImageEditor = undefined;
 var ImageEditorOrgFile = undefined;
 tui.usageStatistics = false
+
 jQuery(document).ready(function () {
   //Init the editor
   ImageEditorModal = new bootstrap.Modal(document.getElementById('image-editor-modal'));
@@ -58,7 +62,7 @@ jQuery(document).ready(function () {
 
   //Init Dropzone
   dropzone = new Dropzone("#my-dropzone", {
-    url: "/api/v1/json/files/upload/",
+    url: baseURL + "/api/v1/json/files/upload/",
     paramName: "f",
     autoProcessQueue: false,
     complete: file => { //Function overwritten to allow for later processing
@@ -71,11 +75,14 @@ jQuery(document).ready(function () {
 
   //Event triggered just before starting upload
   //Add the extra fields here
-  dropzone.on("sending", (_file, _xhr, formData) => {
+  dropzone.on("sending", (file, xhr, formData) => {
     let metadata = {};
     let license = document.getElementById("id_license");
     metadata.license = license.options[license.selectedIndex].value;
     metadata.attribution = document.getElementById("id_attribution").value;
+    metadata.width = file.width;
+    metadata.height = file.height;
+    metadata.mimetype = file.type;
 
     // TODO: parse tags following the same rules as the default parser in
     // https://django-taggit.readthedocs.io/en/latest/custom_tagging.html#using-a-custom-tag-string-parser
@@ -84,7 +91,11 @@ jQuery(document).ready(function () {
       metadata.tags = document.getElementById("id_tags").value.split(" ");
     };
 
+    //Add metadata to request
     formData.append('metadata', JSON.stringify(metadata));
+
+    //Add authenticaton to xhr
+    xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
   });
 
   //Event triggered when the file is added

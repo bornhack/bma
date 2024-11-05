@@ -1,6 +1,8 @@
 class UploadClient {
-  constructor() {
+  constructor(token) {
     this.queue = []
+    this.token = token;
+    this.client_uuid = "12345678-1234-1234-1234-deadbeaf4242"
   }
 
   //Add uploaded file to process queue
@@ -9,12 +11,34 @@ class UploadClient {
   }
 
   //Resize file returns Blob
-  async resize(file, size, type = ['image/png']) {
+  async resize(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
       new Compressor(file, {
         quality: 0.6,  
-        maxWidth: size, 
-        convertTypes: type,
+        maxWidth: width,
+        maxHeight: height,
+        mimeType: type,
+        convertSize: 50000000,
+        success(result) {
+          resolve(result);
+        },             
+        error(err) {                
+          console.log(err.message);
+          reject(err);
+        },                          
+      });
+    });
+  }
+
+  async crop(file, width, height, type = 'image/png') {
+    return new Promise((resolve, reject) => {
+      new Compressor(file, {
+        quality: 0.6,  
+        width: width,
+        height: height,
+        mimeType: type,
+        convertSize: 50000000,
+        resize: 'cover',
         success(result) {
           resolve(result);
         },             
@@ -31,76 +55,78 @@ class UploadClient {
     return window.exifr.parse(file.dataURL)
   }
 
-  async process(item, job) {
-    switch(job.type) {
-      case "resize":
-        this.resize(item.file, job.width).then(img=> {
-          document.getElementById('preview').src = window.URL.createObjectURL(img);
-        });
-        break;
-      case "exif":
-        const exif = await this.exif(item.file, job.width);
+  async processJob(item, job) {
+    switch(job.job_type) {
+      case "ImageConversionJob":
+        console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
+        if (job.custom_aspect_ratio)
+          return this.crop(item.file, job.width, job.height, job.mimetype).then(img=> {
+            this.uploadJobResult(job, img)
+          });
+        else
+          return this.resize(item.file, job.width, job.height, job.mimetype).then(img=> {
+            this.uploadJobResult(job, img)
+          });
+      case "ImageExifExtractionJob":
+        console.log(`Job for ${job.basefile_uuid}: ${job.job_type}`)
+        const exif = await this.exif(item.file);
         console.log(exif)
         break;
     }
   }
 
-  updateProgress(item, progress) {
-    for (let node of item.file.previewElement.querySelectorAll(
-      "[data-dz-uploadprogress]"
-    )) {
-      node.nodeName === "PROGRESS"
-        ? (node.value = progress)
-        : (node.style.width = `${progress}%`);
-    }
-  }
-
   async fetchJobList(item) {
     // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
-    // Simulate fetching job list from API
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`Fetching /api/v1/json/jobs/assign/?file_uuid=${item.uuid}`)
-        resolve([
-          { id: 1, name: "Job resize 500", type: 'resize', width: 500 },
-          { id: 2, name: "Job resize 100", type: 'resize', width: 100 },
-          { id: 3, name: "Job resize 200", type: 'resize', width: 200 },
-          { id: 4, name: "Job resize 300", type: 'resize', width: 300 },
-          { id: 5, name: "Job read exif", type: 'exif' },
-        ]);
-      }, 1000);
-    });
-    /*
     try {
-      const response = await fetch(`/api/v1/json/jobs/assign/?file_uuid=${item.uuid}`);
+      const response = await fetch(`/api/v1/json/jobs/assign/?finished=false&file_uuid=${item.uuid}`, {
+        headers: {
+          "Authorization": `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({ "client_uuid": this.client_uuid }),
+      });
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
       const json = await response.json();
-      return json 
+      return json.bma_response 
     } catch (error) {
       console.error(error.message);
       return [];
     }
-    */
   }
 
-  async processJob(item, job) {
-    // Simulate job processing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`Processing job: ${job.name} for ${item.uuid}`);
-        this.process(item, job);
-        resolve();
-      }, 500);
-    });
+  async uploadJobResult(job, file) {
+    // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
+    var data = new FormData()
+    data.append('f', file)
+    data.append('assign', JSON.stringify({ "client_uuid": this.client_uuid }))
+
+    try {
+      const response = await fetch(`/api/v1/json/jobs/${job.job_uuid}/result/`, {
+        headers: {
+          "Authorization": `Bearer ${this.token}`,
+        },
+        method: "POST",
+        body: data,
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.error(error.message);
+      return [];
+    }
   }
+
 
   async processNext() {
     if (this.queue.length === 0) {
       return;
     }
-
     const item = this.queue.shift();
     try {
       // Fetch job list from API
@@ -112,7 +138,9 @@ class UploadClient {
       // Process each job
       let jobsDone = 0;
       for (const job of jobList) {
-        await this.processJob(item, job);
+        if (!job.finished) {
+          await this.processJob(item, job);
+        }
         jobsDone++;
         this.updateProgress(item, (jobsDone * 100) / jobList.length); 
       }
@@ -125,4 +153,16 @@ class UploadClient {
       this.processNext(); // Process the next item in the queue
     }
   }
+
+  //Update dropzone status bar
+  updateProgress(item, progress) {
+    for (let node of item.file.previewElement.querySelectorAll(
+      "[data-dz-uploadprogress]"
+    )) {
+      node.nodeName === "PROGRESS"
+        ? (node.value = progress)
+        : (node.style.width = `${progress}%`);
+    }
+  }
+
 }
