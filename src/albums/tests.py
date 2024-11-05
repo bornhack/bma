@@ -117,7 +117,7 @@ class TestAlbumsApi(ApiTestBase):
             self.test_album_create_api_with_files(title=f"album{i}")
         response = self.client.get(reverse("api-v1-json:album_list"), headers={"authorization": self.curator6.auth})
         assert response.status_code == 200
-        assert len(response.json()["bma_response"]) == 10
+        assert len(response.json()["bma_response"]) == 10, "Did not get 10 albums"
 
         # test the file filter with files in different albums
         response = self.client.get(
@@ -126,7 +126,9 @@ class TestAlbumsApi(ApiTestBase):
             headers={"authorization": self.curator6.auth},
         )
         assert response.status_code == 200
-        assert len(response.json()["bma_response"]) == 0
+        assert (
+            len(response.json()["bma_response"]) == 0
+        ), "Did not get 0 albums when checking with files in two different albums"
 
         # test with files in the same album
         response = self.client.get(
@@ -135,14 +137,16 @@ class TestAlbumsApi(ApiTestBase):
             headers={"authorization": self.curator6.auth},
         )
         assert response.status_code == 200
-        assert len(response.json()["bma_response"]) == 1
+        assert (
+            len(response.json()["bma_response"]) == 1
+        ), "Did not get 1 album when testing with files in the same album"
 
         # test search
         response = self.client.get(
             reverse("api-v1-json:album_list"), data={"search": "album4"}, headers={"authorization": self.curator6.auth}
         )
         assert response.status_code == 200
-        assert len(response.json()["bma_response"]) == 1
+        assert len(response.json()["bma_response"]) == 1, "Did not get 1 album when searching"
 
         # test sorting
         response = self.client.get(
@@ -152,7 +156,7 @@ class TestAlbumsApi(ApiTestBase):
         )
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 10
-        assert response.json()["bma_response"][0]["title"] == "album9"
+        assert response.json()["bma_response"][0]["title"] == "album9", "Did not see the expected sort order"
 
         # test offset
         response = self.client.get(
@@ -162,7 +166,7 @@ class TestAlbumsApi(ApiTestBase):
         )
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 5
-        assert response.json()["bma_response"][0]["title"] == "album5"
+        assert response.json()["bma_response"][0]["title"] == "album5", "Did not get the expected offset"
 
 
 class TestAlbumViews(ApiTestBase):
