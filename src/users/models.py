@@ -9,6 +9,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
 from django.utils.functional import cached_property
+from oauth2_provider.models import Application
 
 
 class User(AbstractUser):  # type: ignore[django-manager-missing]
@@ -70,6 +71,11 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
         if not hasattr(self, "_cached_groups"):
             self._cached_groups = list(self.groups.values_list("name", flat=True))
         return self._cached_groups
+
+    @property
+    def webapp_oauth_client_id(self) -> str:
+        """Return the client id to use for oauth for the webapp."""
+        return Application.objects.get(user=self, name="autocreated-bma-webapp-client").client_id  # type: ignore[no-any-return]
 
 
 UserType: TypeAlias = User
