@@ -102,7 +102,7 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
 
 
 @support_authbearer_user
-def bma_media_view(*, request: HttpRequest, path: str, accel: bool) -> FileResponse | HttpResponse:
+def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileResponse | HttpResponse:
     """Serve media files using nginx x-accel-redirect, or serve directly for dev use.
 
     This view is used in browsers as well as by api clients, so it permits both regular

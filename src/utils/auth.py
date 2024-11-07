@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from typing import ParamSpec
 from typing import TypeVar
 
 from django.contrib.auth.models import AnonymousUser
@@ -10,9 +11,9 @@ from oauth2_provider.oauth2_backends import get_oauthlib_core
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
-from mypy_extensions import NamedArg
 
 T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class BMAuthBearer(HttpBearer):
@@ -39,9 +40,7 @@ class BMAuthBearer(HttpBearer):
 
 
 # https://docs.python.org/3/library/typing.html#annotating-callable-objects
-def support_authbearer_user(
-    view_func: Callable[[NamedArg("HttpRequest", "request"), NamedArg(str, "path"), NamedArg(bool, "accel")], T],
-) -> Callable[["HttpRequest", str, bool], T]:
+def support_authbearer_user(view_func: Callable[P, T]) -> Callable[P, T]:
     """View decorator to set request.user if there is a valid auth Bearer token.
 
     Use this decorator on plain/non-ninja views where functional bearer token auth
@@ -54,15 +53,16 @@ def support_authbearer_user(
     This decorator can be used together with login_required and other decorators.
     """
 
-    def wrapper(request: "HttpRequest", *args, **kwargs) -> T:  # type: ignore[no-untyped-def] # noqa: ANN002,ANN003
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
         """Get oauthlib core, validate request, set request.user if token is good."""
         oauthlib_core = get_oauthlib_core()
+        request = args[0]
         valid, oauth_response = oauthlib_core.verify_request(request, scopes=[])
         if valid:
             # token is valid, set request.user
-            request.user = oauth_response.user
+            request.user = oauth_response.user  # type: ignore[attr-defined]
         # call the decorated view and return the response
-        return view_func(request=request, *args, **kwargs)  # noqa: B026
+        return view_func(*args, **kwargs)
 
     return wrapper
 
