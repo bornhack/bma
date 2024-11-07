@@ -7,7 +7,7 @@
 
   <div class="row">
 
-    <div class="col-10">
+    <div class="col-lg-9 col-sm-12">
       <div class="row mb-3">
         <div class="col">
             <h3>{{ file.filetype|capfirst }} {{ file.title }}</h3>
@@ -16,7 +16,7 @@
       <div class="row">
         <div class="col">
         {% if 1 %}
-        {% picture file.original img_alt=file.title img_loading="lazy" xs=1 sm=2 md=3 lg=4 xl=5 xxl=6 %}
+            {% picture file.original img_alt=file.title img_loading="lazy" img_class="img-fluid img-thumbnail" xs=2 sm=3 md=4 lg=5 xl=12 %}
         {% else %}
           <i class="fa-regular fa-eye-slash fa-9x"></i>
           <p class="lead">No preview yet</p>
@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <div class="col-2">
+    <div class="col-sm-12 col-lg-3">
       <div class="row mb-3">
         <div class="col d-flex justify-content-end">
           <div class="dropdown">
