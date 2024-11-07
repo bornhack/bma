@@ -4,6 +4,7 @@
 {% block title %}Upload Files{% endblock title %}
 
 {% block extra_head %}
+    <script src="{% static 'js/vendor/base64.min.js' %}"></script>
     <script src="{% static 'js/vendor/dropzone-min.js' %}"></script>
     <script src="{% static 'js/vendor/compressor.js' %}"></script>
     <script src="{% static 'js/vendor/exifr.js' %}"></script>
@@ -11,6 +12,7 @@
     <script src="{% static 'js/vendor/tui-color-picker/tui-color-picker.min.js' %}"></script>
     <script src="{% static 'js/vendor/fabric.min.js' %}"></script>
     <script src="{% static 'js/vendor/image-editor/tui-image-editor.min.js' %}"></script>
+    <script src="{% static 'js/oauthClient.js' %}"></script>
     <script src="{% static 'js/uploadClient.js' %}"></script>
     <link rel="stylesheet" href="{% static 'js/vendor/dropzone.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'js/vendor/image-editor/tui-image-editor.min.css' %}" type="text/css" />

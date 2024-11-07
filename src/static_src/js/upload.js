@@ -1,7 +1,6 @@
 Dropzone.autoDiscover = false;
-const authToken = "0WsLj6k4oIRk8t430VBOAlyZzIrX1d";
 const baseURL = "";
-const UC = new UploadClient(authToken);
+const UC = new UploadClient("Er9anq9PV7mlkPPMP03DtrIrXmGh1pNNo8YdMDe9");
 
 var dropzone = undefined;
 var ImageEditorModal = undefined;
@@ -95,7 +94,7 @@ jQuery(document).ready(function () {
     formData.append('metadata', JSON.stringify(metadata));
 
     //Add authenticaton to xhr
-    xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${UC.oauth.token}`);
   });
 
   //Event triggered when the file is added
@@ -112,8 +111,12 @@ jQuery(document).ready(function () {
         dropzone.removeFile(file);
       })
     })
-    formdatas.push(file.name)
-    enableUploadButton();
+    if (UC.oauth.token) {
+      formdatas.push(file.name)
+      enableUploadButton();
+    } else {
+      $('#btnupload').html("Token ERROR");
+    }
   });
 
   //Event triggered after file is uploaded
@@ -123,9 +126,6 @@ jQuery(document).ready(function () {
 
     //Queue file for jobs fetching and processing
     UC.addToQueue(uuid, file);
-
-    //Example how to read exif
-    //UC.exif(file).then(exif => console.log(exif));
 
     //Make BMA scripts happy
     const index = formdatas.indexOf(file.name);

@@ -1,8 +1,9 @@
 class UploadClient {
-  constructor(token) {
+  constructor(client_id) {
     this.queue = []
-    this.token = token;
+    this.client_id = client_id
     this.client_uuid = "12345678-1234-1234-1234-deadbeaf4242"
+    this.oauth = new OauthClient(client_id);
   }
 
   //Add uploaded file to process queue
@@ -71,7 +72,7 @@ class UploadClient {
         console.log(`Job for ${job.basefile_uuid}: ${job.job_type}`)
         const exif = await this.exif(item.file);
         console.log(exif)
-        break;
+        return this.uploadJobResult(job, JSON.stringify(exif))
     }
   }
 
@@ -80,7 +81,7 @@ class UploadClient {
     try {
       const response = await fetch(`/api/v1/json/jobs/assign/?finished=false&file_uuid=${item.uuid}`, {
         headers: {
-          "Authorization": `Bearer ${this.token}`,
+          "Authorization": `Bearer ${this.oauth.token}`,
           "Content-Type": "application/json",
         },
         method: "POST",
@@ -106,7 +107,7 @@ class UploadClient {
     try {
       const response = await fetch(`/api/v1/json/jobs/${job.job_uuid}/result/`, {
         headers: {
-          "Authorization": `Bearer ${this.token}`,
+          "Authorization": `Bearer ${this.oauth.token}`,
         },
         method: "POST",
         body: data,
@@ -164,5 +165,4 @@ class UploadClient {
         : (node.style.width = `${progress}%`);
     }
   }
-
 }
