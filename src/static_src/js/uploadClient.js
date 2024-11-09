@@ -11,7 +11,7 @@ class UploadClient {
     this.client_uuid = ""
     this.oauth = new OauthClient(client_id);
     this.finished = [];
-    const cookie = getCookie("uc_uuid");
+    const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
     } else {
