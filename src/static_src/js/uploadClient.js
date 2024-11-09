@@ -4,13 +4,16 @@ class UploadClient {
    * Create Upload Client instance.
    *
    * @param {string} client_id - oauth client_id
+   * @param {function} callback - Done loading callback 
    */
-  constructor(client_id) {
+  constructor(client_id, callback) {
     this.queue = []
     this.client_id = client_id
     this.client_uuid = ""
     this.oauth = new OauthClient(client_id, (token) => this.oauthReady(token));
     this.finished = [];
+    this.allowedMimetypes = [];
+    this.callback = callback;
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
@@ -340,6 +343,24 @@ class UploadClient {
   }
 
   /**
+   * Extract keys from object 
+   *
+   * @param {object} obj - Object
+   * @returns {array} Keys
+   */
+  extractKeys(obj) {
+    const keys = [];
+    for (const key in obj) {
+      if (typeof obj[key] === 'object') {
+        keys.push(...this.extractKeys(obj[key]));
+      } else {
+        keys.push(key);
+      }
+    }
+    return keys;
+  }
+
+  /**
    * Get client configuration from server.
    *
    */
@@ -356,8 +377,11 @@ class UploadClient {
       this.finished = [];
       const json = await response.json();
       this.config = json.bma_response;
+      this.allowedMimetypes = this.extractKeys(this.config.filetypes)
+      this.callback();
     } catch (error) {
       console.error(error.message);
     }
   }
+
 }

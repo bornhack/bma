@@ -3,7 +3,10 @@
 Dropzone.autoDiscover = false;
 const baseURL = "";
 const client_id = JSON.parse(document.getElementById('client_id').textContent);
-const UC = new UploadClient(client_id);
+const UC = new UploadClient(client_id, () => {
+  $('#btnupload').html("Upload");
+  console.log("Loaded UC client");
+});
 
 //Init base variables
 var dropzone = undefined;
@@ -46,6 +49,8 @@ jQuery(document).ready(function () {
     ImageEditorOrgFile = undefined;
     ImageEditorModal.hide();
   });
+
+  //Save image as new
   $('#editor-save-new-image').bind('click', () => {
     const data = ImageEditor.toDataURL();
     var blob = dataURItoBlob(data);
@@ -63,6 +68,7 @@ jQuery(document).ready(function () {
     ImageEditorModal.hide();
   });
 
+  //Cancel editor and return file back to dropzone
   $('#editor-cancel').bind('click', () => {
     dropzone.addFile(ImageEditorOrgFile);
     dropzone.emit("addedfiles", dropzone.files);
@@ -90,8 +96,10 @@ jQuery(document).ready(function () {
     let license = document.getElementById("id_license");
     metadata.license = license.options[license.selectedIndex].value;
     metadata.attribution = document.getElementById("id_attribution").value;
-    metadata.width = file.width;
-    metadata.height = file.height;
+    if (file.type.startsWith("image/")) {
+      metadata.width = file.width;
+      metadata.height = file.height;
+    }
     metadata.mimetype = file.type;
 
     // TODO: parse tags following the same rules as the default parser in
@@ -108,7 +116,22 @@ jQuery(document).ready(function () {
     xhr.setRequestHeader("Authorization", `Bearer ${UC.oauth.token}`);
   });
 
-  //Event triggered when the file is added
+  //Event triggered when file is added
+  dropzone.on("addedfile", file => {
+    if (UC.allowedMimetypes.indexOf(file.type) !== -1) {
+      if (UC.oauth.token) {
+        formdatas.push(file.name)
+        enableUploadButton();
+      } else {
+        $('#btnupload').html("Token ERROR");
+      }
+    } else {
+      dropzone.removeFile(file);
+      alert("Invalid filetype");
+    }
+  })
+
+  //Event triggered when the thumbnail is made 
   dropzone.on("thumbnail", file => {
     file.previewElement.addEventListener("click", function() {
       console.log("Starting editor");
@@ -122,12 +145,6 @@ jQuery(document).ready(function () {
         dropzone.removeFile(file);
       })
     })
-    if (UC.oauth.token) {
-      formdatas.push(file.name)
-      enableUploadButton();
-    } else {
-      $('#btnupload').html("Token ERROR");
-    }
   });
 
   //Event triggered after file is uploaded

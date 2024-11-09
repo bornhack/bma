@@ -30,7 +30,10 @@
   <form enctype='multipart/form-data' action="/api/v1/json/files/upload/" method='POST' class="dropzone dz" id="my-dropzone" >
       {% csrf_token %}
   </form>
-  <button id="btnupload" disabled class="btn btn-primary">Upload</button>
+  <button id="btnupload" disabled class="btn btn-primary">
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    <span class="sr-only">Loading...</span>
+  </button>
   <script src={% static 'js/upload.js' %}></script>
   <img id="preview">
   <div class="modal fade" id="image-editor-modal" tabindex="-1" aria-labelledby="ImageEditorModalLabel" aria-hidden="true">
