@@ -1,24 +1,17 @@
-"""Tests for the files API."""
+"""Tests for the files API, admin and HTML views."""
 
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.urls import reverse
-from oauth2_provider.models import get_access_token_model
-from oauth2_provider.models import get_application_model
-from oauth2_provider.models import get_grant_model
 
-from utils.tests import ApiTestBase
+from utils.tests import BmaTestBase
 
 from .models import BaseFile
 
-Application = get_application_model()
-AccessToken = get_access_token_model()
-Grant = get_grant_model()
 
-
-class TestFilesApi(ApiTestBase):
+class TestFilesApi(BmaTestBase):
     """Test for methods in the files API."""
 
     def test_api_auth_bearer_token(self) -> None:
@@ -33,7 +26,7 @@ class TestFilesApi(ApiTestBase):
             "/o/token/",
             {
                 "grant_type": "refresh_token",
-                "client_id": f"client_id_{self.creator2.username}",
+                "client_id": self.creator2.webapp_oauth_client_id,
                 "refresh_token": self.creator2.tokeninfo["refresh_token"],
             },
         )
@@ -779,7 +772,7 @@ class TestFilesApi(ApiTestBase):
         self.assertEqual(response.json()["bma_response"]["size_bytes"], 0)
 
 
-class TestFileAdmin(ApiTestBase):
+class TestFileAdmin(BmaTestBase):
     """Tests for the FileAdmin."""
 
     def test_file_list_status_code(self) -> None:
@@ -927,7 +920,7 @@ class TestFileAdmin(ApiTestBase):
         )
 
 
-class TestFileViews(ApiTestBase):
+class TestFileViews(BmaTestBase):
     """Unit tests for regular django views."""
 
     @classmethod

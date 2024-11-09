@@ -26,8 +26,8 @@ AccessToken = get_access_token_model()
 Grant = get_grant_model()
 
 
-class ApiTestBase(TestCase):
-    """The base class used by all api tests."""
+class BmaTestBase(TestCase):
+    """The base class used by all BMA tests."""
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -37,6 +37,7 @@ class ApiTestBase(TestCase):
         cls.client = Client(enforce_csrf_checks=False)
 
         # create 2 regular users, 2 creators, 2 moderators, 2 curators, and 1 superuser
+        cls.users = []
         for i in range(9):
             kwargs = {}
             if i in [0, 1]:
@@ -56,17 +57,7 @@ class ApiTestBase(TestCase):
             user.set_password("secret")
             user.save()
             setattr(cls, user.username, user)
-            # create oauth application
-            cls.application = Application.objects.create(
-                name="Test Application",
-                redirect_uris="https://example.com/noexist/callback/",
-                user=user,
-                client_type=Application.CLIENT_PUBLIC,
-                authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
-                client_id=f"client_id_{user.username}",
-                client_secret="client_secret",
-                skip_authorization=True,
-            )
+            cls.users.append(user)
             user.auth = cls.get_access_token(user)
             user.save()
             cls.client.logout()
@@ -95,9 +86,9 @@ class ApiTestBase(TestCase):
 
         # get the authorization code
         data = {
-            "client_id": f"client_id_{user.username}",
+            "client_id": user.webapp_oauth_client_id,
             "state": "something",
-            "redirect_uri": "https://example.com/noexist/callback/",
+            "redirect_uri": "https://localhost/api/csrf/",
             "response_type": "code",
             "allow": True,
             "code_challenge": code_challenge_base64,
@@ -119,8 +110,8 @@ class ApiTestBase(TestCase):
             {
                 "grant_type": "authorization_code",
                 "code": qs["code"],
-                "redirect_uri": "https://example.com/noexist/callback/",
-                "client_id": f"client_id_{user.username}",
+                "redirect_uri": "https://localhost/api/csrf/",
+                "client_id": user.webapp_oauth_client_id,
                 "code_verifier": code_verifier_base64.decode("utf-8"),
             },
         )

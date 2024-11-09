@@ -1,18 +1,11 @@
 """Tests for the files API."""
 
 from django.urls import reverse
-from oauth2_provider.models import get_access_token_model
-from oauth2_provider.models import get_application_model
-from oauth2_provider.models import get_grant_model
 
-from utils.tests import ApiTestBase
-
-Application = get_application_model()
-AccessToken = get_access_token_model()
-Grant = get_grant_model()
+from utils.tests import BmaTestBase
 
 
-class TestTagsApi(ApiTestBase):
+class TestTagsApi(BmaTestBase):
     """Test tag stuff in the API."""
 
     def test_tag_api(self) -> None:
