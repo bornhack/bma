@@ -50,7 +50,7 @@ data = {
     "csrfmiddlewaretoken": csrf.text.strip(),
     "client_id": client_id,
     "state": state,
-    "redirect_uri": "https://example.com/redirect/",
+    "redirect_uri": "https://localhost/api/csrf/",
     "response_type": "code",
     "code_challenge": code_challenge_base64,
     "code_challenge_method": "S256",
@@ -70,7 +70,7 @@ token = s.post(
     data={
         "grant_type": "authorization_code",
         "code": authcode,
-        "redirect_uri": "https://example.com/redirect/",
+        "redirect_uri": "https://localhost/api/csrf/",
         "client_id": client_id,
         "code_verifier": code_verifier_base64,
     },
