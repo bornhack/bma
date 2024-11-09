@@ -1,10 +1,23 @@
+/** Class UploadClient. this class is used for uploading files to the server and processing them. */
 class UploadClient {
+  /**
+   * Create Upload Client instance.
+   *
+   * @param {string} client_id - oauth client_id
+   */
   constructor(client_id) {
     this.queue = []
     this.client_id = client_id
-    this.client_uuid = "12345678-1234-1234-1234-deadbeaf4242"
+    this.client_uuid = ""
     this.oauth = new OauthClient(client_id);
     this.finished = [];
+    const cookie = getCookie("uc_uuid");
+    if (cookie) {
+      this.client_uuid = cookie;
+    } else {
+      this.client_uuid = this.generateUUID();
+      this.setCookie("uc_uuid", this.client_uuid, 1);
+    }
   }
 
   //Add uploaded file to process queue
@@ -12,7 +25,15 @@ class UploadClient {
     this.queue.push({uuid: uuid, file: file, tasks: []});
   }
 
-  //Resize file returns Blob
+  /**
+   * Resize the picture keeping the AR
+   *
+   * @param {object} file - File 
+   * @param {number} width - Width 
+   * @param {number} height - Height 
+   * @param {string} mimetype - MimeType
+   * @returns {Promise<Token>} 
+   */
   async resize(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
       new Compressor(file, {
@@ -32,6 +53,15 @@ class UploadClient {
     });
   }
 
+  /**
+   * Crop the picture to requested AR 
+   *
+   * @param {object} file - File 
+   * @param {number} width - Width 
+   * @param {number} height - Height 
+   * @param {string} mimetype - MimeType
+   * @returns {Promise<Token>} 
+   */
   async crop(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
       new Compressor(file, {
@@ -52,11 +82,23 @@ class UploadClient {
     });
   }
 
-  //Returns Promis
+  /**
+   * Exstract Exif information from image 
+   *
+   * @param {object} file - File 
+   * @returns {Promise<Token>} 
+   */
   async exif(file) {
     return window.exifr.parse(file.dataURL)
   }
 
+  /**
+   * Process a job item from the queue 
+   *
+   * @param {object} item - Item to process 
+   * @param {object} job - Job information 
+   * @returns {Promise<Token>} 
+   */
   async processJob(item, job) {
     switch(job.job_type) {
       case "ImageConversionJob":
@@ -72,11 +114,16 @@ class UploadClient {
       case "ImageExifExtractionJob":
         console.log(`Job for ${job.basefile_uuid}: ${job.job_type}`)
         const exif = await this.exif(item.file);
-        console.log(exif)
         return this.uploadJobResult(job, JSON.stringify(exif))
     }
   }
 
+  /**
+   * Fetch the joblist from server 
+   *
+   * @param {object} item - Item to process 
+   * @returns {Promise<Token>} 
+   */
   async fetchJobList(item) {
     // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
     try {
@@ -102,6 +149,12 @@ class UploadClient {
     }
   }
 
+  /**
+   * Upload the job results to the server 
+   *
+   * @param {object} item - Item to process 
+   * @returns {array} bma_response 
+   */
   async uploadJobResult(job, file) {
     // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
     var data = new FormData()
@@ -127,6 +180,13 @@ class UploadClient {
     }
   }
 
+  /**
+   * Create a album from the items in the finished arrach 
+   *
+   * @param {string} name - Name of the album.
+   * @param {string} description - Description of the album.
+   * @returns {array} bma_response 
+   */
   async createAlbum(name, description) {
     var data = {
       'title': name,
@@ -156,6 +216,10 @@ class UploadClient {
   }
 
 
+  /**
+   * Process the next item in the queue 
+   *
+   */
   async processNext() {
     if (this.queue.length === 0) {
       return;
@@ -187,7 +251,13 @@ class UploadClient {
     }
   }
 
-  //Update dropzone status bar
+  /**
+   * Update the dropzone item progress bar 
+   *
+   * @param {object} item - Item 
+   * @param {number} progress - Progress percentage.
+   * @returns {array} bma_response 
+   */
   updateProgress(item, progress) {
     for (let node of item.file.previewElement.querySelectorAll(
       "[data-dz-uploadprogress]"
@@ -196,5 +266,62 @@ class UploadClient {
         ? (node.value = progress)
         : (node.style.width = `${progress}%`);
     }
+  }
+
+  /**
+   * Set a cookie 
+   *
+   * @param {string} cname - Name of the cookie 
+   * @param {string} cvalue - Value of the cookie. 
+   * @param {number} exdays - Days of validity.
+   * @returns {string} Cookie contents 
+   */
+  setCookie(cname, cvalue, exdays) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+
+  /**
+   * Get a cookie 
+   *
+   * @param {string} cname - Name of the cookie 
+   * @returns {string} Cookie contents 
+   */
+  getCookie(cname) {
+    let name = cname + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+
+  /**
+   * Generate UUID 
+   *
+   * @returns {string} UUID 
+   */
+  generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16;//random number between 0 and 16
+      if(d > 0){//Use timestamp until depleted
+        r = (d + r)%16 | 0;
+        d = Math.floor(d/16);
+      } else {//Use microseconds since page-load if supported
+        r = (d2 + r)%16 | 0;
+        d2 = Math.floor(d2/16);
+      }
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
   }
 }
