@@ -4,6 +4,7 @@ class UploadClient {
     this.client_id = client_id
     this.client_uuid = "12345678-1234-1234-1234-deadbeaf4242"
     this.oauth = new OauthClient(client_id);
+    this.finished = [];
   }
 
   //Add uploaded file to process queue
@@ -90,6 +91,9 @@ class UploadClient {
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
+
+      this.finished.push(item.uuid);
+
       const json = await response.json();
       return json.bma_response 
     } catch (error) {
@@ -115,6 +119,34 @@ class UploadClient {
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.error(error.message);
+      return [];
+    }
+  }
+
+  async createAlbum(name, description) {
+    var data = {
+      'title': name,
+      'description': description,
+      'files': this.finished,
+    }
+    if (this.finished.length === 0) return
+    try {
+      const response = await fetch(`/api/v1/json/albums/create/`, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      this.finished = [];
       const json = await response.json();
       return json.bma_response 
     } catch (error) {

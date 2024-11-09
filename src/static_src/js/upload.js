@@ -150,6 +150,12 @@ jQuery(document).ready(function () {
     UC.processNext();
     dropzone.processQueue();
   })
+
+  //Event triggered after its done uploading
+  dropzone.on("queuecomplete", _file => {
+    const now = new Date;
+    UC.createAlbum(`Uploaded ${now.toISOString()}`,"") 
+  })
 });
 
 
