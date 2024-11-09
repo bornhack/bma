@@ -4,10 +4,12 @@ class OauthClient {
    * Create OAuth Client instance.
    *
    * @param {string} client_id - oauth client_id
+   * @param {function} callback - Has token callback 
    */
-  constructor(client_id) {
+  constructor(client_id, callback) {
     this.token = undefined;
     this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    this.callback = callback;
     this.getToken(client_id);
   }
 
@@ -148,6 +150,7 @@ class OauthClient {
       const token = await this.sendTokenRequest(auth[0], client_id, verifier);
       this.fullToken = token;
       this.token = token.access_token;
+      if (this.callback) this.callback(this.token);
       return this.token;
     }
   }

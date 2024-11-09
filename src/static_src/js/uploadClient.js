@@ -9,7 +9,7 @@ class UploadClient {
     this.queue = []
     this.client_id = client_id
     this.client_uuid = ""
-    this.oauth = new OauthClient(client_id);
+    this.oauth = new OauthClient(client_id, (token) => this.oauthReady(token));
     this.finished = [];
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
@@ -18,6 +18,15 @@ class UploadClient {
       this.client_uuid = this.generateUUID();
       this.setCookie("uc_uuid", this.client_uuid, 1);
     }
+  }
+
+  /**
+   * OAuth token callback
+   *
+   * @param {string} token - OAuth token
+   */
+  oauthReady(_token) {
+    this.getClientConfig();
   }
 
   /**
@@ -46,7 +55,7 @@ class UploadClient {
         maxWidth: width,
         maxHeight: height,
         mimeType: type,
-        convertSize: 50000000,
+        convertSize: -1,
         success(result) {
           resolve(result);
         },             
@@ -328,5 +337,27 @@ class UploadClient {
       }
       return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
+  }
+
+  /**
+   * Get client configuration from server.
+   *
+   */
+  async getClientConfig() {
+    try {
+      const response = await fetch(`/api/v1/json/jobs/settings/`, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      this.finished = [];
+      const json = await response.json();
+      this.config = json.bma_response;
+    } catch (error) {
+      console.error(error.message);
+    }
   }
 }
