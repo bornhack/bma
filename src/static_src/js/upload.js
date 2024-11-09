@@ -1,7 +1,6 @@
 Dropzone.autoDiscover = false;
 const baseURL = "";
 const client_id = JSON.parse(document.getElementById('client_id').textContent);
-//const UC = new UploadClient("Er9anq9PV7mlkPPMP03DtrIrXmGh1pNNo8YdMDe9");
 const UC = new UploadClient(client_id);
 
 var dropzone = undefined;
