@@ -1,121 +1,56 @@
 {% extends "base.html" %}
+{% load static %}
 {% load django_bootstrap5 %}
 {% block title %}Upload Files{% endblock title %}
 
+{% block extra_head %}
+    <script src="{% static 'js/vendor/base64.min.js' %}"></script>
+    <script src="{% static 'js/vendor/dropzone-min.js' %}"></script>
+    <script src="{% static 'js/vendor/compressor.js' %}"></script>
+    <script src="{% static 'js/vendor/exifr.js' %}"></script>
+    <script src="{% static 'js/vendor/tui-code-snippet.min.js' %}"></script>
+    <script src="{% static 'js/vendor/tui-color-picker/tui-color-picker.min.js' %}"></script>
+    <script src="{% static 'js/vendor/fabric.min.js' %}"></script>
+    <script src="{% static 'js/vendor/image-editor/tui-image-editor.min.js' %}"></script>
+    <script src="{% static 'js/oauthClient.js' %}"></script>
+    <script src="{% static 'js/uploadClient.js' %}"></script>
+    {{ user.webapp_oauth_client_id|json_script:"client_id" }}
+    <link rel="stylesheet" href="{% static 'js/vendor/dropzone.css' %}" type="text/css" />
+    <link rel="stylesheet" href="{% static 'js/vendor/image-editor/tui-image-editor.min.css' %}" type="text/css" />
+    <link rel="stylesheet" href="{% static 'js/vendor/tui-color-picker/tui-color-picker.css' %}" type="text/css" />
+{% endblock extra_head %}
+
 {% block main_content %}
-  <div class="row justify-content-center">
-    <div class="col-lg-6 col-sm-8">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Upload Files to BMA</h5>
-        </div>
-        <div class="card-body license-card">
-            <p class="fs-3">Understanding Creative Commons licenses</p>
-          <div class="row g-3 justify-content-center my-3">
-            <div class="col-lg-4 d-flex align-items-stretch">
-              <div class="card">
-                <div class="card-body text-center p-4">
-                  <i class="fa-brands fa-creative-commons-zero fa-5x mb-3"></i>
-                  <h5 class="card-title mb-3">CC0 1.0 Universal</h5>
-                  <p class="card-text mb-4 text-secondary">
-                  The creator is giving up their copyright and allowing reusers to distribute, remix, adapt, and build upon the material in any medium or format, even for commercial purposes.
-                  </p>
-                </div>
-                <div class="card-footer">
-                  <a href="https://creativecommons.org/publicdomain/zero/1.0/" class="fw-bold text-decoration-none link-primary" target="_blank">Learn more</a>
-                </div>
+  <p class="fs-3">Enter File(s) Metadata</p>
+  {% for field in form %}
+      {% if field.name != "files" %}
+          {% bootstrap_field field %}
+      {% endif %}
+  {% endfor %}
+  <form enctype='multipart/form-data' action="/api/v1/json/files/upload/" method='POST' class="dropzone dz" id="my-dropzone" >
+      {% csrf_token %}
+  </form>
+  <button id="btnupload" disabled class="btn btn-primary">Upload</button>
+  <script src={% static 'js/upload.js' %}></script>
+  <img id="preview">
+  <div class="modal fade" id="image-editor-modal" tabindex="-1" aria-labelledby="ImageEditorModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="ImageEditorModalLabel">Editor</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-            </div>
-            <div class="col-lg-4 d-flex align-items-stretch">
-              <div class="card">
-                <div class="card-body text-center p-4">
-                  <i class="fa-brands fa-creative-commons-by fa-5x mb-3"></i>
-                  <h5 class="card-title mb-3">Attribution 4.0 International</h5>
-                  <p class="card-text mb-4 text-secondary">
-                  Requires that reusers give credit to the creator. It allows reusers to distribute, remix, adapt, and build upon the material in any medium or format, even for commercial purposes.
-                  </p>
-                </div>
-                <div class="card-footer">
-                  <a href="https://creativecommons.org/licenses/by/4.0/" class="fw-bold text-decoration-none link-primary" target="_blank">Learn more</a>
-                </div>
+              <div class="modal-body">
+                  <div id="my-image-editor" style="height: 800px">
+                      <canvas></canvas>
+                  </div> 
               </div>
-            </div>
-            <div class="col-lg-4 d-flex align-items-stretch">
-              <div class="card">
-                <div class="card-body text-center p-4">
-                  <i class="fa-brands fa-creative-commons-sa fa-5x mb-3"></i>
-                  <h5 class="card-title mb-3">Attribution-ShareAlike 4.0 International</h5>
-                  <p class="card-text text-secondary mb-1">
-                  Requires that reusers give credit to the creator. It allows reusers to distribute, remix, adapt, and build upon the material in any medium or format, even for commercial purposes.
-                  If others remix, adapt, or build upon the material, they must license the modified material under identical terms.
-                  </p>
-                </div>
-                <div class="card-footer">
-                  <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="fw-bold text-decoration-none link-primary" target="_blank">Learn more</a>
-                </div>
+              <div class="modal-footer">
+                  <button type="button" id="editor-cancel" class="btn btn-secondary">Close</button>
+                  <button type="button" id="editor-save-image" class="btn btn-primary">Save</button>
+                  <button type="button" id="editor-save-new-image" class="btn btn-primary">Save as New</button>
               </div>
-            </div>
           </div>
-          <div class="row">
-            <div class="col mt-3">
-                <p class="fs-3">Enter File(s) Metadata</p>
-                {% csrf_token %}
-                {% for field in form %}
-                  {% if field.name != "files" %}
-                    {% bootstrap_field field %}
-                  {% endif %}
-                {% endfor %}
-            </div>
-          </div>
-          <div class="row">
-            <div class="col mt-3">
-                <p class="fs-3">Pick File(s) to Upload</p>
-                {% csrf_token %}
-                {% for field in form %}
-                  {% if field.name == "files" %}
-                    {% bootstrap_field field %}
-                  {% endif %}
-                {% endfor %}
-                <small class="text-muted">* Required</small>
-            </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col">
-              <div id="preview-wrapper" class="row gy-3"></div>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-            <button id="btnupload" onclick="uploadFiles()" class="btn btn-success" disabled>Upload files</button>
-        </div>
       </div>
-    </div>
   </div>
-
-
-  {# the preview template #}
-  <template id="preview-template">
-    <div class='col-sm-4 preview'>
-      <div class='card h-100'>
-        <div class='card-body'>
-          <h5 class='card-title'></h5>
-          <p class='card-text'></p>
-        </div>
-        <div class='card-footer'>
-          <p>
-            {# shown before upload #}
-            <i class="fas fa-info d-none"></i>
-            {# shown during upload #}
-            <i class="fas fa-spinner fa-spin d-none"></i>
-            {# shown after upload success #}
-            <i class="fas fa-check d-none"></i>
-            {# shown after upload failure #}
-            <i class="fas fa-exclamation-times d-none"></i>
-            <span class="message"></span>
-          </p>
-        </div>
-      </div>
-    </div>
-  </template>
-
 {% endblock main_content %}

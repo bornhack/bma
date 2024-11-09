@@ -40,7 +40,8 @@ class OauthClient {
     requestData.append('csrfmiddlewaretoken', csrf);
     requestData.append('client_id', client_id);
     requestData.append('state', state);
-    requestData.append('redirect_uri', window.location);
+    //Using this url just to get a 200 on the redirect
+    requestData.append('redirect_uri', window.location.origin + "/api/csrf/");
     requestData.append('response_type', 'code');
     requestData.append('code_challenge', codeChallengeBase64);
     requestData.append('code_challenge_method', 'S256');
@@ -71,7 +72,8 @@ class OauthClient {
     const requestData = new URLSearchParams();
     requestData.append("grant_type", "authorization_code");
     requestData.append("code", authcode);
-    requestData.append("redirect_uri", window.location); 
+    //Using this url just to get a 200 on the redirect
+    requestData.append('redirect_uri', window.location.origin + "/api/csrf/");
     requestData.append("client_id", client_id);
     requestData.append("code_verifier", code_verifier);
     try {
