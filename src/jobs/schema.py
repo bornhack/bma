@@ -85,6 +85,7 @@ class SettingsSchema(Schema):
 
     filetypes: dict[str, dict[str, str]]
     licenses: dict[str, str]
+    encoding: dict[str, dict[str, dict[str, bool | float]]]
 
 
 class SettingsResponseSchema(Schema):

@@ -14,4 +14,6 @@ from .schema import ApiMessageSchema
 FileApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | dict[str, BaseFile | QuerySet[BaseFile] | str]]
 AlbumApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | dict[str, Album | QuerySet[Album] | str]]
 JobApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | QuerySet[BaseJob]]
-JobSettingsResponseType: TypeAlias = tuple[int, dict[str, dict[str, dict[str, str | dict[str, str]]]]]
+JobSettingsResponseType: TypeAlias = tuple[
+    int, dict[str, dict[str, object | dict[str, str | dict[str, str | bool | float]]]]
+]

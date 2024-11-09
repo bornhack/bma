@@ -46,7 +46,7 @@ query: Query = Query(...)  # type: ignore[type-arg]
 )
 def job_settings(request: HttpRequest) -> JobSettingsResponseType:
     """API endpoint for returning the settings of the BMA server."""
-    response: dict[str, dict[str, dict[str, str] | str]] = {
+    response = {
         "filetypes": {
             "images": dict(settings.ALLOWED_IMAGE_TYPES),
             "videos": dict(settings.ALLOWED_VIDEO_TYPES),
@@ -54,6 +54,9 @@ def job_settings(request: HttpRequest) -> JobSettingsResponseType:
             "documents": dict(settings.ALLOWED_DOCUMENT_TYPES),
         },
         "licenses": dict(LicenseChoices.choices),
+        "encoding": {
+            "images": settings.IMAGE_ENCODING,
+        },
     }
     return 200, {"bma_response": response}
 
