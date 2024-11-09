@@ -1,15 +1,32 @@
+/** Class OAuth client lib - Used for getting oauth tokens from the api */
 class OauthClient {
+  /**
+   * Create OAuth Client instance.
+   *
+   * @param {string} client_id - oauth client_id
+   */
   constructor(client_id) {
     this.token = undefined;
     this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     this.getToken(client_id);
   }
 
+  /**
+   * Get a random number.
+   *
+   * @param {number} max - Max number
+   * @return {number} Random number
+   */
   randomInt(max) {
     return Math.floor(Math.random() * max)
   }
 
-  //Generate oAuthChallenge from Verifier
+  /**
+   * Generate oAuthChallenge from Verifier
+   *
+   * @param {string} codeVerifier - Verifier code 
+   * @return {string} Base64 Challenge 
+   */
   async oauthGetChallenge(codeVerifier) {
     const digest = await crypto.subtle.digest("SHA-256",
       new TextEncoder().encode(codeVerifier));
@@ -18,7 +35,11 @@ class OauthClient {
       .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
   }
 
-  //Get Base64 oAuth Verifier
+  /**
+   * Get Base64 oAuth Verifier
+   *
+   * @return {string} Base64 Verifier 
+   */
   oauthGetVerifier() {
     // Generate a random code verifier
     const codeVerifierLength = 43 + this.randomInt(52);
@@ -28,13 +49,26 @@ class OauthClient {
     return Base64.encode(codeVerifier); 
   }
 
-  //Make the random state data
+  /**
+   * Make the random state data
+   *
+   * @return {string} State value 
+   */
   oauthGetState() {
     // Generate a random state
     const stateLength = 15;
     return Array.from({ length: stateLength }, () => this.alphabet[this.randomInt(this.alphabet.length)]).join('');
   }
 
+  /**
+   * Send authorization request to the API.
+   *
+   * @param {string} csrf - CSRF Token
+   * @param {string} client_id - OAuth client_id
+   * @param {string} codeChallengeBase64 - Base64 encoded Challenge
+   * @param {string} state - State value 
+   * @return {array} [rescode, resstate] 
+   */
   async sendAuthorizationRequest(csrf, client_id, codeChallengeBase64, state) {
     const requestData = new URLSearchParams();
     requestData.append('csrfmiddlewaretoken', csrf);
@@ -68,6 +102,14 @@ class OauthClient {
     }
   }
 
+  /**
+   * Send token request to the API.
+   *
+   * @param {string} authcode - OAuth Auth code 
+   * @param {string} client_id - OAuth client_id
+   * @param {string} code_verifier - Base64 encoded verifier 
+   * @return {promise<object>} Token response
+   */
   async sendTokenRequest(authcode, client_id, code_verifier) {
     const requestData = new URLSearchParams();
     requestData.append("grant_type", "authorization_code");
@@ -90,6 +132,12 @@ class OauthClient {
     }
   }
 
+  /**
+   * Get token 
+   *
+   * @param {string} client_id - OAuth client_id
+   * @return {string} Token
+   */
   async getToken(client_id) {
     const verifier = this.oauthGetVerifier();
     const state = this.oauthGetState();

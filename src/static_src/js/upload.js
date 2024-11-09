@@ -1,8 +1,11 @@
+/* File used in /file/upload as the main JS file */
+
 Dropzone.autoDiscover = false;
 const baseURL = "";
 const client_id = JSON.parse(document.getElementById('client_id').textContent);
 const UC = new UploadClient(client_id);
 
+//Init base variables
 var dropzone = undefined;
 var ImageEditorModal = undefined;
 var ImageEditor = undefined;
@@ -157,7 +160,12 @@ jQuery(document).ready(function () {
   })
 });
 
-
+/**
+ * DataURI to Blob 
+ *
+ * @param {string} dataURI - Data URI 
+ * @return {blob} Image 
+ */
 function dataURItoBlob(dataURI) {
 	var byteString = atob(dataURI.split(",")[1]);
 	var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];

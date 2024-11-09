@@ -20,7 +20,12 @@ class UploadClient {
     }
   }
 
-  //Add uploaded file to process queue
+  /**
+   * Add uploaded file to process queue 
+   *
+   * @param {string} uuid - UUID of the uploaded file 
+   * @param {object} file - File object
+   */
   addToQueue(uuid, file) {
     this.queue.push({uuid: uuid, file: file, tasks: []});
   }
