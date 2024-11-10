@@ -191,7 +191,7 @@ def upload_result(
     elif job.job_type == "ImageExifExtractionJob":
         exif = json.load(f)
         basefile.exif = exif
-        basefile.save(fields=["exif", "updated"])
+        basefile.save(update_fields=["exif", "updated"])
     else:
         logger.debug(f"Unsupported job type: {job.job_type}")
         return 500, {"message": "Unsupported job type"}
@@ -201,7 +201,7 @@ def upload_result(
     job.client_uuid = client.client_uuid
     job.client_version = client.client_version
     job.finished = True
-    job.save(fields=["user", "client_uuid", "client_version", "finished"])
+    job.save(update_fields=["user", "client_uuid", "client_version", "finished"])
 
     # refresh basefile to get updated jobcount
     basefile.refresh_from_db()
