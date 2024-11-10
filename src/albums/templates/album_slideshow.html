@@ -1,4 +1,5 @@
 {% extends "album_detail.html" %}
+{% load pictures %}
 {% block album_detail %}
       <div class="row mb-3">
         <div id="col-8 text-center">
@@ -7,11 +8,7 @@
               <ul class="splide__list">
                 {% for file in filter.qs %}
                 <li class="splide__slide">
-                  {% if file.large_thumbnail.url %}
-                  <img src="{{ file.large_thumbnail.url }}" alt="">
-                  {% else %}
-                    <i class="fa-regular fa-eye-slash fa-9x"></i>
-                  {% endif %}
+                  {% picture file.original img_alt=file.title img_class="img-thumbnail" sm=1 lg=1 %}
                 </li>
                 {% endfor %}
               </ul>
@@ -28,12 +25,7 @@
                   <div class="row">
                     <div id="col">
                       <div class="text-center">
-                      {% if file.large.url %}
-                        <img src="{{ file.medium.url }}"/>
-                      {% else %}
-                        <i class="fa-regular fa-eye-slash fa-9x"></i>
-                        <p class="lead">No preview yet</p>
-                      {% endif %}
+                        {% picture file.original img_alt=file.title img_class="img-thumbnail" sm=12 lg=8 %}
                       </div>
                     </div>
                   </div>

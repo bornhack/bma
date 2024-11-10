@@ -15,12 +15,7 @@
       </div>
       <div class="row">
         <div class="col">
-        {% if 1 %}
-            {% picture file.original img_alt=file.title img_loading="lazy" img_class="img-fluid img-thumbnail" sm=12 lg=9 %}
-        {% else %}
-          <i class="fa-regular fa-eye-slash fa-9x"></i>
-          <p class="lead">No preview yet</p>
-        {% endif %}
+          {% picture file.original img_alt=file.title img_loading="lazy" img_class="img-fluid img-thumbnail" sm=12 lg=9 %}
         </div>
       </div>
     </div>
@@ -55,6 +50,9 @@
                   <dl class="row mb-1">
                     <dt class="col-sm-3 text-truncate">Title</dt>
                     <dd class="col-sm-9">{{ file.title }}</dd>
+
+                    <dt class="col-sm-3 text-truncate">Original Dimensions</dt>
+                    <dd class="col-sm-9">{{ file.width }}*{{ file.height }} (w*h)</dd>
 
                     <dt class="col-sm-3 text-truncate">UUID</dt>
                     <dd class="col-sm-9">{{ file.uuid }}</dd>
