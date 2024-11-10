@@ -3,7 +3,6 @@
 
 import uuid
 from fractions import Fraction
-from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -115,17 +114,6 @@ class ImageConversionJob(BaseJob):
     def aspect_ratio(self) -> Fraction:
         """Return job AR as a Fraction."""
         return Fraction(self.width, self.height)
-
-    def get_result_path(self) -> tuple[Path, str]:
-        """Return the path and filename for the job result."""
-        orig = Path(self.basefile.original.path)
-        path = orig.parent / orig.stem
-        if self.custom_aspect_ratio:
-            # add /4_3/ to the path for AR 4/3
-            path /= str(self.aspect_ratio).replace("/", "_")
-        path.mkdir(parents=True, exist_ok=True)
-        filename = f"{self.width}w.{self.filetype.lower()}"
-        return path, filename
 
     @property
     def mimetype(self) -> str:

@@ -4,6 +4,7 @@ import json
 import logging
 import uuid
 from datetime import timedelta
+from pathlib import Path
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -181,12 +182,12 @@ def upload_result(
 
     # save job result
     if job.job_type == "ImageConversionJob":
-        path, filename = job.get_result_path()
+        path = Path(settings.MEDIA_ROOT / job.path)
         # maybe delete before writing?
-        FileSystemStorage(location=path).save(filename, f)
+        FileSystemStorage(location=path.parent).save(path.name, f)
         logger.debug(
-            f"Job {job.pk} wrote {(path/filename).stat().st_size} bytes {job.width}x{job.height}"
-            f"{job.mimetype} image to path {path / filename}"
+            f"Job {job.pk} wrote {path.stat().st_size} bytes {job.width}x{job.height}"
+            f"{job.mimetype} image to path {path}"
         )
     elif job.job_type == "ImageExifExtractionJob":
         exif = json.load(f)
