@@ -2,18 +2,11 @@
 
 from bs4 import BeautifulSoup
 from django.urls import reverse
-from oauth2_provider.models import get_access_token_model
-from oauth2_provider.models import get_application_model
-from oauth2_provider.models import get_grant_model
 
-from utils.tests import ApiTestBase
-
-Application = get_application_model()
-AccessToken = get_access_token_model()
-Grant = get_grant_model()
+from utils.tests import BmaTestBase
 
 
-class TestAlbumsApi(ApiTestBase):
+class TestAlbumsApi(BmaTestBase):
     """Test for API endpoints in the albums API."""
 
     def test_album_create_api(
@@ -169,7 +162,7 @@ class TestAlbumsApi(ApiTestBase):
         assert response.json()["bma_response"][0]["title"] == "album5", "Did not get the expected offset"
 
 
-class TestAlbumViews(ApiTestBase):
+class TestAlbumViews(BmaTestBase):
     """Unit tests for regular django Album views."""
 
     def create_albums(self) -> None:

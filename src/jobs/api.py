@@ -20,7 +20,7 @@ from files.models import BaseFile
 from files.models import LicenseChoices
 from files.schema import SingleFileResponseSchema
 from jobs.models import BaseJob
-from jobs.schema import JobRequestSchema
+from jobs.schema import JobClientSchema
 from jobs.schema import MultipleJobResponseSchema
 from jobs.schema import SettingsResponseSchema
 from utils.api import FileApiResponseType
@@ -46,14 +46,17 @@ query: Query = Query(...)  # type: ignore[type-arg]
 )
 def job_settings(request: HttpRequest) -> JobSettingsResponseType:
     """API endpoint for returning the settings of the BMA server."""
-    response: dict[str, dict[str, dict[str, str] | str]] = {
+    response = {
         "filetypes": {
-            "images": dict(settings.ALLOWED_IMAGE_TYPES),
-            "videos": dict(settings.ALLOWED_VIDEO_TYPES),
-            "audios": dict(settings.ALLOWED_AUDIO_TYPES),
-            "documents": dict(settings.ALLOWED_DOCUMENT_TYPES),
+            "image": dict(settings.ALLOWED_IMAGE_TYPES),
+            "video": dict(settings.ALLOWED_VIDEO_TYPES),
+            "audio": dict(settings.ALLOWED_AUDIO_TYPES),
+            "document": dict(settings.ALLOWED_DOCUMENT_TYPES),
         },
         "licenses": dict(LicenseChoices.choices),
+        "encoding": {
+            "images": settings.IMAGE_ENCODING,
+        },
     }
     return 200, {"bma_response": response}
 
@@ -82,8 +85,8 @@ def filter_jobs(jobs: QuerySet[BaseJob], filters: JobFilters) -> QuerySet[BaseJo
     if filters.client_uuid:
         jobs = jobs.filter(client_uuid=filters.client_uuid)
 
-    if filters.useragent:
-        jobs = jobs.filter(useragent=filters.useragent)
+    if filters.client_version:
+        jobs = jobs.filter(client_version=filters.client_version)
 
     if filters.finished is not None:
         jobs = jobs.filter(finished=filters.finished)
@@ -108,7 +111,7 @@ def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiRespons
         jobs = jobs[filters.offset :]
     if filters.limit:
         jobs = jobs[: filters.limit]
-    return 200, {"bma_response": jobs, "message": f"Returning {jobs.count()} jobs"}  # type: ignore[return-value]
+    return 200, {"bma_response": jobs, "message": f"Returning {jobs.count()} jobs"}
 
 
 @router.post(
@@ -120,11 +123,11 @@ def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiRespons
     },
     summary="Assign jobs for a file to the calling user.",
 )
-def assign_file_jobs(request: HttpRequest, assign: JobRequestSchema, filters: JobFilters = query) -> JobApiResponseType:
+def assign_file_jobs(request: HttpRequest, client: JobClientSchema, filters: JobFilters = query) -> JobApiResponseType:
     """Assign jobs for a file to the calling user."""
     # clear old assigned unfinished jobs here
     BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
-        user=None, client_uuid=None, useragent=""
+        user=None, client_uuid=None, client_version=""
     )
 
     # get all jobs
@@ -137,7 +140,7 @@ def assign_file_jobs(request: HttpRequest, assign: JobRequestSchema, filters: Jo
         user__isnull=True,
     )
     if not jobs.exists() or jobs is None:
-        return 404, ApiMessageSchema(message="No unassigned and unfinished jobs jobs found. Nothing to do right now.")
+        return 404, {"message": "No unassigned and unfinished jobs jobs found. Nothing to do right now."}
 
     # pick a file and get all other jobs for the same file
     file_uuid = jobs.values_list("basefile_id", flat=True)[0]
@@ -148,15 +151,15 @@ def assign_file_jobs(request: HttpRequest, assign: JobRequestSchema, filters: Jo
     )
     if not jobs.exists():
         # race condition, another client was just assigned/just finished this job
-        return 500, ApiMessageSchema(message="Concurrency issue, please try again. PRs welcome.")
+        return 500, {"message": "Concurrency issue, please try again. PRs welcome."}
 
     # assign and return jobs
     job_ids = list(jobs.values_list("uuid", flat=True))
     logger.debug(f"Assigning {jobs.count()} jobs for file {file_uuid} to user {request.user}: {job_ids}")
-    jobs.update(user=request.user, client_uuid=assign.client_uuid, useragent=request.headers["user-agent"])
+    jobs.update(user=request.user, client_uuid=client.client_uuid, client_version=client.client_version)
     # reload from db
     jobs = BaseJob.objects.filter(uuid__in=job_ids)
-    return 200, {"bma_response": jobs, "message": f"Assigned {jobs.count()} jobs"}  # type: ignore[return-value]
+    return 200, {"bma_response": jobs, "message": f"Assigned {jobs.count()} jobs"}
 
 
 @router.post(
@@ -169,7 +172,7 @@ def assign_file_jobs(request: HttpRequest, assign: JobRequestSchema, filters: Jo
     summary="Upload the result of a job",
 )
 def upload_result(
-    request: HttpRequest, job_uuid: uuid.UUID, f: UploadedFile, assign: JobRequestSchema
+    request: HttpRequest, job_uuid: uuid.UUID, f: UploadedFile, client: JobClientSchema
 ) -> FileApiResponseType:
     """Endpoint for uploading the result of a job."""
     # get job and file
@@ -179,6 +182,7 @@ def upload_result(
     # save job result
     if job.job_type == "ImageConversionJob":
         path, filename = job.get_result_path()
+        # maybe delete before writing?
         FileSystemStorage(location=path).save(filename, f)
         logger.debug(
             f"Job {job.pk} wrote {(path/filename).stat().st_size} bytes {job.width}x{job.height}"
@@ -187,17 +191,17 @@ def upload_result(
     elif job.job_type == "ImageExifExtractionJob":
         exif = json.load(f)
         basefile.exif = exif
-        basefile.save()
+        basefile.save(fields=["exif", "updated"])
     else:
         logger.debug(f"Unsupported job type: {job.job_type}")
         return 500, {"message": "Unsupported job type"}
 
     # mark job as completed
     job.user = request.user
-    job.client_uuid = assign.client_uuid
-    job.useragent = request.headers["user-agent"]
+    job.client_uuid = client.client_uuid
+    job.client_version = client.client_version
     job.finished = True
-    job.save()
+    job.save(fields=["user", "client_uuid", "client_version", "finished"])
 
     # refresh basefile to get updated jobcount
     basefile.refresh_from_db()

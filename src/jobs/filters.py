@@ -13,5 +13,5 @@ class JobFilters(Schema):
     file_uuid: uuid.UUID | None = None
     user_uuid: uuid.UUID | None = None
     client_uuid: uuid.UUID | None = None
-    useragent: str | None = None
+    client_version: str | None = None
     finished: bool | None = None

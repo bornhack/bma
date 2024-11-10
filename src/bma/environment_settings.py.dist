@@ -119,3 +119,10 @@ HITCOUNT_EXCLUDE_USER_GROUP = ()
 
 # Any Hit older than the time specified will be removed from the Hits table when the cleanup management command is run
 HITCOUNT_KEEP_HIT_IN_DATABASE = { 'days': 365 }
+
+IMAGE_ENCODING = {
+    "image/webp": {
+        "lossless": False,
+        "quality": 0.9,
+    },
+}
