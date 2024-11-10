@@ -110,6 +110,42 @@ class UploadClient {
   }
 
   /**
+   * Reformat exif data to schema used in BMA 
+   *
+   * @param {object} originalData - Original exif. 
+   * @returns {object} Reformatted exif data. 
+   */
+  reformatExifData(originalData) {
+    const formattedData = {
+      Image: {},
+      Thumbnail: {},
+      EXIF: {},
+    };
+
+    // Map of property name changes if any
+    const propertyMap = {
+    };
+
+    for (const key in originalData) {
+      const value = originalData[key];
+      const newKey = propertyMap[key] || key;
+
+      if (typeof newKey === 'object') {
+        newKey = newKey[value];
+      }
+
+      if (['ImageWidth', 'ImageHeight', 'Make', 'Model', 'Orientation', 'XResolution', 'YResolution', 'ResolutionUnit', 'Software', 'DateTime', 'YCbCrPositioning', 'ExifOffset'].includes(newKey)) {
+        formattedData.Image[newKey] = value.toString();
+      } else if ([].includes(newKey)) {
+        formattedData.Thumbnail[newKey] = value.toString();
+      } else {
+        formattedData.EXIF[newKey] = value.toString();
+      }
+    }
+    return formattedData;
+  }
+
+  /**
    * Process a job item from the queue 
    *
    * @param {object} item - Item to process 
@@ -119,19 +155,24 @@ class UploadClient {
   async processJob(item, job) {
     switch(job.job_type) {
       case "ImageConversionJob":
+        const filename = `${job.job_uuid}.${job.filetype}`
         console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
           return this.crop(item.file, job.width, job.height, job.mimetype).then(img=> {
-            this.uploadJobResult(job, img)
+            this.uploadJobResult(job, img, filename)
           });
         else
           return this.resize(item.file, job.width, job.height, job.mimetype).then(img=> {
-            this.uploadJobResult(job, img)
+            this.uploadJobResult(job, img, filename)
           });
+        break;
       case "ImageExifExtractionJob":
-        console.log(`Job for ${job.basefile_uuid}: ${job.job_type}`)
-        const exif = await this.exif(item.file);
-        return this.uploadJobResult(job, JSON.stringify(exif))
+        console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.job_uuid}`)
+        const exif = this.reformatExifData(await this.exif(item.file));
+        const jsonFile = new Blob([JSON.stringify(exif)], { type: 'application/json' });
+        console.log(exif, jsonFile);
+        return this.uploadJobResult(job, jsonFile, "exif.json");
+        break;
     }
   }
 
@@ -170,12 +211,14 @@ class UploadClient {
    * Upload the job results to the server 
    *
    * @param {object} item - Item to process 
+   * @param {object} result - Result to upload. 
+   * @param {string} filename - Name of the file 
    * @returns {array} bma_response 
    */
-  async uploadJobResult(job, file) {
+  async uploadJobResult(job, result, filename) {
     // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
     var data = new FormData()
-    data.append('f', file)
+    data.append('f', result, filename);
     data.append('assign', JSON.stringify({ "client_uuid": this.client_uuid }))
 
     try {
