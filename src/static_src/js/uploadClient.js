@@ -14,6 +14,7 @@ class UploadClient {
     this.finished = [];
     this.allowedMimetypes = [];
     this.callback = callback;
+    this.client_version = "js-client";
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
@@ -191,7 +192,7 @@ class UploadClient {
           "Content-Type": "application/json",
         },
         method: "POST",
-        body: JSON.stringify({ "client_uuid": this.client_uuid }),
+        body: JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }),
       });
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
@@ -219,7 +220,7 @@ class UploadClient {
     // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
     var data = new FormData()
     data.append('f', result, filename);
-    data.append('assign', JSON.stringify({ "client_uuid": this.client_uuid }))
+    data.append('client', JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }))
 
     try {
       const response = await fetch(`/api/v1/json/jobs/${job.job_uuid}/result/`, {
