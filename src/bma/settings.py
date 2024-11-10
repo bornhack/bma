@@ -9,6 +9,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version
 from pathlib import Path
 
 import django_stubs_ext
@@ -16,6 +18,12 @@ import django_stubs_ext
 from utils.ninjafix import monkeypatch_ninja_uuid_converter
 
 from .environment_settings import *  # noqa: F403
+
+# get BMA_VERSION from package registry
+try:
+    BMA_VERSION = version("bma")
+except PackageNotFoundError:
+    BMA_VERSION = "0.0.0"
 
 # intialise django_stubs_ext
 django_stubs_ext.monkeypatch()
@@ -80,14 +88,12 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "dealer.contrib.django.Middleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
-    # "oauth2_provider.backends.OAuth2Backend",
     "guardian.backends.ObjectPermissionBackend",
 ]
 
@@ -104,8 +110,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "dealer.contrib.django.context_processor",
                 "django.template.context_processors.media",
+                "utils.context_processors.bma_version",
             ],
         },
     },
@@ -259,7 +265,7 @@ PICTURES = {
         "xl": 1200,
         "xxl": 1400,
     },
-    "GRID_COLUMNS": 5,
+    "GRID_COLUMNS": 12,
     "CONTAINER_WIDTH": 2000,
     "FILE_TYPES": ["WEBP", "PNG"],
     "PIXEL_DENSITIES": [1, 2],

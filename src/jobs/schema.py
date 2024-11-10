@@ -11,10 +11,11 @@ from .models import BaseJob
 from .models import ImageConversionJob
 
 
-class JobRequestSchema(Schema):
-    """The schema used for requests for job assignment or job result submission."""
+class JobClientSchema(Schema):
+    """The client metadata schema used for requests for job assignment and for job result submission."""
 
     client_uuid: uuid.UUID
+    client_version: str
 
 
 class JobResponseSchema(Schema):

@@ -74,7 +74,7 @@ class BaseJob(PolymorphicModel):
         help_text="The UUID4 of the client instance/thread handling the job.",
     )
 
-    useragent = models.CharField(
+    client_version = models.CharField(
         max_length=255,
         blank=True,
         default="",
