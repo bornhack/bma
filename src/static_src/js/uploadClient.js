@@ -14,7 +14,8 @@ class UploadClient {
     this.finished = [];
     this.allowedMimetypes = [];
     this.callback = callback;
-    this.client_version = "js-client";
+    this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
+    this.client_version = `js-client - BMA ${this.bma_version}`;
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
@@ -166,14 +167,13 @@ class UploadClient {
           return this.resize(item.file, job.width, job.height, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename)
           });
-        break;
       case "ImageExifExtractionJob":
         console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.job_uuid}`)
-        const exif = this.reformatExifData(await this.exif(item.file));
+        const exifOrg = await this.exif(item.file);
+        const exif = this.reformatExifData(exifOrg);
         const jsonFile = new Blob([JSON.stringify(exif)], { type: 'application/json' });
-        console.log(exif, jsonFile);
+        console.log(exifOrg, exif);
         return this.uploadJobResult(job, jsonFile, "exif.json");
-        break;
     }
   }
 

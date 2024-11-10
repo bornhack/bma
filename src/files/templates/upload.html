@@ -4,6 +4,8 @@
 {% block title %}Upload Files{% endblock title %}
 
 {% block extra_head %}
+    {{ user.webapp_oauth_client_id|json_script:"client_id" }}
+    {{ bma_version|json_script:"bma_version" }}
     <script src="{% static 'js/vendor/base64.min.js' %}"></script>
     <script src="{% static 'js/vendor/dropzone-min.js' %}"></script>
     <script src="{% static 'js/vendor/compressor.js' %}"></script>
@@ -14,7 +16,6 @@
     <script src="{% static 'js/vendor/image-editor/tui-image-editor.min.js' %}"></script>
     <script src="{% static 'js/oauthClient.js' %}"></script>
     <script src="{% static 'js/uploadClient.js' %}"></script>
-    {{ user.webapp_oauth_client_id|json_script:"client_id" }}
     <link rel="stylesheet" href="{% static 'js/vendor/dropzone.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'js/vendor/image-editor/tui-image-editor.min.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'js/vendor/tui-color-picker/tui-color-picker.css' %}" type="text/css" />
