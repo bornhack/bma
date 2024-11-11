@@ -16,6 +16,8 @@ class UploadClient {
     this.callback = callback;
     this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
     this.client_version = `js-client - BMA ${this.bma_version}`;
+    this.activeJobs = 0;
+    this.maxConcurrent = 2;
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
@@ -126,6 +128,8 @@ class UploadClient {
 
     // Map of property name changes if any
     const propertyMap = {
+      "ISO": "ISOSpeedRatings",
+      "ExposureCompensation": "ExposureBiasValue",
     };
 
     for (const key in originalData) {
@@ -282,11 +286,14 @@ class UploadClient {
    *
    */
   async processNext() {
-    if (this.queue.length === 0) {
+    if (this.queue.length === 0 || this.activeJobs >= this.maxConcurrent) {
       return;
     }
     const item = this.queue.shift();
     try {
+      let jobsDone = 0;
+      this.activeJobs++;
+
       // Fetch job list from API
       const jobList = await this.fetchJobList(item);
 
@@ -294,20 +301,22 @@ class UploadClient {
       this.updateProgress(item, 0);
 
       // Process each job
-      let jobsDone = 0;
       for (const job of jobList) {
         if (!job.finished) {
           await this.processJob(item, job);
         }
         jobsDone++;
-        this.updateProgress(item, (jobsDone * 100) / jobList.length); 
+        this.updateProgress(item, (jobsDone * 100) / jobList.length);
+        console.log(`Jobs active: ${this.activeJobs}`)
       }
       //Produce some user feedback
       item.file.previewElement.classList.add("dz-complete");
       item.file.previewElement.classList.add("dz-success");
     } catch (error) {
+      this.activeJobs--;
       console.error(`Error processing Item ${item.uuid}:`, error);
     } finally {
+      this.activeJobs--;
       this.processNext(); // Process the next item in the queue
     }
   }
