@@ -49,7 +49,7 @@ dev = [
 ]
 test = [
     "beautifulsoup4==4.12.3",
-    "coverage==7.6.4",
+    "coverage==7.6.5",
     "django-debug-toolbar==4.4.6",
     "factory-boy==3.3.1",
     "pytest-django==4.9.0",
