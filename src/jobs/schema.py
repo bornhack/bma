@@ -19,8 +19,9 @@ class JobClientSchema(Schema):
 
 
 class JobResponseSchema(Schema):
-    """Base schema for representing an image conversion job in a response."""
+    """Base schema for representing a job in a response. Inherited by other schemas."""
 
+    schema_name: str
     basefile_uuid: uuid.UUID
     client_uuid: uuid.UUID | None = None
     finished: bool
@@ -28,6 +29,8 @@ class JobResponseSchema(Schema):
     job_uuid: uuid.UUID
     user_uuid: uuid.UUID | None = None
     useragent: str | None = None
+    source_url: str
+    source_filename: str
 
     @staticmethod
     def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
@@ -46,10 +49,16 @@ class JobResponseSchema(Schema):
         """Get the value for the user_uuid field."""
         return obj.user_id  # type: ignore[no-any-return]
 
+    @staticmethod
+    def resolve_source_url(obj: BaseJob, context: dict[str, HttpRequest]) -> str:
+        """Get the value for the source_url field."""
+        return obj.source_url
+
 
 class ImageConversionJobResponseSchema(JobResponseSchema):
     """Schema used for representing an image conversion job in a response."""
 
+    schema_name: str = "ImageConversionJobResponseSchema"
     filetype: str
     mimetype: str
     width: int
@@ -61,6 +70,21 @@ class ExifExtractionJobResponseSchema(JobResponseSchema):
     """Schema used for representing an exif metadata extraction job in a response."""
 
     # this job schema has no extra fields
+    schema_name: str = "ExifExtractionJobResponseSchema"
+
+
+class ThumbnailSourceJobResponseSchema(JobResponseSchema):
+    """Schema used for representing a thumbnail source job in a response."""
+
+    # this job schema has no extra fields
+    schema_name: str = "ThumbnailSourceJobResponseSchema"
+
+
+class ThumbnailJobResponseSchema(JobResponseSchema):
+    """Schema used for representing a thumbnail job in a response."""
+
+    # this job schema has no extra fields
+    schema_name: str = "ThumbnailJobResponseSchema"
 
 
 class SingleJobResponseSchema(ApiResponseSchema):

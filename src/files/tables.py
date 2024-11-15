@@ -12,6 +12,11 @@ class FileTable(tables.Table):
 
     selection = tables.CheckBoxColumn(accessor="pk", orderable=False)
     uuid = tables.Column(linkify=True)
+    thumbnail = tables.TemplateColumn(
+        verbose_name="Thumbnail",
+        template_name="includes/file_thumbnail.html",
+        extra_context={"width": 100, "ratio": "16/9"},
+    )
     albums = tables.Column(verbose_name="Albums")
     uploader = tables.Column(linkify=True)
     hitcount = tables.Column(verbose_name="Hits")
@@ -48,6 +53,7 @@ class FileTable(tables.Table):
         fields = (
             "selection",
             "uuid",
+            "thumbnail",
             "title",
             "albums",
             "attribution",

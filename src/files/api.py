@@ -34,11 +34,13 @@ from videos.models import Video
 from .filters import FileFilters
 from .models import BaseFile
 from .models import FileTypeChoices
+from .models import Thumbnail
 from .schema import FileUpdateRequestSchema
 from .schema import MultipleFileRequestSchema
 from .schema import MultipleFileResponseSchema
 from .schema import SingleFileRequestSchema
 from .schema import SingleFileResponseSchema
+from .schema import ThumbnailMetadataSchema
 from .schema import UploadRequestSchema
 
 logger = logging.getLogger("bma")
@@ -81,7 +83,6 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
         from documents.models import Document as Model
     else:
         return 422, {"message": "File type not supported"}
-    del data["mimetype"]
 
     # handle tags seperately, and skip empty tags
     tags = [tag for tag in data.pop("tags", []) if tag]
@@ -99,10 +100,6 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     if not uploaded_file.title:
         uploaded_file.title = uploaded_file.original_filename
 
-    # thumbnail url was not specified, use the default for the filetype
-    if not uploaded_file.thumbnail_url:
-        uploaded_file.thumbnail_url = settings.DEFAULT_THUMBNAIL_URLS[uploaded_file.filetype]
-
     # validate everything and return 422 if something is fucky
     try:
         uploaded_file.full_clean()
@@ -116,10 +113,6 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     # handle tags
     if tags:
         uploaded_file.tags.add_user_tags(*tags, user=request.user)
-
-    # this has to be done after .save() to ensure the uuid filename and
-    # full path is passed to the imagekit namer
-    uploaded_file.set_initial_thumbnail()
 
     # assign permissions (publish_basefile and unpublish_basefile are assigned after moderation)
     uploaded_file.add_initial_permissions()
@@ -598,3 +591,68 @@ def file_untag(
         content_object=basefile, tagger=request.user, tag__name__in=data.tags
     ).delete()
     return 200, {"bma_response": basefile.tags.all(), "message": f"OK, {deleted} tag(s) removed"}
+
+
+############## THUMBNAILS ######################################################
+@router.post(
+    "/{file_uuid}/thumbnail/",
+    response={
+        201: SingleFileResponseSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+        422: ApiMessageSchema,
+    },
+    summary="Upload thumbnail source image for a file.",
+)
+def file_thumbnail(
+    request: HttpRequest,
+    file_uuid: uuid.UUID,
+    f: UploadedFile,
+    metadata: ThumbnailMetadataSchema,
+    *,
+    check: bool = False,
+) -> FileApiResponseType:
+    """Endpoint for uploading the source image for thumbnails."""
+    # make sure the thumbnailing user has permissions to change the file
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("change_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    data = metadata.dict()
+
+    # initiate the model instance
+    Thumbnail.objects.create(
+        basefile=basefile,
+        source=f,
+        width=data["width"],
+        height=data["height"],
+    )
+    basefile.create_jobs()
+    basefile.refresh_from_db()
+    return 201, {"bma_response": basefile, "message": f"Thumbnail source for file {basefile.uuid} uploaded OK!"}
+
+
+@router.delete(
+    "/{file_uuid}/thumbnail/",
+    response={
+        204: None,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+    },
+    summary="Delete a thumbnail.",
+)
+def file_thumbnail_delete(
+    request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
+) -> tuple[int, dict[str, str] | None]:
+    """Delete a thumbnail."""
+    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    if not request.user.has_perm("change_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    basefile.thumbnail.delete()
+    return 204, None

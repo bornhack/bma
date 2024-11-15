@@ -24,7 +24,6 @@ class UploadRequestSchema(ModelSchema):
     mimetype: str
     original_source: str = ""
     tags: list[str] = []  # noqa: RUF012
-    thumbnail_url: str = ""
     title: str = ""
     width: int | None = None
     height: int | None = None
@@ -43,7 +42,6 @@ class FileUpdateRequestSchema(ModelSchema):
     description: str | None = ""
     original_source: str | None = ""
     attribution: str | None = ""
-    thumbnail_url: str | None = ""
 
     class Config:
         """Specify the model fields to allow."""
@@ -54,7 +52,6 @@ class FileUpdateRequestSchema(ModelSchema):
             "description",
             "original_source",
             "attribution",
-            "thumbnail_url",
         )
 
 
@@ -68,6 +65,14 @@ class MultipleFileRequestSchema(Schema):
     """The schema used for requests involving multiple files."""
 
     files: list[uuid.UUID]
+
+
+class ThumbnailMetadataSchema(Schema):
+    """Schema used when uploading thumbnail sources."""
+
+    width: int
+    height: int
+    mimetype: str
 
 
 """Response schemas below here."""
@@ -92,8 +97,11 @@ class FileResponseSchema(ModelSchema):
     tags: list[TagResponseSchema]
     jobs_unfinished: list[uuid.UUID]
     jobs_finished: list[uuid.UUID]
+    has_thumbnail: bool
     # move to seperate ImageResponseSchema pls
     exif: dict[str, dict[str, str]] | None = None
+    width: int | None = None
+    height: int | None = None
 
     class Config:
         """Specify the model fields to include."""
@@ -112,18 +120,12 @@ class FileResponseSchema(ModelSchema):
             "published",
             "deleted",
             "original_filename",
-            "thumbnail_url",
         )
 
     @staticmethod
     def resolve_albums(obj: BaseFile, context: dict[str, HttpRequest]) -> list[str]:
         """Get the value for the albums field."""
         return [str(x) for x in obj.albums.values_list("uuid", flat=True)]
-
-    @staticmethod
-    def resolve_filename(obj: BaseFile, context: dict[str, HttpRequest]) -> str:
-        """Get the value for the filename field."""
-        return Path(obj.original.path).name
 
     @staticmethod
     def resolve_size_bytes(obj: BaseFile, context: dict[str, HttpRequest]) -> int:
@@ -151,6 +153,11 @@ class FileResponseSchema(ModelSchema):
     def resolve_jobs_finished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
         """Get the number of finished jobs for this file."""
         return obj.jobs.filter(finished=True).values_list("uuid", flat=True)  # type: ignore[no-any-return]
+
+    @staticmethod
+    def resolve_has_thumbnail(obj: BaseFile, context: dict[str, HttpRequest]) -> bool:
+        """Does this file have a Thumbnail object or now."""
+        return hasattr(obj, "thumbnail")
 
 
 class SingleFileResponseSchema(ApiResponseSchema):

@@ -45,7 +45,6 @@ class TestFilesApi(BmaTestBase):
         data = self.file_upload(title="", return_full=True)
         assert data["title"] == data["original_filename"]
         self.file_upload(file_license="notalicense", expect_status_code=422)
-        self.file_upload(thumbnail_url="/foo/wrong.tar", expect_status_code=422)
 
     def test_file_list(self) -> None:  # noqa: PLR0915
         """Test the file_list endpoint."""
@@ -538,7 +537,6 @@ class TestFilesApi(BmaTestBase):
             "description": "some description",
             "license": "CC_ZERO_1_0",
             "attribution": "some attribution",
-            "thumbnail_url": "/media/foo/bar.png",
         }
 
         # update with no auth
@@ -588,15 +586,6 @@ class TestFilesApi(BmaTestBase):
             else:
                 assert v == original_metadata[k]
 
-        # try with an invalid thumbnail url
-        response = self.client.put(
-            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
-            {"thumbnail_url": "/wrong/value.tiff"},
-            headers={"authorization": self.creator2.auth},
-            content_type="application/json",
-        )
-        assert response.status_code == 422
-
         # update instead of replace, first with invalid source url
         response = self.client.patch(
             reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
@@ -617,15 +606,6 @@ class TestFilesApi(BmaTestBase):
         # make sure we updated only the source attribute with the PATCH request
         assert response.json()["bma_response"]["source"] == "https://example.com/foo.png"
         assert response.json()["bma_response"]["attribution"] == "some attribution"
-
-        # update thumbnail to an invalid value
-        response = self.client.patch(
-            reverse("api-v1-json:file_get", kwargs={"file_uuid": self.file_uuid}),
-            {"thumbnail_url": "/foo/evil.ext"},
-            headers={"authorization": self.creator2.auth},
-            content_type="application/json",
-        )
-        assert response.status_code == 422
 
     def test_post_csrf(self) -> None:
         """Make sure CSRF is enforced on API views when using django session cookie auth."""
@@ -770,6 +750,11 @@ class TestFilesApi(BmaTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["bma_response"]["size_bytes"], 0)
+
+    def test_thumbnail_upload(self) -> None:
+        """Test uploading a thumbnail for a file."""
+        data = self.file_upload(return_full=True)
+        assert not data["has_thumbnail"]
 
 
 class TestFileAdmin(BmaTestBase):

@@ -104,6 +104,10 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "utils.context_processors.bma_version",
             ],
+            "builtins": [
+                "pictures.templatetags.pictures",
+                "utils.templatetags.bma_utils",
+            ],
         },
     },
 ]
@@ -257,8 +261,8 @@ PICTURES = {
         "xxl": 1400,
     },
     "GRID_COLUMNS": 12,
-    "CONTAINER_WIDTH": 2000,
-    "FILE_TYPES": ["WEBP", "PNG"],
+    "CONTAINER_WIDTH": 4000,
+    "FILE_TYPES": ["WEBP"],
     "PIXEL_DENSITIES": [1, 2],
     "USE_PLACEHOLDERS": False,
     "PROCESSOR": "images.picture_processor.dummy_processor",
