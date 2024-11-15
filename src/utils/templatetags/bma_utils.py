@@ -31,10 +31,20 @@ def get_group_icons(
 @register.simple_tag()
 def thumbnail(field_file: "PictureFieldFile", width: int, ratio: str | None = None) -> str:
     """BMA thumbnail tag. Depends on the hardcoded 50,100,150,200px (and 2x)."""
+    if isinstance(field_file, str):
+        return mark_safe(  # noqa: S308
+            "<!-- Error creating thumbnail markup, field_file is a string -->"
+        )
     if width not in [50, 100, 150, 200]:
-        raise ValueError(width)
+        return mark_safe(  # noqa: S308
+            f"<!-- Error creating thumbnail markup, width {width} is not supported, "
+            "only 50,100,150,200 is supported -->"
+        )
     if ratio not in field_file.field.aspect_ratios:
-        raise ValueError(ratio)
+        return mark_safe(  # noqa: S308
+            f"<!-- Error creating thumbnail markup, aspect ratio {ratio} is not supported, "
+            f"only {field_file.field.aspect_ratios} are supported -->"
+        )
     url = field_file.aspect_ratios[ratio]["WEBP"][width].url
     url2x = field_file.aspect_ratios[ratio]["WEBP"][width * 2].url
     height = field_file.aspect_ratios[ratio]["WEBP"][width].height
