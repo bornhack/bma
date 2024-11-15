@@ -17,7 +17,7 @@ logger = logging.getLogger("bma")
 
 def create_webapp_oauth_app(*, sender: str, instance: "User", created: bool, **kwargs: dict[Any, Any]) -> None:
     """Create the oauth app for the BMA webapp."""
-    if created:
+    if created and instance.username != "AnonymousUser":
         redirect_uris = [f"https://{hostname}/api/csrf/" for hostname in settings.ALLOWED_HOSTS]
         app, app_created = Application.objects.get_or_create(
             user=instance,

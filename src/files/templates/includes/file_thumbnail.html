@@ -1,0 +1,3 @@
+{% if record.thumbnail %}
+{% thumbnail record.thumbnail.source width=width|default:50 ratio=ratio|default:"" %}
+{% endif %}

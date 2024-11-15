@@ -1,24 +1,16 @@
 """The Image model."""
 
 # mypy: disable-error-code="var-annotated"
-import math
 from fractions import Fraction
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from pictures.models import PictureField
 
 from files.models import BaseFile
 from jobs.models import ImageConversionJob
 from jobs.models import ImageExifExtractionJob
+from utils.models import NoPillowPictureField
 from utils.upload import get_upload_path
-
-
-class NoPillowPictureField(PictureField):
-    """A PictureField which doesn't invoke pillow."""
-
-    def update_dimension_fields(self, instance: "Image", force: bool = False, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003,FBT001,FBT002
-        """Do nothing method to avoid trying to read the image dimensions using PIL."""
 
 
 class Image(BaseFile):
@@ -29,7 +21,6 @@ class Image(BaseFile):
         max_length=255,
         width_field="width",
         height_field="height",
-        aspect_ratios=[None, "4/3"],
         help_text="The original uploaded image.",
     )
 
@@ -54,15 +45,22 @@ class Image(BaseFile):
         return Fraction(self.width, self.height)
 
     def create_jobs(self) -> None:
-        """Create jobs for missing versions for this image."""
-        # get exif data?
+        """Create jobs for exif, smaller versions and thumbnails for this image."""
         if self.exif is None:
-            job, created = ImageExifExtractionJob.objects.get_or_create(
-                basefile=self,
-                path=self.original.path + ".json",
-            )
+            self.create_exif_job()
+        self.create_smaller_version_jobs()
+        self.create_thumbnail_jobs()
 
-        # smaller versions
+    def create_exif_job(self) -> None:
+        """Create exif data extraction job."""
+        # get exif data?
+        job, created = ImageExifExtractionJob.objects.get_or_create(
+            basefile=self,
+            path=self.original.path + ".json",
+        )
+
+    def create_smaller_version_jobs(self) -> None:
+        """Create jobs to make smaller versions of this image."""
         for version in self.original.get_picture_files_list():
             # check if this file already exists
             if version.path.exists():
@@ -81,11 +79,3 @@ class Image(BaseFile):
                 custom_aspect_ratio=bool(ratio),
                 filetype=filetype,
             )
-
-    def calculate_version_height(self, width: int, ratio: Fraction) -> int:
-        """Calculate the height for an image version."""
-        if ratio != self.aspect_ratio:
-            # custom aspect ratio
-            return math.floor(width / ratio)
-        # maintain original AR
-        return math.floor(width / self.aspect_ratio)

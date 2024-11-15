@@ -19,7 +19,9 @@ from ninja.files import UploadedFile
 
 from files.models import BaseFile
 from files.models import LicenseChoices
+from files.models import Thumbnail
 from files.schema import SingleFileResponseSchema
+from files.schema import ThumbnailMetadataSchema
 from jobs.models import BaseJob
 from jobs.schema import JobClientSchema
 from jobs.schema import MultipleJobResponseSchema
@@ -124,7 +126,9 @@ def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiRespons
     },
     summary="Assign jobs for a file to the calling user.",
 )
-def assign_file_jobs(request: HttpRequest, client: JobClientSchema, filters: JobFilters = query) -> JobApiResponseType:
+def assign_file_jobs(
+    request: HttpRequest, client: JobClientSchema, filters: JobFilters = query, *, check: bool = False
+) -> JobApiResponseType:
     """Assign jobs for a file to the calling user."""
     # clear old assigned unfinished jobs here
     BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
@@ -168,31 +172,61 @@ def assign_file_jobs(request: HttpRequest, client: JobClientSchema, filters: Job
     response={
         200: SingleFileResponseSchema,
         404: ApiMessageSchema,
+        422: ApiMessageSchema,
         500: ApiMessageSchema,
     },
     summary="Upload the result of a job",
 )
-def upload_result(
-    request: HttpRequest, job_uuid: uuid.UUID, f: UploadedFile, client: JobClientSchema
+def upload_result(  # noqa: PLR0913
+    request: HttpRequest,
+    job_uuid: uuid.UUID,
+    f: UploadedFile,
+    client: JobClientSchema,
+    metadata: ThumbnailMetadataSchema | None = None,
+    *,
+    check: bool = False,
 ) -> FileApiResponseType:
     """Endpoint for uploading the result of a job."""
     # get job and file
     job = get_object_or_404(BaseJob, uuid=job_uuid, finished=False)
     basefile = job.basefile
 
-    # save job result
-    if job.job_type == "ImageConversionJob":
+    if not request.user.has_perm("change_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+
+    # process and save job result
+    if job.job_type in ["ImageConversionJob", "ThumbnailJob"]:
         path = Path(settings.MEDIA_ROOT / job.path)
         # maybe delete before writing?
         FileSystemStorage(location=path.parent).save(path.name, f)
         logger.debug(
-            f"Job {job.pk} wrote {path.stat().st_size} bytes {job.width}x{job.height}"
+            f"{job.job_type} {job.pk} wrote {path.stat().st_size} bytes {job.width}x{job.height}"
             f"{job.mimetype} image to path {path}"
         )
+
     elif job.job_type == "ImageExifExtractionJob":
         exif = json.load(f)
         basefile.exif = exif
         basefile.save(update_fields=["exif", "updated"])
+
+    elif job.job_type == "ThumbnailSourceJob":
+        if hasattr(basefile, "thumbnail"):
+            return 422, {"message": "Thumbnail source already exists."}
+        if metadata is None:
+            raise ValueError("metadata")
+        data = metadata.dict()
+        Thumbnail.objects.create(
+            basefile=basefile,
+            source=f,
+            width=data["width"],
+            height=data["height"],
+            mimetype=data["mimetype"],
+        )
+        basefile.create_thumbnail_jobs()
+
     else:
         logger.debug(f"Unsupported job type: {job.job_type}")
         return 500, {"message": "Unsupported job type"}
@@ -202,7 +236,7 @@ def upload_result(
     job.client_uuid = client.client_uuid
     job.client_version = client.client_version
     job.finished = True
-    job.save(update_fields=["user", "client_uuid", "client_version", "finished"])
+    job.save(update_fields=["user", "client_uuid", "client_version", "finished", "updated"])
 
     # refresh basefile to get updated jobcount
     basefile.refresh_from_db()

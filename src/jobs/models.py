@@ -1,6 +1,6 @@
 """Models to manage file processing jobs handled by clients."""
-# mypy: disable-error-code="var-annotated"
 
+# mypy: disable-error-code="var-annotated"
 import uuid
 from fractions import Fraction
 
@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from polymorphic.models import PolymorphicModel
+
+from utils.upload import get_thumbnail_source_path
 
 
 def validate_image_filetype(value: str) -> None:
@@ -91,6 +93,16 @@ class BaseJob(PolymorphicModel):
         """Use class name as job type."""
         return self.__class__.__name__
 
+    @property
+    def source_url(self) -> str:
+        """Return the URL of the source file to use for this job. Overridden on some job types."""
+        return str(self.basefile.resolve_links()["downloads"]["original"])
+
+    @property
+    def source_filename(self) -> str:
+        """Return the URL of the source file to use for this job. Overridden on some job types."""
+        return str(self.basefile.filename)
+
 
 class ImageConversionJob(BaseJob):
     """Model to contain image conversion jobs."""
@@ -126,3 +138,21 @@ class ImageConversionJob(BaseJob):
 
 class ImageExifExtractionJob(BaseJob):
     """Model to contain image exif exctraction jobs. No extra fields."""
+
+
+class ThumbnailSourceJob(BaseJob):
+    """Model to contain thumbnail source jobs. No extra fields."""
+
+
+class ThumbnailJob(ImageConversionJob):
+    """Model to contain image thumbnail jobs. No extra fields."""
+
+    @property
+    def source_url(self) -> str:
+        """Return the URL of the source file to use for this job."""
+        return str(self.basefile.resolve_links()["downloads"].get("thumbnail_source", ""))
+
+    @property
+    def source_filename(self) -> str:
+        """Return the filename of the source file to use for this job."""
+        return get_thumbnail_source_path(instance=self.basefile.thumbnail, filename="notused").name
