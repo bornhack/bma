@@ -8,6 +8,16 @@ const UC = new UploadClient(client_id, () => {
   console.log("Loaded UC client");
 });
 
+UC.updateProgress = (item, progress) => {
+  for (let node of item.file.previewElement.querySelectorAll(
+    "[data-dz-uploadprogress]"
+  )) {
+    node.nodeName === "PROGRESS"
+      ? (node.value = progress)
+      : (node.style.width = `${progress}%`);
+  }
+}
+
 //Init base variables
 var dropzone = undefined;
 var ImageEditorModal = undefined;

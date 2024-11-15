@@ -7,6 +7,8 @@ class UploadClient {
    * @param {function} callback - Done loading callback 
    */
   constructor(client_id, callback) {
+    this.run = true;
+    this.log = (log) => { console.log(log) } 
     this.queue = []
     this.client_id = client_id
     this.client_uuid = ""
@@ -25,6 +27,7 @@ class UploadClient {
       this.client_uuid = this.generateUUID();
       this.setCookie("uc_uuid", this.client_uuid, 1);
     }
+    this.updateProgress = (_item, _progress) => {};
   }
 
   /**
@@ -110,7 +113,10 @@ class UploadClient {
    * @returns {Promise<Token>} 
    */
   async exif(file) {
-    return window.exifr.parse(file.dataURL)
+    if ("dataURL" in file)
+      return window.exifr.parse(file.dataURL)
+    else
+      console.log("Exif missing dataURL");
   }
 
   /**
@@ -156,13 +162,13 @@ class UploadClient {
    *
    * @param {object} item - Item to process 
    * @param {object} job - Job information 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} - The promise 
    */
   async processJob(item, job) {
     switch(job.job_type) {
       case "ImageConversionJob":
         const filename = `${job.job_uuid}.${job.filetype}`
-        console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
+        this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
           return this.crop(item.file, job.width, job.height, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename)
@@ -171,26 +177,135 @@ class UploadClient {
           return this.resize(item.file, job.width, job.height, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename)
           });
+      /*
       case "ImageExifExtractionJob":
-        console.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.job_uuid}`)
+        this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.job_uuid}`)
         const exifOrg = await this.exif(item.file);
         const exif = this.reformatExifData(exifOrg);
         const jsonFile = new Blob([JSON.stringify(exif)], { type: 'application/json' });
         console.log(exifOrg, exif);
         return this.uploadJobResult(job, jsonFile, "exif.json");
+      */
+      default:
+        this.log(`Unsupported job type: ${job.job_type} ${job.job_uuid}`);
+        break; 
+    }
+  }
+
+  /**
+   * Fetch file meta data from server 
+   *
+   * @param {object} job - Job entry 
+   * @returns {Promise<Token>} 
+   */
+  async fetchFileMetadata(job) {
+    try {
+      const url = new URL(`${window.location.origin}/api/v1/json/files/${job.basefile_uuid}/`);
+      const response = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch file
+   *
+   * @param {string} url - URL of the file to fetch 
+   * @returns {Promise<Token>} 
+   */
+  async fetchFile(file_url) {
+    try {
+      const url = new URL(file_url)
+      const result = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+        },
+      });
+      return await result.blob()
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch the file list from server 
+   *
+   * @param {object} query - Query to execute 
+   * @returns {Promise<Token>} 
+   */
+  async fetchFileList(query) {
+    try {
+      const url = new URL(`${window.location.origin}/api/v1/json/files/`);
+      url.search = new URLSearchParams(query);
+      const response = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.log(error.message);
+      return [];
     }
   }
 
   /**
    * Fetch the joblist from server 
    *
-   * @param {object} item - Item to process 
+   * @param {object} query - Query to execute 
    * @returns {Promise<Token>} 
    */
-  async fetchJobList(item) {
-    // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
+  async fetchJobList(query) {
     try {
-      const response = await fetch(`/api/v1/json/jobs/assign/?finished=false&file_uuid=${item.uuid}`, {
+      const url = new URL(`${window.location.origin}/api/v1/json/jobs/`);
+      url.search = new URLSearchParams(query);
+      const response = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Assign the job to this client 
+   *
+   * @param {object} query - Query to execute 
+   * @returns {Promise<Token>} 
+   */
+  async assignJob(uuid) {
+    try {
+      const url = new URL(`${window.location.origin}/api/v1/json/jobs/assign/`);
+      url.search = new URLSearchParams({finished: false, file_uuid: uuid});
+      const response = await fetch(url, {
         headers: {
           "Authorization": `Bearer ${this.oauth.token}`,
           "Content-Type": "application/json",
@@ -198,16 +313,16 @@ class UploadClient {
         method: "POST",
         body: JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }),
       });
+      console.log(response)
       if (!response.ok) {
+        this.log(`Failed to assign jobs for ${uuid}`);
         throw new Error(`Response status: ${response.status}`);
       }
-
-      this.finished.push(item.uuid);
 
       const json = await response.json();
       return json.bma_response 
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
       return [];
     }
   }
@@ -221,7 +336,6 @@ class UploadClient {
    * @returns {array} bma_response 
    */
   async uploadJobResult(job, result, filename) {
-    // Fetch jobs /api/v1/json/jobs/assign/?file_uuid=
     var data = new FormData()
     data.append('f', result, filename);
     data.append('client', JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }))
@@ -240,7 +354,7 @@ class UploadClient {
       const json = await response.json();
       return json.bma_response 
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
       return [];
     }
   }
@@ -275,7 +389,7 @@ class UploadClient {
       const json = await response.json();
       return json.bma_response 
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
       return [];
     }
   }
@@ -286,7 +400,7 @@ class UploadClient {
    *
    */
   async processNext() {
-    if (this.queue.length === 0 || this.activeJobs >= this.maxConcurrent) {
+    if (this.queue.length === 0 || this.activeJobs >= this.maxConcurrent || this.run === false) {
       return;
     }
     const item = this.queue.shift();
@@ -295,46 +409,34 @@ class UploadClient {
       this.activeJobs++;
 
       // Fetch job list from API
-      const jobList = await this.fetchJobList(item);
+      const jobList = await this.assignJob(item.uuid);
+      this.finished.push(item.uuid);
 
       //Set progress bar to 0%
       this.updateProgress(item, 0);
 
       // Process each job
       for (const job of jobList) {
-        if (!job.finished) {
+        if (!job.finished && this.run) {
           await this.processJob(item, job);
         }
         jobsDone++;
         this.updateProgress(item, (jobsDone * 100) / jobList.length);
-        console.log(`Jobs active: ${this.activeJobs}`)
       }
       //Produce some user feedback
-      item.file.previewElement.classList.add("dz-complete");
-      item.file.previewElement.classList.add("dz-success");
+      if ("previewElement" in item.file) {
+        item.file.previewElement.classList.add("dz-complete");
+        item.file.previewElement.classList.add("dz-success");
+      }
     } catch (error) {
       this.activeJobs--;
-      console.error(`Error processing Item ${item.uuid}:`, error);
+      this.processNext(); // Process the next item in the queue
+      this.updateProgress(item, 100);
+      console.log(`Error processing Item ${item.uuid}:`, error);
     } finally {
       this.activeJobs--;
       this.processNext(); // Process the next item in the queue
-    }
-  }
-
-  /**
-   * Update the dropzone item progress bar 
-   *
-   * @param {object} item - Item 
-   * @param {number} progress - Progress percentage.
-   * @returns {array} bma_response 
-   */
-  updateProgress(item, progress) {
-    for (let node of item.file.previewElement.querySelectorAll(
-      "[data-dz-uploadprogress]"
-    )) {
-      node.nodeName === "PROGRESS"
-        ? (node.value = progress)
-        : (node.style.width = `${progress}%`);
+      this.updateProgress(item, 100);
     }
   }
 
@@ -433,7 +535,7 @@ class UploadClient {
       this.allowedMimetypes = this.extractKeys(this.config.filetypes)
       this.callback();
     } catch (error) {
-      console.error(error.message);
+      console.log(error.message);
     }
   }
 

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block title %}Grind Files{% endblock title %}
+
+{% block extra_head %}
+    {{ user.webapp_oauth_client_id|json_script:"client_id" }}
+    {{ bma_version|json_script:"bma_version" }}
+    <script src="{% static 'js/vendor/base64.min.js' %}"></script>
+    <script src="{% static 'js/vendor/compressor.js' %}"></script>
+    <script src="{% static 'js/vendor/exifr.js' %}"></script>
+    <script src="{% static 'js/oauthClient.js' %}"></script>
+    <script src="{% static 'js/uploadClient.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'js/vendor/dropzone.css' %}" type="text/css" />
+{% endblock extra_head %}
+
+{% block main_content %}
+    <div class="card">
+        <div class="card-header container-fluid">
+            <div class="row">
+                <div class="col-10">
+                    <h3 id="card-title">Grinder</h3>
+                </div>
+                <div class="col-2 float-right">
+                    <button id="btnstart" disabled class="btn btn-primary float-right">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
+                    </button>
+                    <button id="btnstop" disabled class="btn btn-secondary float-right">
+                        Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <span id="job_count"></span>
+            <div class="progress" role="progressbar" aria-label="Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width: 0%"></div>
+            </div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#log_card" aria-expanded="false" aria-controls="collapseExample">
+    Collapse
+  </button>
+            <div class="card collapse" id="log_card">
+                <div class="card-body">
+                    <h3 id="card-title">Log</h3>
+                    <ul class="list-group list-group-flush" id="job_log">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src={% static 'js/grinder.js' %}></script>
+{% endblock main_content %}

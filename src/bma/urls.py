@@ -24,6 +24,7 @@ urlpatterns = [
     path("o/", include((oauth2_endpoint_views, "oauth2_provider"), namespace="oauth2_provider")),
     path("", include("frontpage.urls")),
     path("files/", include("files.urls", namespace="files")),
+    path("jobs/", include("jobs.urls", namespace="jobs")),
     path("albums/", include("albums.urls", namespace="albums")),
     path("widgets/", include("widgets.urls", namespace="widgets")),
     path("users/", include("users.urls", namespace="users")),
