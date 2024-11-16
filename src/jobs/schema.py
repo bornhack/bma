@@ -24,6 +24,7 @@ class JobResponseSchema(Schema):
     schema_name: str
     basefile_uuid: uuid.UUID
     client_uuid: uuid.UUID | None = None
+    client_version: str | None = None
     finished: bool
     job_type: str
     job_uuid: uuid.UUID
