@@ -167,6 +167,7 @@ class UploadClient {
   async processJob(item, job) {
     switch(job.job_type) {
       case "ImageConversionJob":
+      case "ThumbnailJob":
         const filename = `${job.job_uuid}.${job.filetype}`
         this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
@@ -186,6 +187,12 @@ class UploadClient {
         console.log(exifOrg, exif);
         return this.uploadJobResult(job, jsonFile, "exif.json");
       */
+      case "ThumbnailSourceJob":
+        return this.resize(item.file, 500, item.height, "image/webp").then(img=> {
+          this.getImageDimensions(img).then((size) => {
+            this.uploadJobResult(job, img, "thumbnail.webp", {"width": size.width, "height": size.height, "mimetype": "image/webp"})
+          })
+        });
       default:
         this.log(`Unsupported job type: ${job.job_type} ${job.job_uuid}`);
         break; 
@@ -333,12 +340,16 @@ class UploadClient {
    * @param {object} item - Item to process 
    * @param {object} result - Result to upload. 
    * @param {string} filename - Name of the file 
+   * @param {object} metadata - Metadata of the uploaded result 
    * @returns {array} bma_response 
    */
-  async uploadJobResult(job, result, filename) {
+  async uploadJobResult(job, result, filename, metadata=undefined) {
     var data = new FormData()
     data.append('f', result, filename);
     data.append('client', JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }))
+    if (metadata) {
+      data.append('metadata', JSON.stringify(metadata))
+    }
 
     try {
       const response = await fetch(`/api/v1/json/jobs/${job.job_uuid}/result/`, {
@@ -539,4 +550,25 @@ class UploadClient {
     }
   }
 
+  /**
+   * Extract width and height from image blob.
+   *
+   * @param {Blob} blob - Image blob
+   * @returns {promise} - width and height
+   */
+  getImageDimensions(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          resolve({ width: img.width, height: img.height});
+        };
+        img.onerror = reject;
+        img.src = event.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
 }

@@ -45,7 +45,6 @@ function runJobs() {
             lastModified: new Date(),
             type: img.type,
           });
-          console.log(file, img);
           UC.addToQueue(sourceFile.uuid, file); 
           UC.processNext();
         }
