@@ -54,6 +54,7 @@ test = [
     "factory-boy==3.3.1",
     "pytest-django==4.9.0",
     "pytest-cov==6.0.0",
+    "pytest-randomly==3.16.0",
     "tox==4.23.2",
 ]
 

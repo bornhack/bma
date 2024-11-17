@@ -33,7 +33,11 @@ class JobTable(tables.Table):
 
     def render_basefile(self, record: BaseJob) -> str:
         """Render the basefile column with a filter button."""
-        return filter_button(text=record.basefile.uuid, request=self.request, files=record.basefile.uuid)
+        return filter_button(
+            text=f'<a href="{record.basefile.get_absolute_url()}">{record.basefile.title}</a>',
+            request=self.request,
+            files=record.basefile.uuid,
+        )
 
     def render_job_type(self, record: BaseJob) -> str:
         """Render the jobtype column with a filter button."""
@@ -42,7 +46,11 @@ class JobTable(tables.Table):
     def render_user(self, record: BaseJob) -> str:
         """Render the user column with a filter button."""
         if record.user:
-            return filter_button(text=record.user, request=self.request, users=record.user.uuid)
+            return filter_button(
+                text=f'<a href="{record.user.get_absolute_url()}">{record.user}</a>',
+                request=self.request,
+                users=record.user.uuid,
+            )
         return ""
 
     def render_client_uuid(self, record: BaseJob) -> str:
