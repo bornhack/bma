@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from jobs.views import JobGrindView
+from .views import JobGrindView
 from .views import JobListView
 
 app_name = "jobs"
