@@ -146,16 +146,6 @@ class FileResponseSchema(ModelSchema):
         return get_object_permissions_schema(obj, context["request"])
 
     @staticmethod
-    def resolve_jobs_unfinished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
-        """Get the number of unfinished jobs for this file."""
-        return obj.jobs.filter(finished=False).values_list("uuid", flat=True)  # type: ignore[no-any-return]
-
-    @staticmethod
-    def resolve_jobs_finished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
-        """Get the number of finished jobs for this file."""
-        return obj.jobs.filter(finished=True).values_list("uuid", flat=True)  # type: ignore[no-any-return]
-
-    @staticmethod
     def resolve_has_thumbnail(obj: BaseFile, context: dict[str, HttpRequest]) -> bool:
         """Does this file have a Thumbnail object or now."""
         return hasattr(obj, "thumbnail")
