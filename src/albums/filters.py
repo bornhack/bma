@@ -1,11 +1,10 @@
 """The filters used for album list endpoints."""
 
 import uuid
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import django_filters
-from django.db.models import QuerySet
-from django.http import HttpRequest
 from django.utils import timezone
 from ninja import Field
 
@@ -14,6 +13,10 @@ from utils.filters import ListFilters
 
 from .models import Album
 
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    from django.http import HttpRequest
+
 
 class AlbumFilters(ListFilters):
     """The filters used for the album_list django-ninja API endpoint."""
@@ -21,7 +24,7 @@ class AlbumFilters(ListFilters):
     files: list[uuid.UUID] = Field(None, alias="files")
 
 
-def get_permitted_files(request: HttpRequest) -> QuerySet[BaseFile]:
+def get_permitted_files(request: "HttpRequest") -> "QuerySet[BaseFile]":
     """Called by AlbumFilter to get files for the albumlist filter multiselect form field."""
     return BaseFile.bmanager.get_permitted(user=request.user).all()  # type: ignore[no-any-return]
 
@@ -36,7 +39,7 @@ class AlbumFilter(django_filters.FilterSet):
         method="filter_files",
     )
 
-    def filter_files(self, queryset: QuerySet[Album], name: str, value: str) -> QuerySet[Album]:
+    def filter_files(self, queryset: "QuerySet[Album]", name: str, value: str) -> "QuerySet[Album]":
         """When filtering by files only consider currently active memberships."""
         # we want AND so loop over files and filter for each,
         # finally returning only albums containing all the files in value

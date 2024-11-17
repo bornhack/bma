@@ -94,6 +94,9 @@ def filter_jobs(jobs: QuerySet[BaseJob], filters: JobFilters) -> QuerySet[BaseJo
     if filters.finished is not None:
         jobs = jobs.filter(finished=filters.finished)
 
+    if filters.skip_jobs:
+        jobs = jobs.exclude(uuid__in=filters.skip_jobs)
+
     return jobs
 
 
@@ -241,3 +244,39 @@ def upload_result(  # noqa: PLR0913
     # refresh basefile to get updated jobcount
     basefile.refresh_from_db()
     return 200, {"bma_response": basefile}
+
+
+@router.post(
+    "/{job_uuid}/unassign/",
+    response={
+        200: ApiMessageSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+        500: ApiMessageSchema,
+    },
+    summary="Unassign a job from a client",
+)
+def unassign_job(
+    request: HttpRequest,
+    job_uuid: uuid.UUID,
+    *,
+    check: bool = False,
+) -> ApiMessageSchema | tuple[int, dict[str, str]]:
+    """Endpoint for unassigning a job from a client/user."""
+    # get job and file
+    job = get_object_or_404(BaseJob, uuid=job_uuid, finished=False)
+
+    if not request.user.has_perm("change_basefile", job.basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+
+    # mark job as completed
+    job.user = None
+    job.client_uuid = None
+    job.client_version = ""
+    job.save(update_fields=["user", "client_uuid", "client_version", "updated"])
+
+    return 200, {"message": "OK, job unassigned"}

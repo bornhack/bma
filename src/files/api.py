@@ -71,7 +71,7 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
         return 403, {"message": "Missing upload permissions"}
 
     # get the file metadata
-    data = metadata.dict()
+    data = metadata.dict(exclude_unset=True)
 
     if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
         from images.models import Image as Model

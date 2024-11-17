@@ -27,6 +27,7 @@ urlpatterns = [
     path("albums/", include("albums.urls", namespace="albums")),
     path("widgets/", include("widgets.urls", namespace="widgets")),
     path("users/", include("users.urls", namespace="users")),
+    path("jobs/", include("jobs.urls", namespace="jobs")),
     path("settings/", UserSettingsView.as_view(), name="user_settings"),
     path("settings/update/", UserSettingsUpdateView.as_view(), name="user_settings_update"),
     # BMA serves media files through nginx using X-Accel-Redirect in prod,

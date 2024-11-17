@@ -81,6 +81,7 @@
                   {% if request.user.is_creator or request.user.is_moderator %}
                   <li class="nav-item"><a class="nav-link" href="{% url 'file_admin:files_basefile_changelist' %}">Manage</a></li>
                   {% endif %}
+                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "job_list" %} active{% endif %}" href="{% url 'jobs:job_list' %}">Jobs</a></li>
                 {% endif %}
 
                 {# django admin #}
