@@ -9,5 +9,5 @@ app_name = "jobs"
 
 urlpatterns = [
     path("", JobListView.as_view(), name="job_list"),
-    path("/grinder", JobGrindView.as_view(), name="job_grinder"),
+    path("grinder/", JobGrindView.as_view(), name="job_grinder"),
 ]
