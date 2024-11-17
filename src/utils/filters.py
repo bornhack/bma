@@ -1,7 +1,15 @@
 """The shared filters used in the files and albums API endpoints."""
 
+from typing import TYPE_CHECKING
+
 from django.db import models
-from ninja import Schema
+from django.utils.safestring import mark_safe
+from ninja import FilterSchema
+
+from .querystring import querystring_from_request
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class SortingChoices(models.TextChoices):
@@ -17,10 +25,17 @@ class SortingChoices(models.TextChoices):
     updated_desc = ("updated_desc", "Updated (descending)")
 
 
-class ListFilters(Schema):
-    """Filters shared between the file_list and album_list endpoints."""
+class ListFilters(FilterSchema):
+    """Filters shared between the file_list, album_list, job_list, and user_list API endpoints."""
 
     limit: int = 100
     offset: int | None = None
     search: str | None = None
     sorting: SortingChoices | None = None
+
+
+def filter_button(text: str, request: "HttpRequest", **kwargs: str) -> str:
+    """Add a filter button before the provided text with a querystring updated with the provided kwargs."""
+    querystring = querystring_from_request(request=request, **kwargs)
+    button = f'<a href="{request.path}{querystring}"><i class="fas fa-filter"></i></a>'
+    return mark_safe(f"{button}&nbsp;{text}")  # noqa: S308

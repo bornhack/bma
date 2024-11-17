@@ -1,6 +1,7 @@
 """Response schemas for file processing jobs."""
 
 import uuid
+from typing import TypeAlias
 
 from django.http import HttpRequest
 from ninja import Schema
@@ -10,12 +11,17 @@ from utils.schema import ApiResponseSchema
 from .models import BaseJob
 from .models import ImageConversionJob
 
+################### REQUEST SCHEMAS ########################
+
 
 class JobClientSchema(Schema):
     """The client metadata schema used for requests for job assignment and for job result submission."""
 
     client_uuid: uuid.UUID
     client_version: str
+
+
+################### RESPONSE SCHEMAS ########################
 
 
 class JobResponseSchema(Schema):
@@ -88,19 +94,28 @@ class ThumbnailJobResponseSchema(JobResponseSchema):
     schema_name: str = "ThumbnailJobResponseSchema"
 
 
+# IMPORTANT; ENTIRE DAY WASTED HERE:
+# django-ninja picks the first schema in this union which the object
+# has values to satisfy all fields, without raising an exception.
+# Put the schema with fewest fields last. Sigh.
+Job: TypeAlias = (
+    ImageConversionJobResponseSchema
+    | ExifExtractionJobResponseSchema
+    | ThumbnailSourceJobResponseSchema
+    | ThumbnailJobResponseSchema
+)
+
+
 class SingleJobResponseSchema(ApiResponseSchema):
     """The schema used to return a response with a single job object."""
 
-    bma_response: ImageConversionJobResponseSchema | ExifExtractionJobResponseSchema
+    bma_response: Job
 
 
 class MultipleJobResponseSchema(ApiResponseSchema):
     """The schema used to return a response with multiple job objects."""
 
-    # IMPORTANT; ENTIRE DAY WASTED HERE:
-    # django-ninja picks the first schema in this union which the object
-    # has values to satisfy all fields. Put the schema with fewest fields last. Sigh.
-    bma_response: list[ImageConversionJobResponseSchema | ExifExtractionJobResponseSchema]
+    bma_response: list[Job]
 
 
 ##################### SETTINGS ##################################

@@ -25,6 +25,7 @@ class UploadRequestSchema(ModelSchema):
     original_source: str = ""
     tags: list[str] = []  # noqa: RUF012
     title: str = ""
+    # extra fields only used by images
     width: int | None = None
     height: int | None = None
 
