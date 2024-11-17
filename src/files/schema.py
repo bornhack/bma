@@ -96,8 +96,8 @@ class FileResponseSchema(ModelSchema):
     license_name: str
     license_url: str
     tags: list[TagResponseSchema]
-    jobs_unfinished: list[uuid.UUID]
-    jobs_finished: list[uuid.UUID]
+    jobs_unfinished: int
+    jobs_finished: int
     has_thumbnail: bool
     # move to seperate ImageResponseSchema pls
     exif: dict[str, dict[str, str]] | None = None
