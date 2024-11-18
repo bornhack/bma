@@ -1123,7 +1123,7 @@ class TestFileViews(BmaTestBase):
         self.client.login(username="creator2", password="secret")
         response = self.client.get(reverse("files:file_detail", kwargs={"file_uuid": self.files[0]}))
         content = response.content.decode()
-        assert "<h3>Image creator2 file 0</h3>" in content
+        assert "Image creator2 file 0" in content
 
     ######### FILE TAG LIST ####################################
 

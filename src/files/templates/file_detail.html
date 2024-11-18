@@ -8,32 +8,22 @@
   <div class="row">
 
     <div class="col-lg-9 col-sm-12">
-      <div class="row mb-3">
-        <div class="col">
-            <h3>{{ file.filetype|capfirst }} {{ file.title }}</h3>
-        </div>
-      </div>
       <div class="row">
         <div class="col">
-          {% picture file.original img_alt=file.title img_loading="lazy" img_class="img-fluid" lg=9 sm=12 %}
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">{{ file.filetype|capfirst }} {{ file.title }}</h5>
+            </div>
+            <div class="card-body">
+              {% render_file file.original img_alt=file.title img_loading="lazy" img_class="img-fluid" lg=9 sm=12 %}
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Sidebar start -->
     <div class="col-sm-12 col-lg-3">
-      <div class="row mb-3">
-        <div class="col d-flex justify-content-end">
-          <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownActionsButton1" data-bs-toggle="dropdown" aria-expanded="false">
-              Actions
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownActionsButton1">
-              <li><a class="dropdown-item" href="#">[Add to album]</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
       <div class="row">
         <div class="col mb-3">
           <div class="card">

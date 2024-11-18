@@ -1,6 +1,7 @@
 """File views."""
 
 import logging
+import mimetypes
 import re
 from pathlib import Path
 from urllib.parse import quote
@@ -150,8 +151,11 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
         response["X-Accel-Redirect"] = f"/public/{quote(path)}"
     else:
         # we are serving the file locally
-        f = Path.open(Path(settings.MEDIA_ROOT) / Path(path), "rb")
-        response = FileResponse(f, status=200)
+        f = Path.open(Path(settings.MEDIA_ROOT) / path, "rb")
+        response = FileResponse(f, filename=Path(path).name, status=200)
+        mimetype, _encoding = mimetypes.guess_type(path, strict=False)
+        if mimetype:
+            response["Content-Type"] = mimetype
         # cache for an hour in development for a more
         # pleasant (and closer to realworld) dev experience
         response["Cache-Control"] = "max-age=3600"
