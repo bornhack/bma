@@ -5,78 +5,71 @@ var jobCount = 0;
 var jobCountTotal = 0;
 var filesFetched = {};
 
-function fetchWork(callback = ()=>{}) {
-  const query = {
-    jobs: true,
-    limit: 2,
-  };
-  myFiles = [];
-  jobCountTotal = 0;
-  jobCount = 0;
-  return UC.fetchFileList(query).then(files => {
-    myFiles = files;
-    let fileCounted = {}
-    for (const file of myFiles) {
-      if (!(file.uuid in fileCounted)) {
-        fileCounted[file.uuid] = true;
-        jobCount = jobCount + file.jobs_unfinished.length;
-      }
+/*
+ * Step 1: Fetch unprocessed jobs for this client.
+ * Step 1a: Fetch sources for these jobs.
+ * Step 2: Process jobs from step 1
+ * Step 3: Fetch new jobs from assign
+ * Step 3a: Fetch sources for these jobs.
+ * Step 4: Process jobs from step 3
+ * Step 5: Cleanup memory
+ * Step 6: Goto 1 with all skipped jobs to query
+ */
+
+function step1() {
+  let downloadJobs = [];
+  UC.fetchJobList({client_uuid: UC.client_uuid, finished: false}).then((jobs) => {
+    for (const file of UC.getUnique(jobs, "source_url")) {
+      if (!(file in UC.source_file_store))
+        downloadJobs.push(UC.fetchFile(file));
     }
-    $('#job_count').html(`Grinding ${jobCount} jobs`);
-    jobCountTotal = jobCount;
-    jobCount = 0;
-    if (jobCountTotal > 0)
-      $('#btnstart').removeAttr("disabled");
-    callback(files);
+    Promise.all(downloadJobs).then((imgs)=> {
+      for (const img of imgs) {
+        UC.storeSource(img.url, img.file);
+      }
+      for (const job of jobs) {
+        UC.addToJobQueue(job.basefile_uuid, job);
+      }
+      UC.startGrinder();
+    })
   });
 }
 
-function runJobs() {
-  UC.run = true;
-  $('#btnstart').attr("disabled", "true");
-  $('#btnstop').removeAttr("disabled");
-  for (const sourceFile of myFiles) {
-    if (!(sourceFile.uuid in filesFetched)) {
-      filesFetched[sourceFile.uuid] = true;
-      UC.log(`Fetching file ${sourceFile.uuid}`)
-      UC.fetchFile(`${window.location.origin}${sourceFile.links.downloads.original}`).then( (img) => {
-        if (img.type.startsWith("image/") && img.size > 0) {
-          const file = new File([img], sourceFile.filename, {
-            lastModified: new Date(),
-            type: img.type,
-          });
-          UC.addToQueue(sourceFile.uuid, file); 
-          UC.processNext();
-        }
-      }).catch(() => {
-        UC.processNext();
-      })
+function step3() {
+  UC.log("Fetching new work");
+  UC.assignJob().then((jobs)=>{
+    if (!jobs)
+      return
+    if (jobs.length > 0)
+      step1();
+    else {
+      console.log("Finished");
+      if (UC.running_jobs === 0) {
+        $('#btnstop').attr("disabled", "true");
+        $('#btnstart').removeAttr("disabled");
+      }
     }
-    UC.processNext();
-  }
+  })
 }
 
 const UC = new UploadClient(client_id, () => {
   $('#btnstart').html("Start Grinding");
+  $('#btnstart').removeAttr('disabled');
   UC.log("Loaded UC client");
-  fetchWork();
 });
 
-UC.updateProgress = (_item, _percent) => {
-  if (jobCount >= jobCountTotal && UC.run) {
-    console.log("Fetch new work")
-    fetchWork((_files) => {
-      runJobs();
-    });
-  } 
-  if (UC.run === false) {
-    $('#btnstop').attr("disabled", "true");
-    $('#btnstart').removeAttr("disabled");
+UC.onFinished = (active) => {
+  if (active === 0)
+    step3();
+}
+
+UC.onDeQueue = (active, jobs, current, total, _element) => {
+  UC.log(`Active jobs: ${active} left in Queue: ${jobs} Current: ${current} Total: ${total}`)
+  if (jobs > 0) {
+    const pct = ((current - jobs + 1)/current*100);
+    document.getElementsByClassName('progress-bar').item(0).setAttribute('aria-valuenow', pct);
+    document.getElementsByClassName('progress-bar').item(0).setAttribute('style','width:'+Number(pct)+'%');
   }
-  jobCount++;
-  const pct = (jobCount/jobCountTotal*100);
-  document.getElementsByClassName('progress-bar').item(0).setAttribute('aria-valuenow', pct);
-  document.getElementsByClassName('progress-bar').item(0).setAttribute('style','width:'+Number(pct)+'%');
 }
 
 UC.log = (log) => {
@@ -89,9 +82,16 @@ UC.log = (log) => {
 
 jQuery(document).ready(() => {
   $("#btnstart").bind("click", () => {
-    runJobs();
+    $('#btnstart').attr("disabled", "true");
+    $('#btnstop').removeAttr("disabled");
+    if (UC.run)
+      step1();
+    else
+      UC.startGrinder();
   })
   $("#btnstop").bind("click", () => {
     UC.run = false;
+    $('#btnstop').attr("disabled", "true");
+    $('#btnstart').removeAttr("disabled");
   })
 });

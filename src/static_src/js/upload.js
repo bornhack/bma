@@ -8,13 +8,12 @@ const UC = new UploadClient(client_id, () => {
   console.log("Loaded UC client");
 });
 
-UC.updateProgress = (item, progress) => {
-  for (let node of item.file.previewElement.querySelectorAll(
-    "[data-dz-uploadprogress]"
-  )) {
-    node.nodeName === "PROGRESS"
-      ? (node.value = progress)
-      : (node.style.width = `${progress}%`);
+UC.onDeQueue = (active, jobs, current, total, _element) => {
+  UC.log(`Active jobs: ${active} left in Queue: ${jobs} Current: ${current} Total: ${total}`)
+  if (jobs > 0) {
+    const pct = ((current - jobs + 1)/current*100);
+    document.getElementsByClassName('progress-bar').item(0).setAttribute('aria-valuenow', pct);
+    document.getElementsByClassName('progress-bar').item(0).setAttribute('style','width:'+Number(pct)+'%');
   }
 }
 
@@ -91,12 +90,6 @@ jQuery(document).ready(function () {
     url: baseURL + "/api/v1/json/files/upload/",
     paramName: "f",
     autoProcessQueue: false,
-    complete: file => { //Function overwritten to allow for later processing
-      file.previewElement.classList.remove("dz-processing");
-      file.previewElement.classList.remove("dz-complete");
-      file.previewElement.classList.remove("dz-success");
-      file.previewElement.classList.add("dz-processing");
-    },
   });
 
   //Event triggered just before starting upload
@@ -161,9 +154,10 @@ jQuery(document).ready(function () {
   dropzone.on("success", file => {
     const resp = JSON.parse(file.xhr.response);
     const uuid = resp.bma_response.uuid;
+    const source_url = resp.bma_response.links.downloads.original;
 
     //Queue file for jobs fetching and processing
-    UC.addToQueue(uuid, file);
+    UC.addUploadedFile(uuid, source_url, file);
 
     //Make BMA scripts happy
     const index = formdatas.indexOf(file.name);
@@ -172,11 +166,13 @@ jQuery(document).ready(function () {
     }
     //Trigger BMA script enableUploadButton
     enableUploadButton();
+
+    UC.startGrinder();
   });
 
   //Event triggered after its done uploading a batch
   dropzone.on("complete", _file => {
-    UC.processNext();
+    UC.processNextJob();
     dropzone.processQueue();
   })
 

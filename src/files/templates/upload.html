@@ -37,6 +37,9 @@
   </button>
   <script src={% static 'js/upload.js' %}></script>
   <img id="preview">
+  <div class="progress" role="progressbar" aria-label="Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" style="width: 0%"></div>
+  </div>
   <div class="modal fade" id="image-editor-modal" tabindex="-1" aria-labelledby="ImageEditorModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">

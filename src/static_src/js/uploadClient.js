@@ -8,7 +8,9 @@ class UploadClient {
    */
   constructor(client_id, callback) {
     this.run = true;
-    this.log = (log) => { console.log(log) } 
+    this.log = (log) => { console.log(log) }
+    this.onFinished = (_active) => { }
+    this.onDeQueue = (_job_count, _queue_count, _current, _total) => { }
     this.queue = []
     this.client_id = client_id
     this.client_uuid = ""
@@ -19,7 +21,13 @@ class UploadClient {
     this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
     this.client_version = `js-client - BMA ${this.bma_version}`;
     this.activeJobs = 0;
-    this.maxConcurrent = 2;
+    this.maxConcurrent = 6;
+    this.skip_jobs = [];
+    this.source_file_store = {};
+    this.job_queue = [];
+    this.running_jobs = 0;
+    this.current_jobs = 0;
+    this.total_jobs = 0;
     const cookie = this.getCookie("uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
@@ -40,6 +48,37 @@ class UploadClient {
   }
 
   /**
+   * Add a uploaded file
+   *
+   * @param {string} uuid - UUID of the uploaded file 
+   * @param {string} source_url - URL of the source file
+   * @param {object} file - File object
+   */
+  async addUploadedFile(uuid, source_url, file) {
+    this.finished.push(uuid);
+    const jobList = await this.assignJob({finished: false, file_uuid: uuid});
+    this.storeSource(source_url, file);
+    for (const job of jobList) {
+      this.addToJobQueue(uuid, job);
+    }
+  }
+
+  addToJobQueue(uuid, job) {
+    if (!(job.source_url in this.source_file_store))
+      throw new Error(`addToJobQueue: ${uuid} (${job.source_url}) not in sourcefiles`)
+    this.current_jobs++;
+    this.job_queue.push(
+      {
+        uuid: uuid,
+        task:() => {
+          return new Promise(resolve => resolve(
+            this.executeJob(job)
+          ))
+        },
+    });
+  }
+
+  /**
    * Add uploaded file to process queue 
    *
    * @param {string} uuid - UUID of the uploaded file 
@@ -56,20 +95,20 @@ class UploadClient {
    * @param {number} width - Width 
    * @param {number} height - Height 
    * @param {string} mimetype - MimeType
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async resize(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
       new Compressor(file, {
-        quality: 0.6,  
+        quality: 0.6,
         maxWidth: width,
         maxHeight: height,
         mimeType: type,
         convertSize: -1,
         success(result) {
           resolve(result);
-        },             
-        error(err) {                
+        },
+        error(err) {
           console.log(err.message);
           reject(err);
         },                          
@@ -84,7 +123,7 @@ class UploadClient {
    * @param {number} width - Width 
    * @param {number} height - Height 
    * @param {string} mimetype - MimeType
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async crop(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
@@ -110,7 +149,7 @@ class UploadClient {
    * Exstract Exif information from image 
    *
    * @param {object} file - File 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async exif(file) {
     if ("dataURL" in file)
@@ -158,44 +197,53 @@ class UploadClient {
   }
 
   /**
-   * Process a job item from the queue 
+   * Execute a job item
    *
-   * @param {object} item - Item to process 
    * @param {object} job - Job information 
    * @returns {Promise} - The promise 
    */
-  async processJob(item, job) {
+  async executeJob(job) {
+    if (!(job.source_url in this.source_file_store))
+      throw new Error(`executeJob: ${job.basefile_uuid} not in sourcefiles`);
+    if (this.source_file_store[job.source_url].type.startsWith("image/")) {
     switch(job.job_type) {
       case "ImageConversionJob":
       case "ThumbnailJob":
         const filename = `${job.job_uuid}.${job.filetype}`
         this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
-          return this.crop(item.file, job.width, job.height, job.mimetype).then(img=> {
+          return this.crop(this.source_file_store[job.source_url], job.width, job.height, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename)
           });
         else
-          return this.resize(item.file, job.width, job.height, job.mimetype).then(img=> {
+          return this.resize(this.source_file_store[job.source_url], job.width, job.height, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename)
           });
       /*
       case "ImageExifExtractionJob":
         this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.job_uuid}`)
-        const exifOrg = await this.exif(item.file);
+        const exifOrg = await this.exif(this.source_file_store[job.source_url]);
         const exif = this.reformatExifData(exifOrg);
         const jsonFile = new Blob([JSON.stringify(exif)], { type: 'application/json' });
         console.log(exifOrg, exif);
         return this.uploadJobResult(job, jsonFile, "exif.json");
       */
       case "ThumbnailSourceJob":
-        return this.resize(item.file, 500, item.height, "image/webp").then(img=> {
+        this.log(`Job for ${job.basefile_uuid}: ${job.job_type}`)
+        return this.resize(this.source_file_store[job.source_url], 500, undefined, "image/webp").then(img=> {
           this.getImageDimensions(img).then((size) => {
             this.uploadJobResult(job, img, "thumbnail.webp", {"width": size.width, "height": size.height, "mimetype": "image/webp"})
           })
         });
       default:
         this.log(`Unsupported job type: ${job.job_type} ${job.job_uuid}`);
-        break; 
+        this.skip_jobs.push(job.job_uuid);
+        return this.unassignJob(job.job_uuid);
+    }
+    } else {
+        this.log(`Unsupported filetype type: ${job.job_type} ${job.job_uuid} ${this.source_file_store[job.source_url].type}`);
+        this.skip_jobs.push(job.job_uuid);
+        return this.unassignJob(job.job_uuid);
     }
   }
 
@@ -203,7 +251,7 @@ class UploadClient {
    * Fetch file meta data from server 
    *
    * @param {object} job - Job entry 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async fetchFileMetadata(job) {
     try {
@@ -229,17 +277,17 @@ class UploadClient {
    * Fetch file
    *
    * @param {string} url - URL of the file to fetch 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async fetchFile(file_url) {
     try {
-      const url = new URL(file_url)
+      const url = new URL(`${window.location.origin}${file_url}`)
       const result = await fetch(url, {
         headers: {
           "Authorization": `Bearer ${this.oauth.token}`,
         },
       });
-      return await result.blob()
+      return { url: file_url, file: await result.blob() }
     } catch (error) {
       console.log(error.message);
       return [];
@@ -250,7 +298,7 @@ class UploadClient {
    * Fetch the file list from server 
    *
    * @param {object} query - Query to execute 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
   async fetchFileList(query) {
     try {
@@ -278,11 +326,14 @@ class UploadClient {
    * Fetch the joblist from server 
    *
    * @param {object} query - Query to execute 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
-  async fetchJobList(query) {
+  async fetchJobList(query = {}) {
     try {
       const url = new URL(`${window.location.origin}/api/v1/json/jobs/`);
+      if (this.skip_jobs.length > 0) {
+        query["skip_jobs"] = this.skip_jobs.join(",");
+      }
       url.search = new URLSearchParams(query);
       const response = await fetch(url, {
         headers: {
@@ -306,12 +357,14 @@ class UploadClient {
    * Assign the job to this client 
    *
    * @param {object} query - Query to execute 
-   * @returns {Promise<Token>} 
+   * @returns {Promise} 
    */
-  async assignJob(uuid) {
+  async assignJob(query = {finished: false, limit: 2}) {
     try {
       const url = new URL(`${window.location.origin}/api/v1/json/jobs/assign/`);
-      url.search = new URLSearchParams({finished: false, file_uuid: uuid});
+      if (this.skip_jobs.length > 0)
+        query["skip_jobs"] = this.skip_jobs.join(",");
+      url.search = new URLSearchParams(query);
       const response = await fetch(url, {
         headers: {
           "Authorization": `Bearer ${this.oauth.token}`,
@@ -320,12 +373,35 @@ class UploadClient {
         method: "POST",
         body: JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }),
       });
-      console.log(response)
+      if (response.status === 404)
+        return [];
       if (!response.ok) {
-        this.log(`Failed to assign jobs for ${uuid}`);
-        throw new Error(`Response status: ${response.status}`);
+        this.log(`Failed to assign jobs for ${JSON.stringify(query)}`);
+        return false; 
       }
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  }
 
+  /**
+   * Unassign job 
+   *
+   * @param {string} uuid - UUID of job to unassign 
+   * @returns {Promise} 
+   */
+  async unassignJob(uuid) {
+    try {
+      const url = new URL(`${window.location.origin}/api/v1/json/jobs/${uuid}/unassign/`)
+      const response = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+        },
+        method: "POST",
+      });
       const json = await response.json();
       return json.bma_response 
     } catch (error) {
@@ -402,52 +478,6 @@ class UploadClient {
     } catch (error) {
       console.log(error.message);
       return [];
-    }
-  }
-
-
-  /**
-   * Process the next item in the queue 
-   *
-   */
-  async processNext() {
-    if (this.queue.length === 0 || this.activeJobs >= this.maxConcurrent || this.run === false) {
-      return;
-    }
-    const item = this.queue.shift();
-    try {
-      let jobsDone = 0;
-      this.activeJobs++;
-
-      // Fetch job list from API
-      const jobList = await this.assignJob(item.uuid);
-      this.finished.push(item.uuid);
-
-      //Set progress bar to 0%
-      this.updateProgress(item, 0);
-
-      // Process each job
-      for (const job of jobList) {
-        if (!job.finished && this.run) {
-          await this.processJob(item, job);
-        }
-        jobsDone++;
-        this.updateProgress(item, (jobsDone * 100) / jobList.length);
-      }
-      //Produce some user feedback
-      if ("previewElement" in item.file) {
-        item.file.previewElement.classList.add("dz-complete");
-        item.file.previewElement.classList.add("dz-success");
-      }
-    } catch (error) {
-      this.activeJobs--;
-      this.processNext(); // Process the next item in the queue
-      this.updateProgress(item, 100);
-      console.log(`Error processing Item ${item.uuid}:`, error);
-    } finally {
-      this.activeJobs--;
-      this.processNext(); // Process the next item in the queue
-      this.updateProgress(item, 100);
     }
   }
 
@@ -554,7 +584,7 @@ class UploadClient {
    * Extract width and height from image blob.
    *
    * @param {Blob} blob - Image blob
-   * @returns {promise} - width and height
+   * @returns {Promise} - width and height
    */
   getImageDimensions(blob) {
     return new Promise((resolve, reject) => {
@@ -570,5 +600,68 @@ class UploadClient {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  }
+
+  /**
+   * Get a list of unique items from array of objects
+   * @param {array} objects - Array of Objects
+   * @param {string} key - Key to get uniques from
+   * @returns {set} - List of unique items
+   */
+  getUnique(objects, key) {
+    const uniqueUuids = new Set();
+    objects.forEach(obj => {
+      uniqueUuids.add(obj[key]);
+    });
+    return [...uniqueUuids];
+  }
+
+  /**
+   * Store a source file
+   *
+   * @param {string} uuid - UUID of the file
+   * @param {blob} file - Blob of the source file
+   */
+  storeSource(url, file) {
+    this.source_file_store[url] = file;
+  }
+
+  /**
+   * Get a source file
+   *
+   * @param {blob} file - Blob of the source file
+   * @param {string} uuid - UUID of the file
+   */
+  getSource(url) {
+    return this.source_file_store[url];
+  }
+
+  async processNextJob() {
+    if (this.running_jobs < this.maxConcurrent && this.job_queue.length > 0 && this.run) {
+      const job = this.job_queue.shift()
+      this.running_jobs++
+      this.onDeQueue(this.running_jobs, this.job_queue.length, this.current_jobs, this.total_jobs);
+      job.task()
+        .then(() => {
+          this.running_jobs--;
+          this.processNextJob();
+        })
+        .catch(error => {
+          this.running_jobs--;
+          console.error('Error processing task:', error);
+          this.processNextJob();
+        });
+    } else if (this.job_queue.length === 0 && this.run) {
+      this.total_jobs = this.total_jobs + this.current_jobs;
+      this.current_jobs = 0;
+      this.onFinished(this.running_jobs);
+    }
+  }
+  startGrinder() {
+    const conCount = this.maxConcurrent - this.running_jobs;
+    this.run = true;
+    for (var i = 0; i < conCount; i +=1){
+      this.processNextJob();
+    }
   }
 }
