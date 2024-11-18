@@ -163,7 +163,7 @@ class BaseFile(PolymorphicModel):
         help_text="The original (uploaded) filename. This value is read-only.",
     )
 
-    file_size = models.PositiveIntegerField(
+    file_size = models.BigIntegerField(
         help_text="The size of the file in bytes. This value is read-only.",
     )
 
