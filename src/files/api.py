@@ -120,6 +120,8 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     # create jobs
     uploaded_file.create_jobs()
 
+    # get file using the manager
+    uploaded_file = BaseFile.bmanager.get(uuid=uploaded_file.uuid)
     # all good
     return 201, {"bma_response": uploaded_file, "message": f"File {uploaded_file.uuid} uploaded OK!"}
 
@@ -241,7 +243,7 @@ def api_file_action(
         return 202, {"message": "OK"}
     updated = getattr(db_files, action)()
     logger.debug(f"{action} {updated} OK")
-    db_files = BaseFile.objects.filter(
+    db_files = BaseFile.bmanager.filter(
         uuid__in=db_uuids,
     )
     if single:
@@ -440,7 +442,7 @@ def unpublish_files(
 )
 def file_get(request: HttpRequest, file_uuid: uuid.UUID) -> FileApiResponseType:
     """Return a file object."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if basefile.permitted(user=request.user):
         return 200, {"bma_response": basefile}
     return 403, {"message": "Permission denied."}
@@ -478,7 +480,7 @@ def file_update(
     check: bool = False,
 ) -> FileApiResponseType:
     """Update (PATCH) or replace (PUT) a file metadata object."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -524,7 +526,7 @@ def file_delete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Mark a file for deletion."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("softdelete_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -551,8 +553,8 @@ def file_tag(
 ) -> tuple[int, dict[str, models.QuerySet[BmaTag] | str]]:
     """API endpoint for tagging a file."""
     # make sure the tagging user has permissions to see the file
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if not basefile.permitted:  # type: ignore[truthy-function]
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    if not basefile.permitted:
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
@@ -580,8 +582,8 @@ def file_untag(
 ) -> tuple[int, dict[str, models.QuerySet[BmaTag] | str]]:
     """API endpoint for untagging a file."""
     # make sure the untagging user has permissions to see the file
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
-    if not basefile.permitted:  # type: ignore[truthy-function]
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    if not basefile.permitted:
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
@@ -617,7 +619,7 @@ def file_thumbnail(
 ) -> FileApiResponseType:
     """Endpoint for uploading the source image for thumbnails."""
     # make sure the thumbnailing user has permissions to change the file
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -651,7 +653,7 @@ def file_thumbnail_delete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Delete a thumbnail."""
-    basefile = get_object_or_404(BaseFile, uuid=file_uuid)
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:

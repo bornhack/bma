@@ -43,7 +43,7 @@ class FileTable(tables.Table):
 
     def render_jobs(self, record: BaseFile) -> str:
         """Render the jobs column."""
-        return f"{record.jobs.filter(finished=False).count()} / {record.jobs.filter(finished=True).count()}"
+        return f"{record.jobs_finished} / {record.jobs_unfinished}"
 
     class Meta:
         """Define model, template, fields."""

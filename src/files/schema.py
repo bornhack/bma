@@ -96,8 +96,8 @@ class FileResponseSchema(ModelSchema):
     license_name: str
     license_url: str
     tags: list[TagResponseSchema]
-    jobs_unfinished: list[uuid.UUID]
-    jobs_finished: list[uuid.UUID]
+    jobs_unfinished: int
+    jobs_finished: int
     has_thumbnail: bool
     # move to seperate ImageResponseSchema pls
     exif: dict[str, dict[str, str]] | None = None
@@ -144,16 +144,6 @@ class FileResponseSchema(ModelSchema):
     def resolve_permissions(obj: BaseFile, context: dict[str, HttpRequest]) -> ObjectPermissionSchema:
         """Get the value for the permissions field with all file permissions."""
         return get_object_permissions_schema(obj, context["request"])
-
-    @staticmethod
-    def resolve_jobs_unfinished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
-        """Get the number of unfinished jobs for this file."""
-        return obj.jobs.filter(finished=False).values_list("uuid", flat=True)  # type: ignore[no-any-return]
-
-    @staticmethod
-    def resolve_jobs_finished(obj: BaseFile, context: dict[str, HttpRequest]) -> list[uuid.UUID]:
-        """Get the number of finished jobs for this file."""
-        return obj.jobs.filter(finished=True).values_list("uuid", flat=True)  # type: ignore[no-any-return]
 
     @staticmethod
     def resolve_has_thumbnail(obj: BaseFile, context: dict[str, HttpRequest]) -> bool:

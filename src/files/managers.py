@@ -32,7 +32,10 @@ class BaseFileManager(PolymorphicManager):
             )
             .prefetch_related("hits")
             .annotate(hitcount=Count("hits", distinct=True))
+            .annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=False)))
+            .annotate(jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=True)))
             .prefetch_active_albums_list(recursive=True)
+            .prefetch_related("thumbnail")
         )
 
 
