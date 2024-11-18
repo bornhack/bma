@@ -137,7 +137,6 @@ def assign_file_jobs(
     BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
         user=None, client_uuid=None, client_version=""
     )
-
     # get all jobs
     jobs = get_permitted_jobs(request=request)
     jobs = filter_jobs(jobs=jobs, filters=filters)
@@ -241,8 +240,9 @@ def upload_result(  # noqa: PLR0913
     job.finished = True
     job.save(update_fields=["user", "client_uuid", "client_version", "finished", "updated"])
 
-    # refresh basefile to get updated jobcount
-    basefile.refresh_from_db()
+    # refresh basefile to get updated jobcount,
+    # use bmanager to get annotated file object
+    basefile = BaseFile.bmanager.get(uuid=basefile.uuid)
     return 200, {"bma_response": basefile}
 
 
