@@ -1,6 +1,7 @@
 """This module defines the table used to show files."""
 
 import django_tables2 as tables
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
@@ -11,7 +12,7 @@ class FileTable(tables.Table):
     """Defines the django-tables2 used to show files."""
 
     selection = tables.CheckBoxColumn(accessor="pk", orderable=False)
-    uuid = tables.Column(linkify=True)
+    uuid = tables.Column(linkify=True, verbose_name="File UUID")
     thumbnail = tables.TemplateColumn(
         verbose_name="Thumbnail",
         template_name="includes/file_thumbnail.html",
@@ -21,6 +22,7 @@ class FileTable(tables.Table):
     uploader = tables.Column(linkify=True)
     hitcount = tables.Column(verbose_name="Hits")
     jobs = tables.Column(verbose_name="Jobs")
+    file_type = tables.Column(verbose_name="File Type")
 
     def render_albums(self, record: BaseFile) -> str:
         """Render albums as a list of links."""
@@ -43,7 +45,20 @@ class FileTable(tables.Table):
 
     def render_jobs(self, record: BaseFile) -> str:
         """Render the jobs column."""
-        return f"{record.jobs_finished} / {record.jobs_unfinished}"
+        finished_url = reverse("jobs:job_list") + f"?files={record.uuid}&finished=true"
+        unfinished_url = reverse("jobs:job_list") + f"?files={record.uuid}&finished=false"
+        return mark_safe(  # noqa: S308
+            f'<a href="{unfinished_url}">{record.jobs_unfinished}</a> / '
+            f'<a href="{finished_url}">{record.jobs_finished}</a>'
+        )
+
+    def render_file_size(self, value: int) -> str:
+        """Render the file size column."""
+        return f"{intcomma(value)} bytes"
+
+    def render_file_type(self, record: BaseFile) -> str:
+        """Render the filetype column."""
+        return mark_safe(f'<i class="{record.filetype_icon} fa-2x"></i>')  # noqa: S308
 
     class Meta:
         """Define model, template, fields."""
@@ -60,6 +75,7 @@ class FileTable(tables.Table):
             "uploader",
             "license",
             "file_size",
+            "file_type",
             "tags",
             "hitcount",
             "jobs",
