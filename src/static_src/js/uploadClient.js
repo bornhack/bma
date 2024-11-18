@@ -63,6 +63,12 @@ class UploadClient {
     }
   }
 
+  /**
+   * Add job to job queue
+   *
+   * @param {string} uuid - UUID of basefile
+   * @param {object} job - Job object
+   */
   addToJobQueue(uuid, job) {
     if (!(job.source_url in this.source_file_store))
       throw new Error(`addToJobQueue: ${uuid} (${job.source_url}) not in sourcefiles`)
@@ -636,6 +642,9 @@ class UploadClient {
     return this.source_file_store[url];
   }
 
+  /**
+   * Start the next grind job.
+   */
   async processNextJob() {
     if (this.running_jobs < this.maxConcurrent && this.job_queue.length > 0 && this.run) {
       const job = this.job_queue.shift()
@@ -657,11 +666,37 @@ class UploadClient {
       this.onFinished(this.running_jobs);
     }
   }
+
+  /**
+   * Start Grinder Threads.
+   */
   startGrinder() {
     const conCount = this.maxConcurrent - this.running_jobs;
     this.run = true;
     for (var i = 0; i < conCount; i +=1){
       this.processNextJob();
     }
+  }
+
+  /**
+   * Fetch new work from backend and start grinding
+   */
+  fetchNewWork() {
+    let downloadJobs = [];
+    this.fetchJobList({client_uuid: this.client_uuid, finished: false}).then((jobs) => {
+      for (const file of this.getUnique(jobs, "source_url")) {
+        if (!(file in this.source_file_store))
+          downloadJobs.push(this.fetchFile(file));
+      }
+      Promise.all(downloadJobs).then((imgs)=> {
+        for (const img of imgs) {
+          this.storeSource(img.url, img.file);
+        }
+        for (const job of jobs) {
+          this.addToJobQueue(job.basefile_uuid, job);
+        }
+        this.startGrinder();
+      })
+    });
   }
 }
