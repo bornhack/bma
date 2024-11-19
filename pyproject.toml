@@ -28,7 +28,7 @@ dependencies = [
     "django-stubs-ext==5.1.1",
     "django-tables2==2.7.0",
     "django-taggit==6.1.0",
-    "environs[django]==11.1.0",
+    "environs[django]==11.2.0",
     "fontawesomefree==6.6.0",
     "orjson==3.10.11",
     "psycopg2-binary==2.9.10",
@@ -49,7 +49,7 @@ dev = [
 ]
 test = [
     "beautifulsoup4==4.12.3",
-    "coverage==7.6.5",
+    "coverage==7.6.7",
     "django-debug-toolbar==4.4.6",
     "factory-boy==3.3.1",
     "pytest-django==4.9.0",
