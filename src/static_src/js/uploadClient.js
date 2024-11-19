@@ -21,7 +21,7 @@ class UploadClient {
     this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
     this.client_version = `js-client - BMA ${this.bma_version}`;
     this.activeJobs = 0;
-    this.maxConcurrent = 6;
+    this.maxConcurrent = 2;
     this.skip_jobs = [];
     this.source_file_store = {};
     this.job_queue = [];
@@ -293,7 +293,14 @@ class UploadClient {
           "Authorization": `Bearer ${this.oauth.token}`,
         },
       });
-      return { url: file_url, file: await result.blob() }
+      const file = await result.blob();
+      const header = result.headers.get('Content-Disposition');
+      const parts = header.split(';');
+      const filename = parts[1].split('=')[1];
+      if (filename.endsWith(".webp\"")) {
+        return { url: file_url, file: new Blob([file], {type:"image/webp"})}
+      }
+      return { url: file_url, file: file }
     } catch (error) {
       console.log(error.message);
       return [];
@@ -457,15 +464,16 @@ class UploadClient {
    *
    * @param {string} name - Name of the album.
    * @param {string} description - Description of the album.
+   * @param {array} files - List of file uuids to create a album with. 
    * @returns {array} bma_response 
    */
-  async createAlbum(name, description) {
-    var data = {
+  async createAlbum(name, description, files = this.finished) {
+    const data = {
       'title': name,
       'description': description,
-      'files': this.finished,
+      'files': files,
     }
-    if (this.finished.length === 0) return
+    if (files.length === 0) return
     try {
       const response = await fetch(`/api/v1/json/albums/create/`, {
         headers: {

@@ -26,7 +26,7 @@ UC.onFinished = (active) => {
 }
 
 UC.onDeQueue = (active, jobs, current, total, _element) => {
-  UC.log(`Active jobs: ${active} left in Queue: ${jobs} Current: ${current} Total: ${total}`)
+  console.log(`Active jobs: ${active} left in Queue: ${jobs} Current: ${current} Total: ${total}`)
   if (jobs > 0) {
     const pct = ((current - jobs + 1)/current*100);
     document.getElementsByClassName('progress-bar').item(0).setAttribute('aria-valuenow', pct);
