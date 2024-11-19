@@ -65,6 +65,11 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
         """Bool based on membership of settings.BMA_CURATOR_GROUP_NAME."""
         return settings.BMA_CURATOR_GROUP_NAME in self.cached_groups
 
+    @property
+    def is_worker(self) -> bool:
+        """Bool based on membership of settings.BMA_WORKER_GROUP_NAME."""
+        return settings.BMA_WORKER_GROUP_NAME in self.cached_groups
+
     @cached_property
     def cached_groups(self) -> list[str]:
         """Optimise repeated calls to user.groups.whatever."""

@@ -6,7 +6,6 @@ import uuid
 from functools import reduce
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
@@ -66,8 +65,7 @@ query: Query = Query(...)  # type: ignore[type-arg]
 def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema) -> FileApiResponseType:
     """API endpoint for file uploads."""
     # make sure the uploading user is in the creators group
-    creator_group, created = Group.objects.get_or_create(name=settings.BMA_CREATOR_GROUP_NAME)
-    if created or creator_group not in request.user.groups.all():
+    if not request.user.is_creator:  # type: ignore[union-attr]
         return 403, {"message": "Missing upload permissions"}
 
     # get the file metadata
@@ -555,8 +553,7 @@ def file_tag(
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
-    curator_group, created = Group.objects.get_or_create(name=settings.BMA_CURATOR_GROUP_NAME)
-    if created or curator_group not in request.user.groups.all():
+    if not request.user.is_curator:  # type: ignore[union-attr]
         return 403, {"message": "Missing tagging permissions"}
 
     # add the tag(s) to the file and return
@@ -584,8 +581,7 @@ def file_untag(
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
-    curator_group, created = Group.objects.get_or_create(name=settings.BMA_CURATOR_GROUP_NAME)
-    if created or curator_group not in request.user.groups.all():
+    if not request.user.is_curator:  # type: ignore[union-attr]
         return 403, {"message": "Missing untagging permissions"}
 
     # remove the tagging(s) from the file (if present) and return

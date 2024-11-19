@@ -12,7 +12,6 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from guardian.shortcuts import get_objects_for_user
 from ninja import Query
 from ninja import Router
 from ninja.files import UploadedFile
@@ -29,6 +28,8 @@ from jobs.schema import SettingsResponseSchema
 from utils.api import FileApiResponseType
 from utils.api import JobApiResponseType
 from utils.api import JobSettingsResponseType
+from utils.auth import BMAuthBearer
+from utils.auth import permit_anonymous_api_use
 from utils.schema import ApiMessageSchema
 
 from .filters import JobFilters
@@ -64,19 +65,6 @@ def job_settings(request: HttpRequest) -> JobSettingsResponseType:
     return 200, {"bma_response": response}
 
 
-def get_permitted_jobs(request: HttpRequest) -> QuerySet[BaseJob]:
-    """Return a qs of jobs related to files for which the user has the change_basefile permission."""
-    # get files the user has permission for
-    files = get_objects_for_user(
-        user=request.user,
-        perms="files.change_basefile",
-        klass=BaseFile,
-    ).values_list("uuid", flat=True)
-
-    # get all jobs for those files
-    return BaseJob.objects.filter(basefile__in=files)  # type: ignore[no-any-return]
-
-
 def filter_jobs(jobs: QuerySet[BaseJob], filters: JobFilters) -> QuerySet[BaseJob]:
     """Apply filters and return filtered jobs."""
     if filters.file_uuid:
@@ -107,12 +95,12 @@ def filter_jobs(jobs: QuerySet[BaseJob], filters: JobFilters) -> QuerySet[BaseJo
         404: ApiMessageSchema,
     },
     summary="Return a list of jobs this user has permission to do.",
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
 )
 def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiResponseType:
     """API endpoint for listing jobs the user has permission to do."""
     # filter jobs and return
-    jobs = get_permitted_jobs(request=request)
-    jobs = filter_jobs(jobs=jobs, filters=filters)
+    jobs = filter_jobs(jobs=BaseJob.objects.all(), filters=filters)
     if filters.offset:
         jobs = jobs[filters.offset :]
     if filters.limit:
@@ -124,6 +112,7 @@ def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiRespons
     "/assign/",
     response={
         200: MultipleJobResponseSchema,
+        403: ApiMessageSchema,
         404: ApiMessageSchema,
         500: ApiMessageSchema,
     },
@@ -133,13 +122,15 @@ def assign_file_jobs(
     request: HttpRequest, client: JobClientSchema, filters: JobFilters = query, *, check: bool = False
 ) -> JobApiResponseType:
     """Assign jobs for a file to the calling user."""
+    if request.user.is_worker:  # type: ignore[union-attr]
+        return 403, {"message": "No worker permission."}
+
     # clear old assigned unfinished jobs here
     BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
         user=None, client_uuid=None, client_version=""
     )
     # get all jobs
-    jobs = get_permitted_jobs(request=request)
-    jobs = filter_jobs(jobs=jobs, filters=filters)
+    jobs = filter_jobs(jobs=BaseJob.objects.all(), filters=filters)
 
     # ignore finished jobs and assigned jobs
     jobs = jobs.filter(
@@ -189,12 +180,13 @@ def upload_result(  # noqa: PLR0913
     check: bool = False,
 ) -> FileApiResponseType:
     """Endpoint for uploading the result of a job."""
+    if not request.user.is_worker:  # type: ignore[union-attr]
+        return 403, {"message": "No worker permission."}
+
     # get job and file
     job = get_object_or_404(BaseJob, uuid=job_uuid, finished=False)
     basefile = job.basefile
 
-    if not request.user.has_perm("change_basefile", basefile):
-        return 403, {"message": "Permission denied."}
     if check:
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
@@ -264,11 +256,12 @@ def unassign_job(
     check: bool = False,
 ) -> ApiMessageSchema | tuple[int, dict[str, str]]:
     """Endpoint for unassigning a job from a client/user."""
+    if not request.user.is_worker:  # type: ignore[union-attr]
+        return 403, {"message": "No worker permission."}
+
     # get job and file
     job = get_object_or_404(BaseJob, uuid=job_uuid, finished=False)
 
-    if not request.user.has_perm("change_basefile", job.basefile):
-        return 403, {"message": "Permission denied."}
     if check:
         # check mode requested, don't change anything
         return 202, {"message": "OK"}

@@ -22,12 +22,17 @@ def bma_startup(sender: WSGIHandler, **kwargs: dict[str, str]) -> None:
     # create moderator group if needed
     moderator_group, created = Group.objects.get_or_create(name=settings.BMA_MODERATOR_GROUP_NAME)
     if created:
-        logger.info(f"Created creator group {settings.BMA_CREATOR_GROUP_NAME}")
+        logger.info(f"Created moderator group {settings.BMA_MODERATOR_GROUP_NAME}")
 
     # create creator group if needed
     curator_group, created = Group.objects.get_or_create(name=settings.BMA_CURATOR_GROUP_NAME)
     if created:
-        logger.info(f"Created creator group {settings.BMA_CREATOR_GROUP_NAME}")
+        logger.info(f"Created curator group {settings.BMA_CURATOR_GROUP_NAME}")
+
+    # create worker group if needed
+    worker_group, created = Group.objects.get_or_create(name=settings.BMA_WORKER_GROUP_NAME)
+    if created:
+        logger.info(f"Created worker group {settings.BMA_WORKER_GROUP_NAME}")
 
     # all done
     logger.debug(
