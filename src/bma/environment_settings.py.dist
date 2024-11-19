@@ -123,7 +123,7 @@ HITCOUNT_KEEP_HIT_IN_DATABASE = { 'days': 365 }
 
 IMAGE_ENCODING = {
     "image/webp": {
-        "lossless": False,
-        "quality": 0.9,
+        "lossless": True,
+        "quality": 1.0,
     },
 }
