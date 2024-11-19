@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 ENV PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
@@ -24,7 +24,8 @@ RUN apt-get update \
     libpq-dev \
     libjpeg-dev \
     libgdal-dev \
-    wkhtmltopdf
+    wkhtmltopdf \
+    git
 
 RUN --mount=type=bind,readwrite,source=.,target=/app \
   pip3 install --no-cache-dir /app[dev,test]
