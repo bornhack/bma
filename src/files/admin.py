@@ -16,13 +16,23 @@ from .models import BaseFile
 class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
     """The ModelAdmin class to manage files. Used by the regular admin and FileAdmin."""
 
-    readonly_fields = ("original_filename", "file_size", "license", "uploader", "approved", "published", "deleted")
+    readonly_fields = (
+        "original_filename",
+        "file_size",
+        "license",
+        "uploader",
+        "approved",
+        "published",
+        "deleted",
+        "mimetype",
+    )
     list_display = (
         "uuid",
         "uploader",
         "thumbnail",
         "downloads",
         "permissions",
+        "mimetype",
         "created",
         "updated",
         "title",

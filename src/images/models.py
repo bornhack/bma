@@ -79,3 +79,7 @@ class Image(BaseFile):
                 custom_aspect_ratio=bool(ratio),
                 filetype=filetype,
             )
+
+    def get_image_versions(self) -> dict[str, dict[str, list[tuple[int, int, str]]]]:
+        """Return versions."""
+        return self.get_picturefield_versions(field=self.original)

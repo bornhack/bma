@@ -345,6 +345,29 @@ class BaseFile(PolymorphicModel):
                 filetype=filetype,
             )
 
+    def get_picturefield_versions(
+        self, field: "NoPillowPictureField"
+    ) -> dict[str, dict[str, list[tuple[int, int, str]]]]:
+        """Return a tuple of width, height, ratio, format for all versions of this file."""
+        versions: dict[str, dict[str, list[tuple[int, int, str]]]] = {}
+        # get the ratio of the source instance, used to calculate the height
+        # for versions with default AR
+        source_ratio = Fraction(field.instance.width / field.instance.height)
+        for ratio, filetypes in field.aspect_ratios.items():
+            # initialise a dict to hold all filetypes for this ratio
+            versions[ratio] = {}
+            for filetype, sizes in filetypes.items():
+                # initialise list to hold all sizes for this filetype
+                versions[ratio][filetype] = []
+                for width, version in sizes.items():
+                    url = version.url if Path(version.path).exists() else ""
+                    height = self.calculate_version_height(
+                        width=width, ratio=Fraction(ratio) if ratio else source_ratio
+                    )
+                    versions[ratio][filetype].append((width, height, url))
+                versions[ratio][filetype].sort(reverse=True)
+        return versions
+
     def calculate_version_height(self, width: int, ratio: Fraction) -> int:
         """Calculate the height for an image version."""
         if ratio != self.aspect_ratio:
@@ -352,6 +375,12 @@ class BaseFile(PolymorphicModel):
             return math.floor(width / ratio)
         # maintain original AR
         return int(math.floor(width / self.aspect_ratio))
+
+    def get_thumbnail_versions(self) -> dict[str, dict[str, list[tuple[int, int, str]]]]:
+        """Return thumbnails."""
+        if not self.thumbnail:
+            return {}
+        return self.get_picturefield_versions(field=self.thumbnail.source)
 
 
 class Thumbnail(BaseModel):
