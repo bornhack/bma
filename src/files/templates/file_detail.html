@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load django_bootstrap5 %}
 {% load pictures %}
+{% load humanize %}
 {% block title %}File details{% endblock title %}
 
 {% block main_content %}
@@ -30,7 +31,7 @@
             <div class="card-header">
               <div class="row">
                 <div class="col-6">
-                  <h5 class="card-title">Information</h5>
+                  <h5 class="card-title">File Information</h5>
                 </div>
               </div>
             </div>
@@ -41,8 +42,8 @@
                     <dt class="col-sm-3 text-truncate">Title</dt>
                     <dd class="col-sm-9">{{ file.title }}</dd>
 
-                    <dt class="col-sm-3 text-truncate">Original Dimensions</dt>
-                    <dd class="col-sm-9">{{ file.width }}*{{ file.height }} (w*h)</dd>
+                    <dt class="col-sm-3">Download</dt>
+                    <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{{ file.original.url }}"><i class="fas fa-download"></i> download</a> ({{ file.file_size|intcomma }} bytes {{ file.mimetype }})</dd>
 
                     <dt class="col-sm-3 text-truncate">UUID</dt>
                     <dd class="col-sm-9">{{ file.uuid }}</dd>
@@ -50,19 +51,19 @@
                     <dt class="col-sm-3">Uploader</dt>
                     <dd class="col-sm-9"><a href="{{ file.uploader.get_absolute_url }}">{{ file.uploader }}</a></dd>
 
-                    <dt class="col-sm-3">Attribution</dt>
+                    <dt class="col-sm-3">CC Attribution</dt>
                     <dd class="col-sm-9">{{ file.attribution }}</dd>
 
-                    <dt class="col-sm-3">Source</dt>
+                    <dt class="col-sm-3">CC Source</dt>
                     <dd class="col-sm-9"><a href="{{ file.source }}">{{ file.source }}</a></dd>
 
-                    <dt class="col-sm-3">License</dt>
+                    <dt class="col-sm-3">CC License</dt>
                     <dd class="col-sm-9">{{ file.get_license_display }}</dd>
 
                     <dt class="col-sm-3">Hits</dt>
                     <dd class="col-sm-9">{{ file.hits.count }}</dd>
 
-                    <dt class="col-sm-3 text-truncate">Filename</dt>
+                    <dt class="col-sm-3 text-truncate">Original Filename</dt>
                     <dd class="col-sm-9">{{ file.original_filename }}</dd>
 
                     <dt class="col-sm-3">Description</dt>
@@ -81,6 +82,44 @@
         </div>
       </div>
 
+      {% if file.filetype == "image" %}
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Image Versions</h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between">
+                <div class="col-12">
+                  <dl class="row mb-1">
+                    <dt class="col-sm-3 text-truncate">Original File</dt>
+                    <dd class="col-sm-9"><b>{{ file.width }}*{{ file.height }}</b> (width*height), Aspect Ratio <b>{{ file.aspect_ratio }}</b></dd>
+                    {% for ratio, filetypes in file.get_image_versions.items %}
+                      {% for filetype, sizes in filetypes.items %}
+                      <dt class="col-sm-3 text-truncate">{{ filetype }} ({{ ratio|default:"Original AR" }})</dt>
+                    <dd class="col-sm-9">
+                        {% for width, height, picurl in sizes %}
+                          {% if picurl %}
+                          <a href="{{ picurl }}">{{ width }}*{{ height }}</a>
+                          {% else %}
+                          {{ width }}*{{ height }}
+                          {% endif %}
+                        {% endfor %}
+                    </dd>
+                    {% endfor %}
+                    {% endfor %}
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+
+      <!-- Albums -->
       <div class="row">
         <div class="col mb-3">
           <div class="card">
@@ -96,11 +135,12 @@
         </div>
       </div>
 
+      <!-- Tags -->
       <div class="row">
         <div class="col mb-3">
           <div id="tag-card" class="card">
             <div class="card-header">
-                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}">Details</a></h5>
+                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}">Tag Details</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% if file.tags.exists %}
@@ -130,6 +170,60 @@
           </div>
         </div>
       </div>
+
+
+      <!-- thumbnails -->
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Thumbnails</h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between">
+                <div class="col-12">
+                  <table class="table table-small">
+                    <thead>
+                      <tr><th>Ratio</th><th>Filetype</th><th>Sizes</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for ratio, filetypes in file.get_thumbnail_versions.items %}
+                    {% for filetype, sizes in filetypes.items %}
+                      <tr>
+                        <td>{{ ratio|default:"Default" }}</td>
+                        <td>{{ filetype }}</td>
+                        <td>{% for width, height, picurl in sizes %}<a href="{{ picurl }}">{{ width }}*{{ height }}</a> {% endfor %}</td>
+                      </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if file.filetype == "image" and file.exif %}
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Image Exif Data</h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between">
+                <div class="col-12">
+                  <pre>{{ file.exif | pprint }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
     </div>
   </div>
 
