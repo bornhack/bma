@@ -122,7 +122,7 @@ def assign_file_jobs(
     request: HttpRequest, client: JobClientSchema, filters: JobFilters = query, *, check: bool = False
 ) -> JobApiResponseType:
     """Assign jobs for a file to the calling user."""
-    if request.user.is_worker:  # type: ignore[union-attr]
+    if not request.user.is_worker:  # type: ignore[union-attr]
         return 403, {"message": "No worker permission."}
 
     # clear old assigned unfinished jobs here
