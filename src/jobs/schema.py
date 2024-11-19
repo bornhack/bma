@@ -35,7 +35,6 @@ class JobResponseSchema(Schema):
     job_type: str
     job_uuid: uuid.UUID
     user_uuid: uuid.UUID | None = None
-    useragent: str | None = None
     source_url: str
     source_filename: str
 
