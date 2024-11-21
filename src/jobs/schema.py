@@ -37,6 +37,7 @@ class JobResponseSchema(Schema):
     user_uuid: uuid.UUID | None = None
     source_url: str
     source_filename: str
+    source_mimetype: str
 
     @staticmethod
     def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
@@ -56,9 +57,9 @@ class JobResponseSchema(Schema):
         return obj.user_id  # type: ignore[no-any-return]
 
     @staticmethod
-    def resolve_source_url(obj: BaseJob, context: dict[str, HttpRequest]) -> str:
-        """Get the value for the source_url field."""
-        return obj.source_url
+    def resolve_source_mimetype(obj: BaseJob, context: dict[str, HttpRequest]) -> str:
+        """Get the value for the source_mimetype field."""
+        return str(obj.basefile.mimetype)
 
 
 class ImageConversionJobResponseSchema(JobResponseSchema):
@@ -125,7 +126,7 @@ class SettingsSchema(Schema):
 
     filetypes: dict[str, dict[str, str]]
     licenses: dict[str, str]
-    encoding: dict[str, dict[str, dict[str, bool | float]]]
+    encoding: dict[str, dict[str, dict[str, bool | int]]]
 
 
 class SettingsResponseSchema(Schema):
