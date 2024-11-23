@@ -20,14 +20,8 @@
     <!-- Custom stylesheets -->
     <link href="{% static "css/bma.css" %}" rel="stylesheet">
 
-    <!-- https://datatables.net/ -->
-    <link href="{% static "css/vendor/dataTables.1.12.1.min.css" %}" rel="stylesheet">
-
     <!-- jQuery -->
     <script src="{% static "js/vendor/jquery-3.6.0.min.js" %}"></script>
-
-    <!-- https://datatables.net/ -->
-    <script src="{% static "js/vendor/jquery.dataTables.1.12.1.min.js" %}"></script>
 
     <!-- bootstrap JS -->
     {% bootstrap_javascript %}
@@ -37,12 +31,6 @@
     {% django_htmx_script %}
     <!-- https://htmx.org/extensions/json-enc/ -->
     <script src="{% static 'js/vendor/htmx/json-enc.js' %}" defer></script>
-
-    <!-- slideshows IS THIS STILL USED? -->
-    <script src="{% static "js/vendor/spotlight.v0.7.8.bundle.js" %}" defer></script>
-
-    <!-- https://github.com/Mobius1/Selectable -->
-    <script type="text/javascript" src="{% static "js/vendor/selectable.min.js" %}"></script>
 
     <!-- Custom javascript -->
     <script src="{% static "js/bma.js" %}"></script>

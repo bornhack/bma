@@ -1,11 +1,16 @@
 {% extends "base.html" %}
+{% load static %}
 {% load django_bootstrap5 %}
 {% load pictures %}
 {% load humanize %}
 {% block title %}File details{% endblock title %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/plyr-v3.7.8.css' %}">
+<script src="{% static "js/vendor/plyr-v3.7.8.js" %}"></script>
+<script src="{% static "js/plyr.js" %}"></script>
+{% endblock extra_head %}
 
 {% block main_content %}
-
   <div class="row">
 
     <div class="col-lg-9 col-sm-12">
@@ -31,7 +36,7 @@
             <div class="card-header">
               <div class="row">
                 <div class="col-6">
-                  <h5 class="card-title">File Information</h5>
+                  <h5 class="card-title">{{ file.filetype|capfirst }} Information</h5>
                 </div>
               </div>
             </div>
@@ -39,35 +44,38 @@
               <div class="row justfiy-content-between">
                 <div class="col-12">
                   <dl class="row mb-1">
+                    <h5>CC Attribution</h5>
                     <dt class="col-sm-3 text-truncate">Title</dt>
                     <dd class="col-sm-9">{{ file.title }}</dd>
 
-                    <dt class="col-sm-3">Download</dt>
+                    <dt class="col-sm-3">Attribution</dt>
+                    <dd class="col-sm-9">{{ file.attribution }}</dd>
+
+                    <dt class="col-sm-3">Source</dt>
+                    <dd class="col-sm-9"><a href="{{ file.source }}">{{ file.source }}</a></dd>
+
+                    <dt class="col-sm-3">License</dt>
+                    <dd class="col-sm-9">{{ file.get_license_display }}</dd>
+
+                    <h5>Downloads</h5>
+                    <dt class="col-sm-3">Original File</dt>
                     <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{{ file.original.url }}"><i class="fas fa-download"></i> download</a> ({{ file.file_size|intcomma }} bytes {{ file.mimetype }})</dd>
 
-                    <dt class="col-sm-3 text-truncate">UUID</dt>
-                    <dd class="col-sm-9">{{ file.uuid }}</dd>
+                    <h5>Metadata</h5>
+                    <dt class="col-sm-3">Description</dt>
+                    <dd class="col-sm-9"><p>{{ file.description|default:"n/a" }}</p></dd>
 
                     <dt class="col-sm-3">Uploader</dt>
                     <dd class="col-sm-9"><a href="{{ file.uploader.get_absolute_url }}">{{ file.uploader }}</a></dd>
 
-                    <dt class="col-sm-3">CC Attribution</dt>
-                    <dd class="col-sm-9">{{ file.attribution }}</dd>
-
-                    <dt class="col-sm-3">CC Source</dt>
-                    <dd class="col-sm-9"><a href="{{ file.source }}">{{ file.source }}</a></dd>
-
-                    <dt class="col-sm-3">CC License</dt>
-                    <dd class="col-sm-9">{{ file.get_license_display }}</dd>
+                    <dt class="col-sm-3 text-truncate">UUID</dt>
+                    <dd class="col-sm-9">{{ file.uuid }}</dd>
 
                     <dt class="col-sm-3">Hits</dt>
                     <dd class="col-sm-9">{{ file.hits.count }}</dd>
 
                     <dt class="col-sm-3 text-truncate">Original Filename</dt>
                     <dd class="col-sm-9">{{ file.original_filename }}</dd>
-
-                    <dt class="col-sm-3">Description</dt>
-                    <dd class="col-sm-9"><p>{{ file.description|default:"n/a" }}</p></dd>
 
                     <dt class="col-sm-3">Created</dt>
                     <dd class="col-sm-9">{{ file.created|date:"d/m/y-H:i:s" }}</dd>
@@ -226,5 +234,4 @@
 
     </div>
   </div>
-
 {% endblock main_content %}

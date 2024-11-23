@@ -1,5 +1,6 @@
 """Various utility template tags for the BMA project."""
 
+from fractions import Fraction
 from typing import TYPE_CHECKING
 
 from django import template
@@ -8,6 +9,7 @@ from django.template import loader
 from django.template.context import RequestContext
 from django.utils.safestring import mark_safe
 from pictures.templatetags.pictures import picture
+from pictures.utils import sizes
 
 if TYPE_CHECKING:
     from django.db.models.fields.files import FieldFile
@@ -51,9 +53,12 @@ def thumbnail(field_file: "PictureFieldFile", filetype: str, width: int, ratio: 
             f"only {field_file.field.aspect_ratios} are supported -->"
         )
 
-    url = field_file.aspect_ratios[ratio]["WEBP"][width].url
-    url2x = field_file.aspect_ratios[ratio]["WEBP"][width * 2].url
-    height = field_file.aspect_ratios[ratio]["WEBP"][width].height
+    try:
+        url = field_file.aspect_ratios[ratio]["WEBP"][width].url
+        url2x = field_file.aspect_ratios[ratio]["WEBP"][width * 2].url
+        height = field_file.aspect_ratios[ratio]["WEBP"][width].height
+    except KeyError:
+        return ""
     title = field_file.instance.basefile.original_filename
     alt = field_file.instance.basefile.description or field_file.instance.basefile.original_filename
     return mark_safe(  # noqa: S308
@@ -96,3 +101,21 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
     else:
         output = "<!-- Unknown filetype -->"
     return mark_safe(output)  # noqa: S308
+
+
+@register.simple_tag()
+def media_query(container_width: int | None = None, **kwargs: str) -> str:
+    """Render a media query string based on the provided breakpoints and PICTURES breakpoints."""
+    return str(sizes(container_width=container_width or settings.PICTURES["CONTAINER_WIDTH"], **kwargs))
+
+
+@register.simple_tag()
+def render_source_set(
+    *, field_file: "PictureFieldFile", file_type: str, aspect_ratio: Fraction | None = None, max_width: int, cols: int
+) -> str:
+    """Return a source set for a given original image size."""
+    output = ""
+    for width, pic in field_file.aspect_ratios[aspect_ratio][file_type].items():
+        output += f"{pic.url} {width}w, "
+    # remove trailing ", "
+    return output[:-2]

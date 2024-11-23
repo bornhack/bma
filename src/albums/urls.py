@@ -22,9 +22,9 @@ urlpatterns = [
         "<uuid:album_uuid>/",
         include(
             [
-                path("", RedirectView.as_view(pattern_name="albums:album_slideshow"), name="album_detail"),
+                path("", RedirectView.as_view(pattern_name="albums:album_grid"), name="album_detail"),
                 path("update/", AlbumUpdateView.as_view(), name="album_update"),
-                path("slideshow/", AlbumDetailView.as_view(), name="album_slideshow"),
+                path("grid/", AlbumDetailView.as_view(), name="album_grid"),
                 path("table/", AlbumDetailView.as_view(), name="album_table"),
                 path("add-files/", AlbumAddFilesView.as_view(), name="album_add_files"),
                 path("remove-files/", AlbumRemoveFilesView.as_view(), name="album_remove_files"),

@@ -247,6 +247,7 @@ class FileFilter(django_filters.FilterSet):
         model = BaseFile
         fields: ClassVar[dict[str, list[str]]] = {
             "attribution": ["exact", "icontains"],
+            "title": ["icontains"],
             "approved": ["exact"],
             "published": ["exact"],
             "deleted": ["exact"],
