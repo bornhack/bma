@@ -1,7 +1,12 @@
 {% extends "base.html" %}
+{% load humanize static %}
 {% load django_bootstrap5 %}
 
 {% block title %}File list{% endblock title %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+{% endblock extra_head %}
 
 {% block main_content %}
   <div class="row">
@@ -38,9 +43,12 @@
       <div class="card">
         <h5 class="card-header">Files</h5>
         <div class="card-body">
-          {% include "includes/file_table.html" %}
+          <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
+            {% include "includes/file_table.html" %}
+          </div>
         </div>
       </div>
     </div>
   </div>
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
 {% endblock main_content %}

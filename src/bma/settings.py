@@ -267,3 +267,11 @@ PICTURES = {
     "USE_PLACEHOLDERS": False,
     "PROCESSOR": "images.picture_processor.dummy_processor",
 }
+
+
+DJANGO_TABLES2_TABLE_ATTRS = {
+    "class": "table table-hover",
+    "thead": {
+        "class": "table-light",
+    },
+}

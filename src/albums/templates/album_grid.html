@@ -9,11 +9,11 @@
 {% for file in filter.qs %}
 
 {% if file.filetype == "image" %}
-<a href="{{ file.original.url }}" data-pswp-width="{{ file.width }}"  data-pswp-height="{{ file.height }}"  data-pswp-type="image"  data-pswp-srcset="{% render_source_set field_file=file.original file_type="WEBP" max_width=4000 cols=12 %}">{% thumbnail file.thumbnail.source filetype=file.filetype width=200 ratio="1/1" %}</a>
+<a class="gallerya" href="{{ file.original.url }}" data-pswp-width="{{ file.width }}"  data-pswp-height="{{ file.height }}"  data-pswp-type="image"  data-pswp-srcset="{% render_source_set field_file=file.original file_type="WEBP" max_width=4000 cols=12 %}">{% thumbnail file.thumbnail.source filetype=file.filetype width=200 ratio="1/1" %}</a>
 
 {% elif file.filetype == "video" %}
 {# Set max video player size to 1280x1024 #}
-<a href="{{ file.original.url }}" data-pswp-type="video" data-pswp-width="1280" data-pswp-height="1024">{% thumbnail file.thumbnail.source filetype=file.filetype width=200 ratio="16/9" %}</a>
+<a class="gallerya" href="{{ file.original.url }}" data-pswp-type="video" data-pswp-width="1280" data-pswp-height="1024">{% thumbnail file.thumbnail.source filetype=file.filetype width=200 ratio="16/9" %}</a>
 
 {% else %}
 <a href="{{ file.original.url }}">
