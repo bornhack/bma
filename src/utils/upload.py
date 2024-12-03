@@ -29,7 +29,7 @@ def get_extension_from_mimetype(mimetype: str) -> str:
 
 def get_mimetype_from_extension(extension: str) -> str | None:
     """Return mimetype for the extension using pythons mimetypes module."""
-    mimetype, _encoding = mimetypes.guess_type(url=f"foo.{extension}")
+    mimetype, _encoding = mimetypes.guess_type(url=f"foo.{extension}", strict=False)
     return mimetype
 
 
