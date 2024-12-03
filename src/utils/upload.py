@@ -29,7 +29,8 @@ def get_extension_from_mimetype(mimetype: str) -> str:
 
 def get_mimetype_from_extension(extension: str) -> str | None:
     """Return mimetype for the extension using pythons mimetypes module."""
-    return mimetypes.guess_extension(type=extension)
+    mimetype, _encoding = mimetypes.guess_type(url=f"foo.{extension}")
+    return mimetype
 
 
 def get_upload_path(instance: "BaseFile", filename: str) -> Path:
