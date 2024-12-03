@@ -36,8 +36,6 @@ class JobResponseSchema(Schema):
     job_uuid: uuid.UUID
     user_uuid: uuid.UUID | None = None
     source_url: str
-    source_filename: str
-    source_mimetype: str
 
     @staticmethod
     def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
@@ -56,11 +54,6 @@ class JobResponseSchema(Schema):
         """Get the value for the user_uuid field."""
         return obj.user_id  # type: ignore[no-any-return]
 
-    @staticmethod
-    def resolve_source_mimetype(obj: BaseJob, context: dict[str, HttpRequest]) -> str:
-        """Get the value for the source_mimetype field."""
-        return str(obj.basefile.mimetype)
-
 
 class ImageConversionJobResponseSchema(JobResponseSchema):
     """Schema used for representing an image conversion job in a response."""
@@ -70,7 +63,7 @@ class ImageConversionJobResponseSchema(JobResponseSchema):
     mimetype: str
     width: int
     height: int
-    custom_aspect_ratio: bool
+    custom_aspect_ratio: str
 
 
 class ExifExtractionJobResponseSchema(JobResponseSchema):
@@ -87,22 +80,21 @@ class ThumbnailSourceJobResponseSchema(JobResponseSchema):
     schema_name: str = "ThumbnailSourceJobResponseSchema"
 
 
-class ThumbnailJobResponseSchema(JobResponseSchema):
+class ThumbnailJobResponseSchema(ImageConversionJobResponseSchema):
     """Schema used for representing a thumbnail job in a response."""
 
-    # this job schema has no extra fields
     schema_name: str = "ThumbnailJobResponseSchema"
 
 
 # IMPORTANT; ENTIRE DAY WASTED HERE:
-# django-ninja picks the first schema in this union which the object
-# has values to satisfy all fields, without raising an exception.
-# Put the schema with fewest fields last. Sigh.
+# django-ninja (actually pydantic) picks the first schema in this
+# union where the object has values to satisfy all fields, without
+# raising an exception. Put the schema with fewest fields last. Sigh.
 Job: TypeAlias = (
     ImageConversionJobResponseSchema
-    | ExifExtractionJobResponseSchema
-    | ThumbnailSourceJobResponseSchema
     | ThumbnailJobResponseSchema
+    | ThumbnailSourceJobResponseSchema
+    | ExifExtractionJobResponseSchema
 )
 
 
@@ -125,7 +117,7 @@ class SettingsSchema(Schema):
     """The schema used to represent settings in responses."""
 
     filetypes: dict[str, dict[str, str]]
-    licenses: dict[str, str]
+    licenses: dict[str, dict[str, str]]
     encoding: dict[str, dict[str, dict[str, bool | int]]]
 
 

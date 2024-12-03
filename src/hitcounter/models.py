@@ -28,7 +28,7 @@ class BaseHit(models.Model):
     management command.
     """
 
-    created = models.DateTimeField(editable=False, auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(editable=False, auto_now_add=True, db_index=True)
     ip = models.CharField(max_length=40, editable=False, db_index=True)
     session = models.CharField(max_length=40, editable=False, db_index=True)
     user_agent = models.CharField(max_length=255, editable=False)
@@ -40,8 +40,8 @@ class BaseHit(models.Model):
         """Meta options for the Hit model."""
 
         abstract = True
-        ordering = ("-created",)
-        get_latest_by = "created"
+        ordering = ("-created_at",)
+        get_latest_by = "created_at"
         verbose_name = _("hit")
         verbose_name_plural = _("hits")
 

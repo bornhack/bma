@@ -1,0 +1,21 @@
+{% extends "file_detail.html" %} 
+{% load render_table from django_tables2 %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% load humanize %}
+{% block title %}File jobs{% endblock title %}
+
+{% block file_detail %}
+<div class="card-body">
+  <div class="table-responsive">
+    <div class="lead">Per page:
+    <div class="btn-group" role="group" aria-label="Per page">
+      <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
+      <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
+      <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
+    </div>
+    </div>
+    {% render_table table %}
+  </div>
+</div>
+{% endblock file_detail %}

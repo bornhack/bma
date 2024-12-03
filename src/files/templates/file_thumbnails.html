@@ -1,0 +1,51 @@
+{% extends "file_detail.html" %} 
+{% load static %}
+{% load django_bootstrap5 %}
+{% load pictures %}
+{% load humanize %}
+{% block title %}File details{% endblock title %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/plyr-v3.7.8.css' %}">
+<script src="{% static "js/vendor/plyr-v3.7.8.js" %}"></script>
+<script src="{% static "js/plyr.js" %}"></script>
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+{% endblock extra_head %}
+
+{% block file_detail %}
+<div class="card-body">
+  <div class="table-responsive">
+  <table class="table table-hover">
+    <thead><tr>
+      <th>Aspect Ratio</th>
+      <th>File Type</th>
+      <th>400</th>
+      <th>300</th>
+      <th>200</th>
+      <th>150</th>
+      <th>100</th>
+      <th>50</th>
+    </tr></thead>
+    <tbody>
+    {% for ratio, filetypes in file.get_thumbnails.items %}
+      {% for filetype, sizes in filetypes.items %}
+      <tr>
+        <td>{{ ratio|default:"Original" }}</td>
+        <td>{{ filetype }}</td>
+        {% for width, thumbnail in sizes.items %}
+        <td class="align-middle">
+          <figure class="figure">
+            <a href="{{ thumbnail.imagefile.url }}"><img src="{{ thumbnail.imagefile.url }}" title="{{ thumbnail.width }}*{{ thumbnail.height }} {{ thumbnail.file_size|intcomma }} bytes" class="border" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}"></a>
+            <figcaption class="figure-caption">{{ thumbnail.width }}*{{ thumbnail.height }} ({{ thumbnail.file_size|intcomma }} bytes)</figcaption>
+          </figure>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock file_detail %}

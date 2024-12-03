@@ -19,10 +19,10 @@ class SortingChoices(models.TextChoices):
     title_desc = ("title_desc", "Title (descending)")
     description_asc = ("description_asc", "Description (ascending)")
     description_desc = ("description_desc", "Description (descending)")
-    created_asc = ("created_asc", "Created (ascending)")
-    created_desc = ("created_desc", "Created (descending)")
-    updated_asc = ("updated_asc", "Updated (ascending)")
-    updated_desc = ("updated_desc", "Updated (descending)")
+    created_at_asc = ("created_at_asc", "Created (ascending)")
+    created_at_desc = ("created_at_desc", "Created (descending)")
+    updated_at_asc = ("updated_at_asc", "Updated (ascending)")
+    updated_at_desc = ("updated_at_desc", "Updated (descending)")
 
 
 class ListFilters(FilterSchema):

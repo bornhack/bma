@@ -5,6 +5,9 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from files.models import LicenseChoices
+from files.models import license_urls
+
 from .models import BaseFile
 
 
@@ -15,14 +18,14 @@ class FileTable(tables.Table):
     uuid = tables.Column(linkify=True, verbose_name="File UUID")
     thumbnail = tables.TemplateColumn(
         verbose_name="Thumbnail",
-        template_name="includes/file_thumbnail.html",
-        extra_context={"width": 100, "ratio": "16/9"},
+        template_name="includes/file_thumbnail_pswp.html",
+        extra_context={"width": 100, "ratio": "1/1"},
     )
     albums = tables.Column(verbose_name="Albums")
     uploader = tables.Column(linkify=True)
     hitcount = tables.Column(verbose_name="Hits")
     jobs = tables.Column(verbose_name="Jobs")
-    file_type = tables.Column(verbose_name="File Type")
+    mimetype = tables.Column(verbose_name="File Type")
 
     def render_albums(self, record: BaseFile) -> str:
         """Render albums as a list of links."""
@@ -56,9 +59,18 @@ class FileTable(tables.Table):
         """Render the file size column."""
         return f"{intcomma(value)} bytes"
 
-    def render_file_type(self, record: BaseFile) -> str:
-        """Render the filetype column."""
-        return mark_safe(f'<i class="{record.filetype_icon} fa-2x"></i>')  # noqa: S308
+    def render_mimetype(self, record: BaseFile) -> str:
+        """Render the mimetype column."""
+        mimetype = f'<i class="{record.filetype_icon}"></i> {record.filetype}<br><i>{record.mimetype}</i>'
+        if record.filetype == "image":
+            mimetype += f"<br>{record.width}*{record.height}<br>AR {record.aspect_ratio}"
+        return mark_safe(mimetype)  # noqa: S308
+
+    def render_license(self, record: BaseFile) -> str:
+        """Render the license column."""
+        url = license_urls[record.license]
+        title = LicenseChoices[record.license]
+        return mark_safe(f'<a title="{title}" href="{url}">{record.license}</a>')  # noqa: S308
 
     class Meta:
         """Define model, template, fields."""
@@ -70,12 +82,12 @@ class FileTable(tables.Table):
             "uuid",
             "thumbnail",
             "title",
+            "mimetype",
+            "file_size",
             "albums",
             "attribution",
             "uploader",
             "license",
-            "file_size",
-            "file_type",
             "tags",
             "hitcount",
             "jobs",

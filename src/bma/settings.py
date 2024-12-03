@@ -260,6 +260,7 @@ PICTURES = {
         "xl": 1200,
         "xxl": 1400,
     },
+    "ASPECT_RATIOS": [None],
     "GRID_COLUMNS": 12,
     "CONTAINER_WIDTH": 4000,
     "FILE_TYPES": ["WEBP"],

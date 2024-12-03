@@ -8,12 +8,11 @@ from ninja import ModelSchema
 from ninja import Schema
 
 from files.models import BaseFile
+from files.models import LicenseChoices
 from tags.schema import TagResponseSchema
 from utils.permissions import get_object_permissions_schema
 from utils.schema import ApiResponseSchema
 from utils.schema import ObjectPermissionSchema
-
-from .models import LicenseChoices
 
 
 class UploadRequestSchema(ModelSchema):
@@ -25,6 +24,7 @@ class UploadRequestSchema(ModelSchema):
     original_source: str = ""
     tags: list[str] = []  # noqa: RUF012
     title: str = ""
+
     # extra fields only used by images
     width: int | None = None
     height: int | None = None
@@ -68,8 +68,8 @@ class MultipleFileRequestSchema(Schema):
     files: list[uuid.UUID]
 
 
-class ThumbnailMetadataSchema(Schema):
-    """Schema used when uploading thumbnail sources."""
+class ImageMetadataSchema(Schema):
+    """Schema used when uploading images."""
 
     width: int
     height: int
@@ -111,8 +111,8 @@ class FileResponseSchema(ModelSchema):
         model_fields = (
             "uuid",
             "uploader",
-            "created",
-            "updated",
+            "created_at",
+            "updated_at",
             "title",
             "description",
             "license",

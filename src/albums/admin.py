@@ -13,8 +13,8 @@ class AlbumAdmin(admin.ModelAdmin[Album]):
     list_display = (
         "uuid",
         "owner",
-        "created",
-        "updated",
+        "created_at",
+        "updated_at",
         "title",
         "description",
     )

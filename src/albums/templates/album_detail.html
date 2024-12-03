@@ -83,6 +83,7 @@
                 <div class="col-6 d-flex justify-content-end">
                   {% get_obj_perms request.user for album as "album_perms" %}
                   {% if "change_album" in album_perms %}
+                  <div class="btn-group">
                   <a class="btn btn-primary" href="{% url 'albums:album_update' album_uuid=album.pk %}">
                     <i class="fa-solid fa-pen-to-square"></i>
                     <small>Edit</small>
@@ -95,6 +96,7 @@
                     <i class="fa-solid fa-minus"></i>
                     <small>Files</small>
                   </a>
+                  </div>
                   {% endif %}
 
                 </div>
@@ -103,33 +105,42 @@
             <div class="card-body">
               <div class="row justfiy-content-between">
                 <div class="col-12">
-                  <dl class="row mb-1">
-                    <dt class="col-sm-3 text-truncate">UUID</dt>
-                    <dd class="col-sm-9">{{ album.uuid }}</dd>
+                  <div class="col">
+                    <p><h6 class="mb-0">UUID</h6>
+                      <span class="ms-2"><strong>{{ album.uuid }}</strong></span>
+                    </p>
 
-                    <dt class="col-sm-3 text-truncate">Title</dt>
-                    <dd class="col-sm-9">{{ album.title }}</dd>
+                    <p><h6 class="mb-0">Title</h6>
+                      <span class="ms-2"><strong>{{ album.title }}</strong></span>
+                    </p>
 
-                    <dt class="col-sm-3">Files</dt>
-                    <dd class="col-sm-9">
-                      <span class="badge bg-secondary">{{ album.active_files_list|length }}</span>
-                    </dd>
 
-                    <dt class="col-sm-3">Owner</dt>
-                    <dd class="col-sm-9"><a href="{% url 'users:user_profile' user_handle=album.owner.handle %}">{{ album.owner }}</a></dd>
+                    <p><h6 class="mb-0">Files</h6>
+                     <span class="ms-2 badge bg-primary">{{ album.active_files_list|length }}</span>
+                    </p>
 
-                    <dt class="col-sm-3">Hits</dt>
-                    <dd class="col-sm-9">{{ album.hits.count }}</dd>
+                    <p><h6 class="mb-0">Owner</h6>
+                      <span class="ms-2"><strong><a href="{% url 'users:user_profile' user_handle=album.owner.handle %}">{{ album.owner }}</a></strong></span>
+                    </p>
 
-                    <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ album.created|date:"d/m/y-H:i:s" }}</dd>
+                    <p><h6 class="mb-0">Hits</h6>
+                      <span class="ms-2 badge bg-primary">{{ album.hits.count }}</span>
+                    </p>
 
-                    <dt class="col-sm-3">Updated</dt>
-                    <dd class="col-sm-9">{{ album.updated|date:"d/m/y-H:i:s" }}</dd>
+                    <p><h6 class="mb-0">Created</h6>
+                      <span class="ms-2"><strong>{{ album.created_at|date:"d/m/y-H:i:s" }}</strong></span>
+                    </p>
 
-                    <dt class="col-sm-3">Description</dt>
-                    <dd class="col-sm-9"><p>{{ album.description|default:"n/a" }}</p></dd>
-                  </dl>
+
+                    <p><h6 class="mb-0">Updated</h6>
+                      <span class="ms-2"><strong>{{ album.updated_at|date:"d/m/y-H:i:s" }}</strong></span>
+                    </p>
+
+                    <p><h6 class="mb-0">Description</h6>
+                      <span class="ms-2"><strong>{{ album.description|default:"n/a" }}</strong></span>
+                    </p>
+
+                  </div>
                 </div>
               </div>
             </div>

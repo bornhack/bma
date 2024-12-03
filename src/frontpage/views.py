@@ -39,7 +39,7 @@ class FrontpageTemplateView(TemplateView):
             return (  # type: ignore[no-any-return]
                 BaseFile.bmanager.get_permitted(user=user)
                 .filter(polymorphic_ctype__model=model)
-                .order_by("created")[:6]
+                .order_by("created_at")[:6]
             )
         except BaseFile.DoesNotExist:
             return None

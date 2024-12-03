@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from guardian.shortcuts import get_objects_for_user
 
 from utils.admin import file_admin
+from utils.templatetags.bma_utils import thumbnail as get_thumbnail
 
 from .models import BaseFile
 
@@ -33,8 +34,8 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         "downloads",
         "permissions",
         "mimetype",
-        "created",
-        "updated",
+        "created_at",
+        "updated_at",
         "title",
         "license",
         "attribution",
@@ -218,10 +219,7 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
 
     def thumbnail(self, obj: BaseFile) -> str:
         """Return thumbnail html."""
-        try:
-            return mark_safe(f'<a href="{obj.original.url}"><img src = "{obj.thumbnail_url}" width = "100"></a>')  # noqa: S308
-        except AttributeError:
-            return ""
+        return get_thumbnail(obj, width=100, ratio="1/1")
 
 
 # register the BaseFile model in the file_admin

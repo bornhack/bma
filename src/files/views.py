@@ -34,6 +34,9 @@ from albums.forms import AlbumAddFilesForm
 from albums.forms import AlbumRemoveFilesForm
 from albums.models import Album
 from hitcounter.utils import count_hit
+from jobs.filters import JobFilter
+from jobs.models import BaseJob
+from jobs.tables import JobTable
 from tags.filters import TagFilter
 from tags.forms import TagForm
 from tags.mixins import TagViewMixin
@@ -83,7 +86,7 @@ class FileListView(SingleTableMixin, FilterView):
 class FileDetailView(DetailView):  # type: ignore[type-arg]
     """File detail view. Shows a single file."""
 
-    template_name = "file_detail.html"
+    template_name = "file_file.html"
     model = BaseFile
     pk_url_kwarg = "file_uuid"
     context_object_name = "file"
@@ -242,6 +245,56 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
         if "fromurl" in form.data:
             return redirect(form.data["fromurl"])
         return redirect(reverse("files:file_list"))
+
+
+class FileThumbnailsView(DetailView):  # type: ignore[type-arg]
+    """File thumbnails view. Shows all thumbnails for a file."""
+
+    template_name = "file_thumbnails.html"
+    model = BaseFile
+    pk_url_kwarg = "file_uuid"
+    context_object_name = "file"
+
+    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
+        """Check permissions before returning the file."""
+        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
+        if not basefile.permitted(user=self.request.user):
+            # the current user does not have permissions to view this file
+            raise PermissionDenied
+
+        # all good
+        return basefile  # type: ignore[no-any-return]
+
+
+class FileJobsView(SingleTableMixin, FilterView):
+    """File jobs view. Shows all jobs for a file."""
+
+    template_name = "file_jobs.html"
+    model = BaseFile
+    pk_url_kwarg = "file_uuid"
+    context_object_name = "file"
+    table_class = JobTable
+    filterset_class = JobFilter
+
+    def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:
+        """Get tags for this file."""
+        return BaseJob.objects.filter(basefile=self.get_object())  # type: ignore[no-any-return]
+
+    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
+        """Check permissions before returning the file. Use manager to get a fat file."""
+        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
+        if not basefile.permitted(user=self.request.user):
+            # the current user does not have permissions to view this file
+            raise PermissionDenied
+
+        # all good
+        return basefile  # type: ignore[no-any-return]
+
+    def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
+        """Add file to context."""
+        context = super().get_context_data(**kwargs)
+        context["file"] = self.get_object()
+        return context  # type: ignore[no-any-return]
 
 
 ########## File tag views ######################################################

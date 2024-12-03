@@ -6,6 +6,7 @@ import json
 import logging
 import secrets
 import string
+import uuid
 from pathlib import Path
 from urllib.parse import parse_qs
 from urllib.parse import urlsplit
@@ -61,7 +62,8 @@ class BmaTestBase(TestCase):
             user.auth = cls.get_access_token(user)
             user.save()
             cls.client.logout()
-
+        # clientinfo
+        cls.clientinfo = {"client_uuid": str(uuid.uuid4()), "client_version": settings.BMA_VERSION}
         # create groups and add users
         creators, _ = Group.objects.get_or_create(name=settings.BMA_CREATOR_GROUP_NAME)
         creators.user_set.add(cls.creator2, cls.creator3)
@@ -160,7 +162,8 @@ class BmaTestBase(TestCase):
                 reverse("api-v1-json:upload"),
                 {
                     "f": f,
-                    "metadata": json.dumps(metadata),
+                    "f_metadata": json.dumps(metadata),
+                    "client": json.dumps(cls.clientinfo),
                 },
                 headers={"authorization": getattr(cls, uploader).auth},
             )

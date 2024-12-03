@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="{% static 'css/vendor/plyr-v3.7.8.css' %}">
 <script src="{% static "js/vendor/plyr-v3.7.8.js" %}"></script>
 <script src="{% static "js/plyr.js" %}"></script>
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
 {% endblock extra_head %}
 
 {% block main_content %}
@@ -20,9 +22,8 @@
             <div class="card-header">
               <h5 class="card-title">{{ file.filetype|capfirst }} {{ file.title }}</h5>
             </div>
-            <div class="card-body d-flex justify-content-center">
-              {% render_file file.original img_alt=file.title img_loading="lazy" img_class="img-fluid" lg=9 sm=12 %}
-            </div>
+            {% block file_detail %}
+            {% endblock file_detail %}
           </div>
         </div>
       </div>
@@ -34,11 +35,7 @@
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-              <div class="row">
-                <div class="col-6">
-                  <h5 class="card-title">{{ file.filetype|capfirst }} Information</h5>
-                </div>
-              </div>
+                <h5 class="card-title">{{ file.filetype|capfirst }} Information<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_detail' file_uuid=file.uuid %}"><i class="{{ file.filetype_icon }}"></i> Show {{ file.filetype|capfirst }}</a></h5>
             </div>
             <div class="card-body">
               <div class="row justfiy-content-between">
@@ -78,10 +75,14 @@
                     <dd class="col-sm-9">{{ file.original_filename }}</dd>
 
                     <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ file.created|date:"d/m/y-H:i:s" }}</dd>
+                    <dd class="col-sm-9">{{ file.created_at|date:"d/m/y-H:i:s" }}</dd>
 
                     <dt class="col-sm-3">Updated</dt>
-                    <dd class="col-sm-9">{{ file.updated|date:"d/m/y-H:i:s" }}</dd>
+                    <dd class="col-sm-9">{{ file.updated_at|date:"d/m/y-H:i:s" }}</dd>
+
+                    <dt class="col-sm-3">Jobs</dt>
+                    <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">{{ file.jobs.count }}</a></dd>
+
                   </dl>
                 </div>
               </div>
@@ -90,6 +91,40 @@
         </div>
       </div>
 
+      <!-- thumbnails -->
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">{{ file.filetype|capfirst }} Thumbnails<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_thumbnails' file_uuid=file.uuid %}"><i class="fas fa-table-cells-large"></i> Show Thumbnails</a></h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between">
+                <div class="col-12">
+                  <table class="table table-responsive table-small">
+                    <thead>
+                      <tr><th>Ratio</th><th>Mimetype</th><th>Sizes</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for ratio, filetypes in file.get_thumbnails.items %}
+                    {% for filetype, sizes in filetypes.items %}
+                      <tr>
+                        <td>{{ ratio|default:"Default" }}</td>
+                        <td>{{ filetype }}</td>
+                        <td>{% for width, thumbnail in sizes.items %}<a title="{{ thumbnail.imagefile.size|intcomma }} bytes" href="{{ thumbnail.imagefile.url }}">{{ width }}*{{ thumbnail.height }}</a> {% endfor %}</td>
+                      </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- image versions -->
       {% if file.filetype == "image" %}
       <div class="row">
         <div class="col mb-3">
@@ -98,41 +133,34 @@
               <h5 class="card-title">Image Versions</h5>
             </div>
             <div class="card-body">
-              <div class="row justfiy-content-between">
-                <div class="col-12">
-                  <dl class="row mb-1">
-                    <dt class="col-sm-3 text-truncate">Original File</dt>
-                    <dd class="col-sm-9"><b>{{ file.width }}*{{ file.height }}</b> (width*height), Aspect Ratio <b>{{ file.aspect_ratio }}</b></dd>
-                    {% for ratio, filetypes in file.get_image_versions.items %}
-                      {% for filetype, sizes in filetypes.items %}
-                      <dt class="col-sm-3 text-truncate">{{ filetype }} ({{ ratio|default:"Original AR" }})</dt>
-                    <dd class="col-sm-9">
-                        {% for width, height, picurl in sizes %}
-                          {% if picurl %}
-                          <a href="{{ picurl }}">{{ width }}*{{ height }}</a>
-                          {% else %}
-                          {{ width }}*{{ height }}
-                          {% endif %}
-                        {% endfor %}
-                    </dd>
-                    {% endfor %}
-                    {% endfor %}
-                  </dl>
-                </div>
-              </div>
+              <table class="table table-responsive table-small">
+                <thead>
+                  <tr><th>Ratio</th><th>Mimetype</th><th>Sizes</th></tr>
+                </thead>
+                <tbody>
+                {% for ratio, mimetypes in file.get_versions.items %}
+                  {% for mimetype, sizes in mimetypes.items %}
+                  <tr>
+                    <td>{{ ratio|default:"Default" }}</td>
+                    <td>{{ mimetype }}</td>
+                    <td>{% for width, version in sizes.items %}<a title="{{ version.imagefile.size|intcomma }} bytes" href="{{ version.imagefile.url }}">{{ width }}*{{ version.height }}</a> {% endfor %}</td>
+                  </tr>
+                  {% endfor %}
+                {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
       {% endif %}
 
-
       <!-- Albums -->
       <div class="row">
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-              <h5 class="card-title">Albums</h5>
+              <h5 class="card-title">Albums<a class="btn btn-secondary btn-xs float-end" href="{% url 'albums:album_list' %}?files={{ file.uuid }}"><i class="fas fa-list"></i> Album List</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% for album in file.active_albums_list %}
@@ -148,7 +176,7 @@
         <div class="col mb-3">
           <div id="tag-card" class="card">
             <div class="card-header">
-                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}">Tag Details</a></h5>
+                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Tag List</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% if file.tags.exists %}
@@ -180,39 +208,6 @@
       </div>
 
 
-      <!-- thumbnails -->
-      <div class="row">
-        <div class="col mb-3">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="card-title">Thumbnails</h5>
-            </div>
-            <div class="card-body">
-              <div class="row justfiy-content-between">
-                <div class="col-12">
-                  <table class="table table-small">
-                    <thead>
-                      <tr><th>Ratio</th><th>Filetype</th><th>Sizes</th></tr>
-                    </thead>
-                    <tbody>
-                    {% for ratio, filetypes in file.get_thumbnail_versions.items %}
-                    {% for filetype, sizes in filetypes.items %}
-                      <tr>
-                        <td>{{ ratio|default:"Default" }}</td>
-                        <td>{{ filetype }}</td>
-                        <td>{% for width, height, picurl in sizes %}<a href="{{ picurl }}">{{ width }}*{{ height }}</a> {% endfor %}</td>
-                      </tr>
-                    {% endfor %}
-                    {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {% if file.filetype == "image" and file.exif %}
       <div class="row">
         <div class="col mb-3">
@@ -234,4 +229,5 @@
 
     </div>
   </div>
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
 {% endblock main_content %}

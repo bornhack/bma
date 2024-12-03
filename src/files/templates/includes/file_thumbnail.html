@@ -1,5 +1,1 @@
-{% if record.thumbnail %}
-<a class="gallerya" href="{{ record.original.url }}" data-pswp-width="{{ record.width }}"  data-pswp-height="{{ record.height }}"  data-pswp-type="image"  data-pswp-srcset="{% render_source_set field_file=record.original file_type="WEBP" max_width=4000 cols=12 %}">{% thumbnail record.thumbnail.source filetype=record.filetype width=width|default:50 ratio=ratio|default:"" %}</a>
-{% else %}
-<div class="text-center"><i class="center fas {{ record.filetype_icon }} fa-3x"></i></div>
-{% endif %}
+{% thumbnail record width=width|default:100 ratio=ratio|default:"" %}

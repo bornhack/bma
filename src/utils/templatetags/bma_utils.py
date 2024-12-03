@@ -8,11 +8,16 @@ from django.conf import settings
 from django.template import loader
 from django.template.context import RequestContext
 from django.utils.safestring import mark_safe
+
+from files.models import Thumbnail
 from pictures.templatetags.pictures import picture
 from pictures.utils import sizes
 
 if TYPE_CHECKING:
     from django.db.models.fields.files import FieldFile
+
+    from files.models import BaseFile
+    from images.models import Image
     from pictures.models import PictureFieldFile
 
 register = template.Library()
@@ -34,12 +39,9 @@ def get_group_icons(
 
 
 @register.simple_tag()
-def thumbnail(field_file: "PictureFieldFile", filetype: str, width: int, ratio: str | None = None) -> str:
+def thumbnail(basefile: "BaseFile", width: int, ratio: str) -> str:
     """BMA thumbnail tag. Depends on the hardcoded 50,100,150,200px (and 2x)."""
-    if isinstance(field_file, str):
-        return mark_safe(  # noqa: S308
-            f'<img class="img-fluid img-thumbnail" src="{settings.DEFAULT_THUMBNAIL_URLS[filetype]}" width="{width}">'
-        )
+    from files.models import ThumbnailSource
 
     if width not in [50, 100, 150, 200]:
         return mark_safe(  # noqa: S308
@@ -47,23 +49,43 @@ def thumbnail(field_file: "PictureFieldFile", filetype: str, width: int, ratio: 
             "only 50,100,150,200 is supported -->"
         )
 
-    if ratio not in field_file.field.aspect_ratios:
+    if ratio not in ThumbnailSource.source.field.aspect_ratios:  # type: ignore[attr-defined]
         return mark_safe(  # noqa: S308
             f"<!-- Error creating thumbnail markup, aspect ratio {ratio} is not supported, "
-            f"only {field_file.field.aspect_ratios} are supported -->"
+            f"only {ThumbnailSource.source.field.aspect_ratios} are supported -->"  # type: ignore[attr-defined]
+        )
+
+    thumbnails = basefile.thumbnails.filter(
+        width__in=[width, width * 2], aspect_ratio=str(Fraction(ratio)), mimetype="image/webp"
+    )
+    if not thumbnails:
+        # neither requested size or 2x available, return default
+        return mark_safe(  # noqa: S308
+            '<img class="img-fluid img-thumbnail" '
+            f'src="{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
+        )
+    try:
+        t = thumbnails.get(width=width, height=width / Fraction(ratio))
+        url = t.imagefile.url
+    except Thumbnail.DoesNotExist:
+        # requested size not available, return default
+        return mark_safe(  # noqa: S308
+            '<img class="img-fluid img-thumbnail" '
+            f'src="{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
         )
 
     try:
-        url = field_file.aspect_ratios[ratio]["WEBP"][width].url
-        url2x = field_file.aspect_ratios[ratio]["WEBP"][width * 2].url
-        height = field_file.aspect_ratios[ratio]["WEBP"][width].height
-    except KeyError:
-        return ""
-    title = field_file.instance.basefile.original_filename
-    alt = field_file.instance.basefile.description or field_file.instance.basefile.original_filename
+        url2x = thumbnails.get(width=width * 2).imagefile.url
+        url2x = f", {url2x} 2x"
+    except Thumbnail.DoesNotExist:
+        # 2x requested size not available, skip 2x for this thumbnail
+        url2x = ""
+
+    title = basefile.original_filename
+    alt = basefile.description or basefile.original_filename
     return mark_safe(  # noqa: S308
-        f'<img srcset="{url}, {url2x} 2x" src="{url}" '
-        f'height="{height}" width="{width}" title="{title}" '
+        f'<img srcset="{url}{url2x}" src="{url}" '
+        f'height="{t.height}" width="{width}" title="{title}" '
         f'alt="{alt}" class="img-fluid img-thumbnail">'
     )
 
@@ -74,7 +96,7 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
     if not hasattr(field_file.instance, "filetype"):
         output = "<!-- No filetype -->"
     elif field_file.instance.filetype == "image":
-        output = picture(field_file=field_file, **kwargs)
+        output = picture(field_file=field_file, **kwargs)  # type: ignore[arg-type] # wtf?
 
     elif field_file.instance.filetype == "audio":
         tmpl = loader.get_template("includes/render_audio.html")
@@ -106,16 +128,17 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
 @register.simple_tag()
 def media_query(container_width: int | None = None, **kwargs: str) -> str:
     """Render a media query string based on the provided breakpoints and PICTURES breakpoints."""
-    return str(sizes(container_width=container_width or settings.PICTURES["CONTAINER_WIDTH"], **kwargs))
+    return str(sizes(container_width=container_width or settings.PICTURES["CONTAINER_WIDTH"], **kwargs))  # type: ignore[arg-type]
 
 
 @register.simple_tag()
-def render_source_set(
-    *, field_file: "PictureFieldFile", file_type: str, aspect_ratio: Fraction | None = None, max_width: int, cols: int
-) -> str:
-    """Return a source set for a given original image size."""
+def render_source_set(*, image: "Image", mimetype: str, aspect_ratio: Fraction | None = None) -> str:
+    """Return a source set for an image with all the versions of a given mimetype and AR."""
     output = ""
-    for width, pic in field_file.aspect_ratios[aspect_ratio][file_type].items():
-        output += f"{pic.url} {width}w, "
+    # if aspect_ratio is None (no custom AR was requested): use the AR of the parent Image
+    ratiokey = aspect_ratio or image.aspect_ratio
+    versions = image.get_versions(mimetype=mimetype, aspect_ratio=aspect_ratio).get(ratiokey, {}).get(mimetype, {})
+    for version in versions.values():
+        output += f"{version.imagefile.url} {version.width}w, "
     # remove trailing ", "
     return output[:-2]

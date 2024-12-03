@@ -14,7 +14,6 @@ from utils.filters import ListFilters
 
 from .models import BaseFile
 from .models import FileTypeChoices
-from .models import LicenseChoices
 
 
 class FileFilters(ListFilters):
@@ -22,7 +21,7 @@ class FileFilters(ListFilters):
 
     albums: list[uuid.UUID] | None = None
     uploaders: list[uuid.UUID] | None = None
-    licenses: list[LicenseChoices] | None = None
+    licenses: list[str] | None = None
     filetypes: list[FileTypeChoices] | None = None
     approved: bool | None = None
     published: bool | None = None

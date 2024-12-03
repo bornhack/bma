@@ -36,4 +36,4 @@ class HitManager(models.Manager):  # type: ignore[type-arg]
         """
         grace = getattr(settings, "HITCOUNT_KEEP_HIT_ACTIVE", {"days": 7})
         period = timezone.now() - timedelta(**grace)
-        return self.filter(created__gte=period).filter(*args, **kwargs)
+        return self.filter(created_at__gte=period).filter(*args, **kwargs)

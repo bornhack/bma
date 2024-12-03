@@ -28,7 +28,7 @@ class TagTable(tables.Table):
         fields = (
             "name",
             "weight",
-            "created",
+            "created_at",
             "slug",
         )
 
@@ -47,5 +47,5 @@ class TaggingTable(tables.Table):
         fields = (
             "tagger",
             "tag__name",
-            "created",
+            "created_at",
         )

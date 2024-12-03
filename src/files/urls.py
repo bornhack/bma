@@ -5,12 +5,14 @@ from django.urls import path
 
 from files.views import FileBrowserView
 from files.views import FileDetailView
+from files.views import FileJobsView
 from files.views import FileListView
 from files.views import FileMultipleActionView
 from files.views import FileTagCreateView
 from files.views import FileTagDeleteView
 from files.views import FileTagDetailView
 from files.views import FileTagListView
+from files.views import FileThumbnailsView
 from files.views import FileUploadView
 
 app_name = "files"
@@ -25,6 +27,8 @@ urlpatterns = [
         include(
             [
                 path("", FileDetailView.as_view(), name="file_detail"),
+                path("thumbnails/", FileThumbnailsView.as_view(), name="file_thumbnails"),
+                path("jobs/", FileJobsView.as_view(), name="file_jobs"),
                 path(
                     "tags/",
                     include(

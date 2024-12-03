@@ -70,7 +70,7 @@ class TestFilesApi(BmaTestBase):
         assert response.json()["bma_response"][4]["title"] == "title12"
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            data={"limit": 1, "sorting": "created_desc"},
+            data={"limit": 1, "sorting": "created_at_desc"},
             headers={"authorization": self.creator2.auth},
         )
         assert response.json()["bma_response"][0]["title"] == "title19"
@@ -78,7 +78,7 @@ class TestFilesApi(BmaTestBase):
         # test offset
         response = self.client.get(
             reverse("api-v1-json:file_list"),
-            data={"offset": 5, "sorting": "created_asc"},
+            data={"offset": 5, "sorting": "created_at_asc"},
             headers={"authorization": self.creator2.auth},
         )
         assert response.json()["bma_response"][0]["title"] == "title5"
@@ -575,8 +575,8 @@ class TestFilesApi(BmaTestBase):
         assert response.status_code == 200
         original_metadata.update(updates)
         for k, v in response.json()["bma_response"].items():
-            # "updated" will have changed of course,
-            if k == "updated":
+            # "updated_at" will have changed of course,
+            if k == "updated_at":
                 assert v != original_metadata[k]
             # and "source" was initially set but not specified in the PUT call,
             # so it should be blank now, so it should return the files detail url
