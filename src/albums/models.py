@@ -19,6 +19,7 @@ from psycopg2.extras import DateTimeTZRange
 
 from files.models import BaseFile
 from users.sentinel import get_sentinel_user
+from utils.models import NP_CASCADE
 
 from .managers import AlbumManager
 from .managers import AlbumQuerySet
@@ -43,12 +44,12 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
         help_text="The creator of this album.",
     )
 
-    created = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this object was first created.",
     )
 
-    updated = models.DateTimeField(
+    updated_at = models.DateTimeField(
         auto_now=True,
         help_text="The date and time when this object was last updated.",
     )
@@ -79,7 +80,7 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
     class Meta:
         """Order by created date initially."""
 
-        ordering = ("created",)
+        ordering = ("created_at",)
 
     def __str__(self) -> str:
         """The string representation of an album."""
@@ -150,10 +151,10 @@ class AlbumMember(models.Model):
     )
 
     # if the basefile object gets deleted from database also delete the AlbumMember
-    basefile = models.ForeignKey(BaseFile, related_name="memberships", on_delete=models.CASCADE)
+    basefile = models.ForeignKey(BaseFile, related_name="memberships", on_delete=NP_CASCADE)
 
     # if the album object gets deleted from database also delete the AlbumMembers
-    album = models.ForeignKey(Album, related_name="memberships", on_delete=models.CASCADE)
+    album = models.ForeignKey(Album, related_name="memberships", on_delete=NP_CASCADE)
 
     period = DateTimeRangeField(
         default=from_now_to_forever,
@@ -187,13 +188,13 @@ class AlbumMember(models.Model):
 class AlbumUserObjectPermission(UserObjectPermissionBase):
     """Use a direct (non-generic) FK for user album permissions in guardian."""
 
-    content_object = models.ForeignKey("albums.Album", related_name="user_permissions", on_delete=models.CASCADE)
+    content_object = models.ForeignKey("albums.Album", related_name="user_permissions", on_delete=NP_CASCADE)
 
 
 class AlbumGroupObjectPermission(GroupObjectPermissionBase):
     """Use a direct (non-generic) FK for group album permissions in guardian."""
 
-    content_object = models.ForeignKey("albums.Album", related_name="group_permissions", on_delete=models.CASCADE)
+    content_object = models.ForeignKey("albums.Album", related_name="group_permissions", on_delete=NP_CASCADE)
 
 
 AlbumType: TypeAlias = Album

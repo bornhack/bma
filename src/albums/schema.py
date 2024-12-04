@@ -41,8 +41,8 @@ class AlbumResponseSchema(ModelSchema):
         model_fields = (
             "uuid",
             "owner",
-            "created",
-            "updated",
+            "created_at",
+            "updated_at",
             "title",
             "description",
             "files",

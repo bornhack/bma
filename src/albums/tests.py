@@ -144,7 +144,7 @@ class TestAlbumsApi(BmaTestBase):
         # test sorting
         response = self.client.get(
             reverse("api-v1-json:album_list"),
-            data={"sorting": "created_desc"},
+            data={"sorting": "created_at_desc"},
             headers={"authorization": self.curator6.auth},
         )
         assert response.status_code == 200

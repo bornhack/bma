@@ -15,7 +15,7 @@ class BMATagManager(_TaggableManager):
     """Custom taggit manager to include tagging user in lookup_kwargs, which is used to find through relations."""
 
     def get_queryset(self, *args: str) -> models.QuerySet[BmaTag]:
-        """Always annotate tags with weight, and order by weight, name, created."""
+        """Always annotate tags with weight, and order by weight, name, created_at."""
         return (  # type: ignore[no-any-return]
             super()
             .get_queryset()
@@ -25,7 +25,7 @@ class BMATagManager(_TaggableManager):
                 weight=models.Count("name"),
                 tagger_uuids=ArrayAgg("taggings__tagger__pk"),
             )
-            .order_by("-weight", "name", "created")
+            .order_by("-weight", "name", "created_at")
         )
 
     def _lookup_kwargs(self) -> dict[str, str | UserType]:

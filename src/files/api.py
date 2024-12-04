@@ -3,6 +3,7 @@
 import logging
 import operator
 import uuid
+from fractions import Fraction
 from functools import reduce
 
 from django.conf import settings
@@ -20,6 +21,8 @@ from ninja.files import UploadedFile
 from audios.models import Audio
 from documents.models import Document
 from images.models import Image
+from jobs.models import FileUploadJob
+from jobs.schema import JobClientSchema
 from tags.models import BmaTag
 from tags.models import TaggedFile
 from tags.schema import MultipleTagRequestSchema
@@ -33,13 +36,13 @@ from videos.models import Video
 from .filters import FileFilters
 from .models import BaseFile
 from .models import FileTypeChoices
-from .models import Thumbnail
+from .models import ThumbnailSource
 from .schema import FileUpdateRequestSchema
+from .schema import ImageMetadataSchema
 from .schema import MultipleFileRequestSchema
 from .schema import MultipleFileResponseSchema
 from .schema import SingleFileRequestSchema
 from .schema import SingleFileResponseSchema
-from .schema import ThumbnailMetadataSchema
 from .schema import UploadRequestSchema
 
 logger = logging.getLogger("bma")
@@ -62,17 +65,26 @@ query: Query = Query(...)  # type: ignore[type-arg]
     },
     summary="Upload a new file.",
 )
-def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema) -> FileApiResponseType:
+def upload(  # noqa: C901,PLR0913
+    request: HttpRequest,
+    f: UploadedFile,
+    f_metadata: UploadRequestSchema,
+    client: JobClientSchema,
+    t: UploadedFile | None = None,
+    t_metadata: ImageMetadataSchema | None = None,
+) -> FileApiResponseType:
     """API endpoint for file uploads."""
     # make sure the uploading user is in the creators group
     if not request.user.is_creator:  # type: ignore[union-attr]
         return 403, {"message": "Missing upload permissions"}
 
     # get the file metadata
-    data = metadata.dict(exclude_unset=True)
+    data = f_metadata.dict(exclude_unset=True)
 
     if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
         from images.models import Image as Model
+
+        data["aspect_ratio"] = Fraction(data["width"], data["height"])
     elif data["mimetype"] in settings.ALLOWED_VIDEO_TYPES:
         from videos.models import Video as Model
     elif data["mimetype"] in settings.ALLOWED_AUDIO_TYPES:
@@ -105,7 +117,17 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
         logger.exception("Upload validation error")
         return 422, {"message": "Validation error"}
 
-    # save everything
+    # save file
+    uploaded_file.save()
+
+    # create uploadjob
+    j = FileUploadJob.objects.create(
+        basefile=uploaded_file,
+        user=request.user,
+        finished=True,
+        **client.dict(),
+    )
+    uploaded_file.job = j
     uploaded_file.save()
 
     # handle tags
@@ -115,11 +137,34 @@ def upload(request: HttpRequest, f: UploadedFile, metadata: UploadRequestSchema)
     # assign permissions (publish_basefile and unpublish_basefile are assigned after moderation)
     uploaded_file.add_initial_permissions()
 
+    logger.debug(f"New {uploaded_file.filetype} file {uploaded_file.uuid} uploaded")
+
+    # was a thumbnailsource included?
+    if t is not None and t_metadata is not None:
+        tdata = t_metadata.dict()
+        ts = ThumbnailSource(
+            basefile=uploaded_file,
+            aspect_ratio=str(Fraction(tdata["width"] / tdata["height"])),
+            source=t,
+            file_size=t.size,  # type: ignore[misc]
+            **tdata,
+        )
+        # validate everything and return 422 if something is fucky
+        try:
+            ts.full_clean()
+        except ValidationError:
+            logger.exception("Upload thumbnail validation error")
+            return 422, {"message": "Validation error (thumbnail)"}
+        # save thumbnailsource
+        ts.save()
+        logger.debug(f"ThumbnailSource {ts.uuid} created for file {uploaded_file.uuid}")
+
     # create jobs
     uploaded_file.create_jobs()
 
-    # get file using the manager
+    # get file using the manager so the returned object has annotations
     uploaded_file = BaseFile.bmanager.get(uuid=uploaded_file.uuid)
+
     # all good
     return 201, {"bma_response": uploaded_file, "message": f"File {uploaded_file.uuid} uploaded OK!"}
 
@@ -489,7 +534,7 @@ def file_update(
             with transaction.atomic():
                 # we are updating the object, we do not want defaults for absent fields
                 BaseFile.objects.filter(uuid=basefile.uuid).update(
-                    **metadata.dict(exclude_unset=True), updated=timezone.now()
+                    **metadata.dict(exclude_unset=True), updated_at=timezone.now()
                 )
                 basefile.refresh_from_db()
                 basefile.full_clean()
@@ -500,7 +545,7 @@ def file_update(
             with transaction.atomic():
                 # we are replacing the object, we do want defaults for absent fields
                 BaseFile.objects.filter(uuid=basefile.uuid).update(
-                    **metadata.dict(exclude_unset=False), updated=timezone.now()
+                    **metadata.dict(exclude_unset=False), updated_at=timezone.now()
                 )
                 basefile.refresh_from_db()
                 basefile.full_clean()
@@ -609,11 +654,11 @@ def file_thumbnail(
     request: HttpRequest,
     file_uuid: uuid.UUID,
     f: UploadedFile,
-    metadata: ThumbnailMetadataSchema,
+    metadata: ImageMetadataSchema,
     *,
     check: bool = False,
 ) -> FileApiResponseType:
-    """Endpoint for uploading the source image for thumbnails."""
+    """Endpoint for uploading ThumbnailSource images for thumbnails."""
     # make sure the thumbnailing user has permissions to change the file
     basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
@@ -624,15 +669,29 @@ def file_thumbnail(
     data = metadata.dict()
 
     # initiate the model instance
-    Thumbnail.objects.create(
+    ts = ThumbnailSource(
         basefile=basefile,
         source=f,
-        width=data["width"],
-        height=data["height"],
+        **data,
     )
+    # validate before saving
+    try:
+        ts.full_clean()
+    except ValidationError:
+        logger.exception("Upload thumbnail validation error")
+        return 422, {"message": "Validation error (thumbnail)"}
+    # delete existing ts
+    deleted = ThumbnailSource.objects.filter(basefile=basefile).delete()
+    logger.debug(f"Deleted existing ThumbnailSource {deleted}")
+
+    # save thumbnailsource
+    ts.save()
+    logger.debug(f"ThumbnailSource {ts.uuid} created for file {basefile.uuid}")
+
+    # create jobs, refresh object, and return
     basefile.create_jobs()
     basefile.refresh_from_db()
-    return 201, {"bma_response": basefile, "message": f"Thumbnail source for file {basefile.uuid} uploaded OK!"}
+    return 201, {"bma_response": basefile, "message": f"New thumbnail source for file {basefile.uuid} uploaded OK!"}
 
 
 @router.delete(

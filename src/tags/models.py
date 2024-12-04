@@ -13,7 +13,7 @@ class BmaTag(TagBase):
     """BMA uses this instead of the default taggit model to remove the unique=True constraint for tag name."""
 
     name = models.CharField(max_length=100, help_text="The tag")
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         """A string representation of a tag including weight if available."""
@@ -42,7 +42,7 @@ class TaggedFile(ItemBase):
         related_name="taggings",
         help_text="The tag.",
     )
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         """A user can only tag a file with a tag once."""

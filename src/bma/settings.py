@@ -260,10 +260,19 @@ PICTURES = {
         "xl": 1200,
         "xxl": 1400,
     },
+    "ASPECT_RATIOS": [None],
     "GRID_COLUMNS": 12,
     "CONTAINER_WIDTH": 4000,
     "FILE_TYPES": ["WEBP"],
     "PIXEL_DENSITIES": [1, 2],
     "USE_PLACEHOLDERS": False,
     "PROCESSOR": "images.picture_processor.dummy_processor",
+}
+
+
+DJANGO_TABLES2_TABLE_ATTRS = {
+    "class": "table table-hover",
+    "thead": {
+        "class": "table-light",
+    },
 }

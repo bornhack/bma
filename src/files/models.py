@@ -2,7 +2,6 @@
 
 # mypy: disable-error-code="var-annotated"
 import logging
-import math
 import uuid
 from fractions import Fraction
 from pathlib import Path
@@ -25,12 +24,15 @@ from taggit.utils import _parse_tags
 
 from jobs.models import ThumbnailJob
 from jobs.models import ThumbnailSourceJob
+from pictures.models import PictureField
+from pictures.models import PictureFieldFile
 from tags.managers import BMATagManager
 from tags.models import TaggedFile
 from users.models import UserType
 from users.sentinel import get_sentinel_user
+from utils.models import NP_CASCADE
 from utils.models import BaseModel
-from utils.models import NoPillowPictureField
+from utils.upload import get_thumbnail_path
 from utils.upload import get_thumbnail_source_path
 
 from .managers import BaseFileManager
@@ -39,6 +41,16 @@ from .managers import BaseFileQuerySet
 logger = logging.getLogger("bma")
 
 User = get_user_model()
+
+
+class FileTypeChoices(models.TextChoices):
+    """The filetype filter."""
+
+    image = ("image", "Image")
+    video = ("video", "Video")
+    audio = ("audio", "Audio")
+    document = ("document", "Document")
+
 
 license_urls = {
     "CC_ZERO_1_0": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -58,22 +70,13 @@ class LicenseChoices(models.TextChoices):
     )
 
 
-class FileTypeChoices(models.TextChoices):
-    """The filetype filter."""
-
-    image = ("image", "Image")
-    video = ("video", "Video")
-    audio = ("audio", "Audio")
-    document = ("document", "Document")
-
-
 class BaseFile(PolymorphicModel):
     """The polymorphic base model inherited by the Image, Video, Audio, and Document models."""
 
     class Meta:
         """Define custom permissions for the BaseFile and inherited models."""
 
-        ordering = ("created",)
+        ordering = ("created_at",)
         permissions = (
             ("unapprove_basefile", "Unapprove file"),
             ("approve_basefile", "Approve file"),
@@ -96,6 +99,16 @@ class BaseFile(PolymorphicModel):
         help_text="The unique ID (UUID4) of this object.",
     )
 
+    job = models.ForeignKey(
+        "jobs.FileUploadJob",
+        on_delete=NP_CASCADE,
+        related_name="files",
+        # permit nulls to make mutual job<>basefile FK work
+        null=True,
+        blank=True,
+        help_text="The Job created when this file was uploaded.",
+    )
+
     uploader = models.ForeignKey(
         "users.User",
         on_delete=models.SET(get_sentinel_user),
@@ -103,12 +116,12 @@ class BaseFile(PolymorphicModel):
         help_text="The uploader of this file.",
     )
 
-    created = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this object was first created.",
     )
 
-    updated = models.DateTimeField(
+    updated_at = models.DateTimeField(
         auto_now=True,
         help_text="The date and time when this object was last updated.",
     )
@@ -125,22 +138,35 @@ class BaseFile(PolymorphicModel):
     )
 
     original_source = models.URLField(
-        help_text="The URL to the original source of this work. "
+        help_text="The URL to the original CC source of this work. "
         "Leave blank to consider the BMA URL the original source.",
         blank=True,
     )
 
-    license = models.CharField(
+    original_filename = models.CharField(
         max_length=255,
-        choices=LicenseChoices.choices,
-        blank=False,
-        help_text="The license for this file. The license can not be changed after the file(s) is uploaded.",
+        help_text="The original (uploaded) filename. This value is read-only.",
+    )
+
+    file_size = models.BigIntegerField(
+        help_text="The size of the file in bytes. This value is read-only.",
+    )
+
+    mimetype = models.CharField(
+        max_length=255,
+        help_text="The mimetype of the file as reported the uploading client. This value is read-only.",
+    )
+
+    license = models.CharField(
+        max_length=20,
+        choices=LicenseChoices,
+        help_text="The license for this file. The license can not be changed or revoked after the file is uploaded.",
     )
 
     attribution = models.CharField(
         max_length=255,
-        help_text="The attribution text for this file. "
-        "This is usually the real name or handle of the author(s) or licensor of the file.",
+        help_text="The attribution text for this file. This is usually "
+        "the real name or handle of the author(s) or licensor of the file.",
     )
 
     approved = models.BooleanField(
@@ -156,21 +182,6 @@ class BaseFile(PolymorphicModel):
     deleted = models.BooleanField(
         default=False,
         help_text="Has this file been deleted?",
-    )
-
-    original_filename = models.CharField(
-        max_length=255,
-        help_text="The original (uploaded) filename. This value is read-only.",
-    )
-
-    file_size = models.BigIntegerField(
-        help_text="The size of the file in bytes. This value is read-only.",
-    )
-
-    mimetype = models.CharField(
-        max_length=255,
-        help_text="The mimetype of the original (uploaded) file as reported "
-        "by the uploading client. This value is read-only.",
     )
 
     tags = TaggableManager(
@@ -229,8 +240,12 @@ class BaseFile(PolymorphicModel):
         downloads: dict[str, str] = {
             "original": self.original.url,
         }
-        if hasattr(self, "thumbnail"):
-            downloads["thumbnail_source"] = self.thumbnail.source.url
+        if hasattr(self, "thumbnailsource"):
+            downloads["thumbnail_source"] = self.thumbnailsource.url
+        if self.filetype == "image":
+            # add download links for smaller versions of this image
+            for version in self.image_versions.all():
+                downloads[f"{version.width}*{version.height}"] = version.imagefile.url
         if request:
             if request.user.has_perm("approve_basefile", self):
                 links["approve"] = reverse(
@@ -258,7 +273,7 @@ class BaseFile(PolymorphicModel):
     def update_field(self, *, field: str, value: bool) -> None:
         """Update a bool field on the model atomically."""
         setattr(self, field, value)
-        self.save(update_fields=[field, "updated"])
+        self.save(update_fields=[field, "updated_at"])
 
     def approve(self) -> None:
         """Approve this file and add publish/unpublish permissions to the uploader."""
@@ -318,122 +333,209 @@ class BaseFile(PolymorphicModel):
         self.create_thumbnail_jobs()
 
     def create_thumbnail_jobs(self) -> None:
-        """Create jobs to make thumbnails."""
-        if not hasattr(self, "thumbnail"):
-            # no thumbnail to work with yet, but make sure there is a ThumbnailSourceJob
+        """Create jobs to make thumbnails.
+
+        Documents, Audios and Videos require a ThumbnailSource, Images do not.
+        """
+        if hasattr(self, "thumbnailsource"):
+            # this file has a thumbnailsource, use that
+            source = self.thumbnailsource.source
+        elif self.filetype == "image":
+            # create temporary thumbnailsource for job creation to get the
+            # conversion rules from the thumbnail field
+            source = PictureFieldFile(instance=self, field=ThumbnailSource.source.field, name=self.original.name)
+        else:
+            # no thumbnailsource to work with yet,
+            # make sure there is a ThumbnailSourceJob
             ThumbnailSourceJob.objects.get_or_create(
                 basefile=self,
-                path=self.thumbnail_path,
+                finished=False,
             )
             return
-        for version in self.thumbnail.source.get_picture_files_list():
+        for version in source.get_picture_files_list(exclude_oversized=False):
             # check if this file already exists
             if version.path.exists():
                 continue
-            # file missing, a new job must be created
-            _, (_, filetype, ratio, _, width), _ = version.deconstruct()
-            if version.height:
-                height = version.height
-            else:
-                height = self.calculate_version_height(width=width, ratio=ratio if ratio else self.aspect_ratio)
+
+            # file missing, an unfinished job to create one should exist
             job, created = ThumbnailJob.objects.get_or_create(
                 basefile=self,
-                path=version.name,
-                width=width,
-                height=height,
-                custom_aspect_ratio=bool(ratio),
-                filetype=filetype,
+                width=version.width,
+                height=version.height,
+                custom_aspect_ratio=version.aspect_ratio,
+                filetype=version.file_type,
+                source_url=source.url,
+                finished=False,
             )
+            job.full_clean()
 
-    def get_picturefield_versions(
-        self, field: "NoPillowPictureField"
-    ) -> dict[str, dict[str, list[tuple[int, int, str]]]]:
-        """Return a tuple of width, height, ratio, format for all versions of this file."""
-        versions: dict[str, dict[str, list[tuple[int, int, str]]]] = {}
-        # get the ratio of the source instance, used to calculate the height
-        # for versions with default AR
-        source_ratio = Fraction(field.instance.width / field.instance.height)
-        for ratio, filetypes in field.aspect_ratios.items():
-            # initialise a dict to hold all filetypes for this ratio
-            versions[ratio] = {}
-            for filetype, sizes in filetypes.items():
-                # initialise list to hold all sizes for this filetype
-                versions[ratio][filetype] = []
-                for width, version in sizes.items():
-                    url = version.url if Path(version.path).exists() else ""
-                    height = self.calculate_version_height(
-                        width=width, ratio=Fraction(ratio) if ratio else source_ratio
-                    )
-                    versions[ratio][filetype].append((width, height, url))
-                versions[ratio][filetype].sort(reverse=True)
-        return versions
-
-    def calculate_version_height(self, width: int, ratio: Fraction) -> int:
-        """Calculate the height for an image version."""
-        if ratio != self.aspect_ratio:
-            # custom aspect ratio
-            return math.floor(width / ratio)
-        # maintain original AR
-        return int(math.floor(width / self.aspect_ratio))
-
-    def get_thumbnail_versions(self) -> dict[str, dict[str, list[tuple[int, int, str]]]]:
-        """Return thumbnails."""
-        if not self.thumbnail:
-            return {}
-        return self.get_picturefield_versions(field=self.thumbnail.source)
+    def get_thumbnails(self) -> dict[Fraction | None, dict[str, dict[int, "Thumbnail"]]]:
+        """Return a dict with ratio: filetype: size: Thumbnail nested dicts."""
+        thumbnails = {}
+        for thumbnail in self.thumbnails.all():
+            if thumbnail.aspect_ratio not in thumbnails:
+                thumbnails[thumbnail.aspect_ratio] = {}
+            if thumbnail.mimetype not in thumbnails[thumbnail.aspect_ratio]:
+                thumbnails[thumbnail.aspect_ratio][thumbnail.mimetype] = {}
+            thumbnails[thumbnail.aspect_ratio][thumbnail.mimetype][thumbnail.width] = thumbnail
+        return thumbnails
 
 
-class Thumbnail(BaseModel):
-    """Model to contain thumbnails for files.
+class ImageModel(models.Model):
+    """Model mixin with shared fields used by all non-polymorphic models representing images.
 
-    Thumbnails of various sizes and ARs are created from the source image.
-
-    If a BaseFile doesn't have a Thumbnail object yet some default thumbnail images
-    are used based on the filetype.
+    The polymorphic Image model and BaseFile model share some of the same fields between them but
+    polymorphic models cannot inherit from non-polymorphic models. Don't waste time trying
+    to make this more DRY, find something else to do /tyk
+    https://github.com/jazzband/django-polymorphic/issues/534
     """
+
+    file_size = models.BigIntegerField(
+        help_text="The size of the file in bytes. This value is read-only.",
+    )
+
+    mimetype = models.CharField(
+        max_length=255,
+        help_text="The mimetype of the file as reported the uploading client. This value is read-only.",
+    )
+
+    width = models.PositiveIntegerField(
+        help_text="The width of this image (in pixels).",
+    )
+
+    height = models.PositiveIntegerField(
+        help_text="The height of this image (in pixels).",
+    )
+
+    aspect_ratio = models.CharField(
+        max_length=20,
+        help_text=(
+            "The intended (and advertised) aspect ratio of this image, expressed as a string "
+            "like '16/9'. The actual image AR (width/height) can vary slightly "
+            "from the value in this field because of rounding errors when resizing images."
+        ),
+    )
+
+    pixels = models.GeneratedField(
+        expression=models.F("width") * models.F("height"),
+        output_field=models.PositiveBigIntegerField(),
+        db_persist=True,
+        help_text="The total number of pixels in this image. Useful for ordering by image size.",
+    )
+
+    class Meta:
+        """This is an abstract model."""
+
+        abstract = True
+
+
+class ThumbnailSource(ImageModel, BaseModel):
+    """Model to contain thumbnail sources for files.
+
+    A ThumbnailSource is required to create Thumbnails for Video, Audio and Document
+    files, but optional for Image files. If a ThumbnailSource doesn't exists for an
+    Image file then the original image will be used to generate thumbnails.
+    """
+
+    job = models.OneToOneField(
+        "jobs.ThumbnailSourceJob",
+        on_delete=NP_CASCADE,
+        help_text="The Job which triggered uploading of this ThumbnailSource.",
+    )
 
     basefile = models.OneToOneField(
         "files.BaseFile",
-        on_delete=models.CASCADE,  # delete thumbnail when a basefile is deleted
-        help_text="The basefile these thumbnails are for.",
+        on_delete=NP_CASCADE,  # delete ThumbnailSource when a basefile is deleted
+        help_text="The basefile this ThumbnailSource is for.",
     )
 
-    source = NoPillowPictureField(
+    source = PictureField(
         upload_to=get_thumbnail_source_path,
         max_length=255,
         width_field="width",
         height_field="height",
-        aspect_ratios=[None, "1/1", "4/3", "16/9"],
+        aspect_ratios=["1/1", "4/3", "16/9", "2/3"],
         container_width=200,
         grid_columns=4,
         pixel_densities=[1, 2],
         help_text="The source image from which all the thumbnails are created.",
     )
 
-    width = models.PositiveIntegerField(
-        help_text="The width of the thumbnail source (in pixels).",
+    def __str__(self) -> str:
+        """String representation of a thumbnailsource."""
+        return (
+            f"ThumbnailSource {self.uuid} {self.width}*{self.height} "
+            f"{self.mimetype} for {self.basefile.filetype} {self.basefile.uuid}"
+        )
+
+
+class Thumbnail(ImageModel, BaseModel):
+    """Model to represent thumbnails for files.
+
+    A Thumbnail generated from a ThumbnailSource has an additional FK to the ThumbnailSource,
+    where Thumbnails generated from an Image directly only has an FK to the BaseFile.
+    """
+
+    job = models.OneToOneField(
+        "jobs.ThumbnailJob",
+        on_delete=NP_CASCADE,
+        help_text="The Job which triggered uploading of this Thumbnail.",
     )
 
-    height = models.PositiveIntegerField(
-        help_text="The height of the thumbnail source (in pixels).",
+    basefile = models.ForeignKey(
+        "files.BaseFile",
+        on_delete=NP_CASCADE,  # delete Thumbnails when a basefile is deleted
+        related_name="thumbnails",
+        help_text="The basefile this Thumbnail is for.",
     )
 
-    mimetype = models.CharField(
+    source = models.ForeignKey(
+        "files.ThumbnailSource",
+        on_delete=NP_CASCADE,  # delete Thumbnails when ThumbnailSource is deleted
+        related_name="thumbnails",
+        null=True,
+        blank=True,
+        help_text=(
+            "The ThumbnailSource this Thumbnail was generated from. This field is null "
+            "if the Thumbnail was generated from the BaseFile directly (only for Image files)."
+        ),
+    )
+
+    imagefile = PictureField(
+        upload_to=get_thumbnail_path,
         max_length=255,
-        help_text="The mimetype of the thumbnail source image as reported by the uploading client.",
+        width_field="width",
+        height_field="height",
+        help_text="The thumbnail file.",
     )
+
+    class Meta:
+        """Define Meta model options for the Thumbnail model."""
+
+        constraints = (
+            # only one thumbnail of the same dimensions and mimetype at a time
+            models.UniqueConstraint(fields=["basefile", "width", "height", "mimetype"], name="unique_thumbnail"),
+        )
+        ordering = ("-width",)
+
+    def __str__(self) -> str:
+        """String representation of a thumbnail."""
+        return (
+            f"Thumbnail {self.uuid} {self.width}*{self.height} {self.mimetype} "
+            f"for {self.basefile.filetype} {self.basefile.uuid}"
+        )
 
 
 class FileUserObjectPermission(UserObjectPermissionBase):
     """Use a direct (non-generic) FK for user file permissions in guardian."""
 
-    content_object = models.ForeignKey(BaseFile, related_name="user_permissions", on_delete=models.CASCADE)
+    content_object = models.ForeignKey(BaseFile, related_name="user_permissions", on_delete=NP_CASCADE)
 
 
 class FileGroupObjectPermission(GroupObjectPermissionBase):
     """Use a direct (non-generic) FK for group file permissions in guardian."""
 
-    content_object = models.ForeignKey(BaseFile, related_name="group_permissions", on_delete=models.CASCADE)
+    content_object = models.ForeignKey(BaseFile, related_name="group_permissions", on_delete=NP_CASCADE)
 
 
 BaseFileType: TypeAlias = BaseFile

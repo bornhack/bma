@@ -4,10 +4,9 @@ import json
 import logging
 import uuid
 from datetime import timedelta
-from pathlib import Path
 
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
+from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
@@ -18,9 +17,9 @@ from ninja.files import UploadedFile
 
 from files.models import BaseFile
 from files.models import LicenseChoices
-from files.models import Thumbnail
+from files.models import license_urls
+from files.schema import ImageMetadataSchema
 from files.schema import SingleFileResponseSchema
-from files.schema import ThumbnailMetadataSchema
 from jobs.models import BaseJob
 from jobs.schema import JobClientSchema
 from jobs.schema import MultipleJobResponseSchema
@@ -57,7 +56,7 @@ def job_settings(request: HttpRequest) -> JobSettingsResponseType:
             "audio": dict(settings.ALLOWED_AUDIO_TYPES),
             "document": dict(settings.ALLOWED_DOCUMENT_TYPES),
         },
-        "licenses": dict(LicenseChoices.choices),
+        "licenses": {k: {"title": v, "url": license_urls[k]} for k, v in dict(LicenseChoices.choices).items()},
         "encoding": {
             "images": settings.IMAGE_ENCODING,
         },
@@ -105,6 +104,7 @@ def job_list(request: HttpRequest, filters: JobFilters = query) -> JobApiRespons
         jobs = jobs[filters.offset :]
     if filters.limit:
         jobs = jobs[: filters.limit]
+    logger.debug(f"Returning {jobs.count()} jobs")
     return 200, {"bma_response": jobs, "message": f"Returning {jobs.count()} jobs"}
 
 
@@ -126,9 +126,9 @@ def assign_file_jobs(
         return 403, {"message": "No worker permission."}
 
     # clear old assigned unfinished jobs here
-    BaseJob.objects.filter(finished=False, user__isnull=False, updated__lt=timezone.now() - timedelta(hours=24)).update(
-        user=None, client_uuid=None, client_version=""
-    )
+    BaseJob.objects.filter(
+        finished=False, user__isnull=False, updated_at__lt=timezone.now() - timedelta(hours=24)
+    ).update(user=None, client_uuid=None, client_version="")
     # get all jobs
     jobs = filter_jobs(jobs=BaseJob.objects.all(), filters=filters)
 
@@ -172,11 +172,11 @@ def assign_file_jobs(
 )
 def upload_result(  # noqa: PLR0913
     request: HttpRequest,
+    *,
     job_uuid: uuid.UUID,
     f: UploadedFile,
     client: JobClientSchema,
-    metadata: ThumbnailMetadataSchema | None = None,
-    *,
+    metadata: ImageMetadataSchema | None = None,
     check: bool = False,
 ) -> FileApiResponseType:
     """Endpoint for uploading the result of a job."""
@@ -191,46 +191,33 @@ def upload_result(  # noqa: PLR0913
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
 
-    # process and save job result
-    if job.job_type in ["ImageConversionJob", "ThumbnailJob"]:
-        path = Path(settings.MEDIA_ROOT / job.path)
-        # maybe delete before writing?
-        FileSystemStorage(location=path.parent).save(path.name, f)
-        logger.debug(
-            f"{job.job_type} {job.pk} wrote {path.stat().st_size} bytes {job.width}x{job.height}"
-            f"{job.mimetype} image to path {path}"
-        )
+    try:
+        # process and save ImageConversionJob result
+        if job.job_type in ["ImageConversionJob", "ThumbnailJob", "ThumbnailSourceJob"]:
+            if metadata is None:
+                return 422, {"message": "Result validation error"}
+            data = metadata.dict()
+            job.handle_result(f=f, data=data)
 
-    elif job.job_type == "ImageExifExtractionJob":
-        exif = json.load(f)
-        basefile.exif = exif
-        basefile.save(update_fields=["exif", "updated"])
+        # save exif data from ImageExifExtractionJob
+        elif job.job_type == "ImageExifExtractionJob":
+            exif = json.load(f)
+            basefile.exif = exif
+            basefile.save(update_fields=["exif", "updated_at"])
 
-    elif job.job_type == "ThumbnailSourceJob":
-        if hasattr(basefile, "thumbnail"):
-            return 422, {"message": "Thumbnail source already exists."}
-        if metadata is None:
-            raise ValueError("metadata")
-        data = metadata.dict()
-        Thumbnail.objects.create(
-            basefile=basefile,
-            source=f,
-            width=data["width"],
-            height=data["height"],
-            mimetype=data["mimetype"],
-        )
-        basefile.create_thumbnail_jobs()
-
-    else:
-        logger.debug(f"Unsupported job type: {job.job_type}")
-        return 500, {"message": "Unsupported job type"}
+        else:
+            logger.debug(f"Unsupported job type: {job.job_type}")
+            return 422, {"message": "Unsupported job type"}
+    except ValidationError:
+        logger.exception("Result validation error")
+        return 422, {"message": "Result validation error"}
 
     # mark job as completed
     job.user = request.user
     job.client_uuid = client.client_uuid
     job.client_version = client.client_version
     job.finished = True
-    job.save(update_fields=["user", "client_uuid", "client_version", "finished", "updated"])
+    job.save(update_fields=["user", "client_uuid", "client_version", "finished", "updated_at"])
 
     # refresh basefile to get updated jobcount,
     # use bmanager to get annotated file object
@@ -270,6 +257,6 @@ def unassign_job(
     job.user = None
     job.client_uuid = None
     job.client_version = ""
-    job.save(update_fields=["user", "client_uuid", "client_version", "updated"])
+    job.save(update_fields=["user", "client_uuid", "client_version", "updated_at"])
 
     return 200, {"message": "OK, job unassigned"}

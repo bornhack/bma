@@ -37,6 +37,7 @@ csrf = s.post(
         "username": username,
         "password": password,
     },
+    headers={"Referer": host + "/admin/login/"},
 )
 
 alphabet = string.ascii_uppercase + string.digits
@@ -50,7 +51,7 @@ data = {
     "csrfmiddlewaretoken": csrf.text.strip(),
     "client_id": client_id,
     "state": state,
-    "redirect_uri": "https://localhost/api/csrf/",
+    "redirect_uri": f"{host}/api/csrf/",
     "response_type": "code",
     "code_challenge": code_challenge_base64,
     "code_challenge_method": "S256",
@@ -59,7 +60,7 @@ data = {
     "scope": "read",
     "allow": "Authorize",
 }
-auth = s.post(host + "/o/authorize/", allow_redirects=False, data=data)
+auth = s.post(host + "/o/authorize/", allow_redirects=False, data=data, headers={"Referer": host + "/o/authorize/"})
 url = auth.headers["Location"]
 result = urlparse(url)
 qs = parse_qs(result.query)
@@ -70,7 +71,7 @@ token = s.post(
     data={
         "grant_type": "authorization_code",
         "code": authcode,
-        "redirect_uri": "https://localhost/api/csrf/",
+        "redirect_uri": f"{host}/api/csrf/",
         "client_id": client_id,
         "code_verifier": code_verifier_base64,
     },

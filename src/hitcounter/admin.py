@@ -22,9 +22,9 @@ from .models import TagHit
 class HitAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     """ModelAdmin for the Hit models."""
 
-    list_display = ("id", "content_object", "created", "user", "ip", "user_agent")
+    list_display = ("id", "content_object", "created_at", "user", "ip", "user_agent")
     search_fields = ("ip", "user_agent")
-    date_hierarchy = "created"
+    date_hierarchy = "created_at"
     actions = (
         "blocklist_ips",
         "blocklist_user_agents",

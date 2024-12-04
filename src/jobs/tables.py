@@ -23,12 +23,18 @@ class JobTable(tables.Table):
             "uuid",
             "basefile",
             "job_type",
+            "width",
+            "height",
+            "filetype",
+            "custom_aspect_ratio",
+            "source_url",
+            "result",
             "user",
             "client_uuid",
             "client_version",
             "finished",
-            "created",
-            "updated",
+            "created_at",
+            "updated_at",
         )
 
     def render_basefile(self, record: BaseJob) -> str:

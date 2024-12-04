@@ -117,7 +117,7 @@ class AlbumUpdateView(CuratorGroupRequiredMixin, UpdateView):  # type: ignore[ty
     def get_success_url(self) -> str:
         """Return to the album."""
         messages.success(self.request, "Album updated!")
-        return reverse(self.get_object())
+        return str(self.get_object().get_absolute_url())
 
 
 class AlbumAddFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]

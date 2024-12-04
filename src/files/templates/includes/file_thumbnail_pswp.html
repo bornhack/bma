@@ -1,0 +1,32 @@
+<div class="pswp-gallery__item">
+
+{% if record.filetype == "image" %}
+  <a class="gallerya" href="{{ record.fullsize_url }}"
+    data-pswp-type="image"
+    data-pswp-width="{{ record.width }}"
+    data-pswp-height="{{ record.height }}"
+    data-pswp-srcset="{% render_source_set image=record mimetype="image/webp" %}">
+      {% thumbnail record width=width ratio=ratio %}
+  </a>
+
+{% elif record.filetype == "video" %}
+  <a class="gallerya" href="{{ record.original.url }}"
+    data-pswp-type="video"
+    data-pswp-width="1280"
+    data-pswp-height="1024">
+      {% thumbnail record width=width ratio="16/9" %}
+  </a>
+{% elif record.filetype == "audio" %}
+  {# cheat a bit and tell photoswipe this audio is a video, plyr will handle it #}
+  <a class="gallerya" href="{{ record.original.url }}"
+    data-pswp-type="video"
+    data-pswp-width="640"
+    data-pswp-height="480">
+      {% thumbnail record width=width ratio="1/1" %}
+  </a>
+{% else %}
+  {# do not include documents in photoswipe gallery for now #}
+  {% thumbnail record width=width ratio="16/9" %}
+{% endif %}
+{% include "includes/file_pswp_caption.html" with file=record %}
+</div>

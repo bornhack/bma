@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ image.title }}</title>
+  </head>
+  <body>
+    {% render_file image.original img_alt=file.title img_loading="lazy" img_class="img-fluid" lg=9 sm=12 %}
+  </body>
+</html>

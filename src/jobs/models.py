@@ -1,15 +1,18 @@
 """Models to manage file processing jobs handled by clients."""
-
 # mypy: disable-error-code="var-annotated"
+
+import logging
 import uuid
-from fractions import Fraction
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from ninja.files import UploadedFile
 from polymorphic.models import PolymorphicModel
 
-from utils.upload import get_thumbnail_source_path
+from utils.models import NP_CASCADE
+
+logger = logging.getLogger("bma")
 
 
 def validate_image_filetype(value: str) -> None:
@@ -41,23 +44,23 @@ class BaseJob(PolymorphicModel):
 
     basefile = models.ForeignKey(
         "files.BaseFile",
-        on_delete=models.CASCADE,  # delete jobs when a file is deleted
+        on_delete=NP_CASCADE,  # delete jobs when a file is deleted
         related_name="jobs",
     )
 
-    created = models.DateTimeField(
+    created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="The date and time when this job was first created.",
     )
 
-    updated = models.DateTimeField(
+    updated_at = models.DateTimeField(
         auto_now=True,
         help_text="The date and time when this job was last updated.",
     )
 
-    path = models.CharField(
+    source_url = models.CharField(
         max_length=255,
-        help_text="Path under MEDIA_ROOT for the result of the file processing job.",
+        help_text="URL to the source file to use for this job.",
     )
 
     user = models.ForeignKey(
@@ -93,19 +96,13 @@ class BaseJob(PolymorphicModel):
         """Use class name as job type."""
         return self.__class__.__name__
 
-    @property
-    def source_url(self) -> str:
-        """Return the URL of the source file to use for this job. Overridden on some job types."""
-        return str(self.basefile.resolve_links()["downloads"]["original"])
 
-    @property
-    def source_filename(self) -> str:
-        """Return the URL of the source file to use for this job. Overridden on some job types."""
-        return str(self.basefile.filename)
+class FileUploadJob(BaseJob):
+    """Model to contain file upload jobs. File upload jobs are created on upload. No extra fields."""
 
 
-class ImageConversionJob(BaseJob):
-    """Model to contain image conversion jobs."""
+class ImageJob(BaseJob):
+    """Fields shared between ThumbnailJobs and ImageConversionJobs."""
 
     width = models.PositiveIntegerField(help_text="The desired width of the converted image.")
 
@@ -114,18 +111,23 @@ class ImageConversionJob(BaseJob):
     filetype = models.CharField(
         max_length=10,
         validators=[validate_image_filetype],
-        help_text="The desired file type for this job.",
+        help_text="The desired file type of the converted image.",
     )
 
-    custom_aspect_ratio = models.BooleanField(
-        default=False,
-        help_text="True if this job needs cropping to a custom AR, False if no crop is needed.",
+    custom_aspect_ratio = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Specifies the desired aspect ratio of the converted image. "
+        "Blank if the AR of the source image is to be maintained. Used by the converting "
+        "client to decide on resize method (crop or maintain ratio) and by the "
+        "server to create the ImageVersion/Thumbnail object correctly when the "
+        "result is uploaded.",
     )
 
-    @property
-    def aspect_ratio(self) -> Fraction:
-        """Return job AR as a Fraction."""
-        return Fraction(self.width, self.height)
+    class Meta:
+        """Abstract model."""
+
+        abstract = True
 
     @property
     def mimetype(self) -> str:
@@ -136,6 +138,42 @@ class ImageConversionJob(BaseJob):
         raise FiletypeUnsupportedError(filetype=self.filetype)
 
 
+class ImageConversionJob(ImageJob):
+    """Model to contain image conversion jobs."""
+
+    def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
+        """Save the result of an ImageConversionJob."""
+        from images.models import ImageVersion
+
+        # create model instance
+        image = ImageVersion(
+            job=self,
+            image=self.basefile,
+            # use AR from source image if no custom AR is requested
+            aspect_ratio=self.custom_aspect_ratio or self.basefile.aspect_ratio,
+            imagefile=f,
+            file_size=f.size,  # type: ignore[misc]
+            **data,
+        )
+
+        # validate
+        image.full_clean()
+
+        # delete any existing version of this image with this size and mimetype before saving
+        ImageVersion.objects.filter(
+            image=self.basefile, width=image.width, height=image.height, mimetype=image.mimetype
+        ).delete()
+
+        # save the imageversion
+        image.save()
+
+        # a bit of output
+        logger.debug(
+            f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
+            f"{image.mimetype} image {image.uuid} to {image.imagefile.path}"
+        )
+
+
 class ImageExifExtractionJob(BaseJob):
     """Model to contain image exif exctraction jobs. No extra fields."""
 
@@ -143,16 +181,71 @@ class ImageExifExtractionJob(BaseJob):
 class ThumbnailSourceJob(BaseJob):
     """Model to contain thumbnail source jobs. No extra fields."""
 
+    def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
+        """Handle the result of a ThumbnailSourceJob."""
+        from files.models import ThumbnailSource
 
-class ThumbnailJob(ImageConversionJob):
+        # delete any existing ThumbnailSource for this file
+        ts = ThumbnailSource(  # type: ignore[misc]
+            job=self,
+            basefile=self.basefile,
+            source=f,
+            file_size=f.size,
+            **data,
+        )
+
+        # validate
+        ts.full_clean()
+
+        # delete existing source
+        ThumbnailSource.objects.filter(basefile=self.basefile).delete()
+
+        # save and create jobs
+        ts.save()
+        self.basefile.create_thumbnail_jobs()
+
+        # log message and return
+        logger.debug(
+            f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
+            f"{self.mimetype} thumbnailsource {ts.uuid} to {ts.source.path}"
+        )
+
+
+class ThumbnailJob(ImageJob):
     """Model to contain image thumbnail jobs. No extra fields."""
 
-    @property
-    def source_url(self) -> str:
-        """Return the URL of the source file to use for this job."""
-        return str(self.basefile.resolve_links()["downloads"].get("thumbnail_source", ""))
+    def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
+        """Save the result of a ThumbnailJob as a Thumbnail object."""
+        from files.models import Thumbnail
 
-    @property
-    def source_filename(self) -> str:
-        """Return the filename of the source file to use for this job."""
-        return get_thumbnail_source_path(instance=self.basefile.thumbnail, filename="notused").name
+        # set thumbnailsource FK?
+        if hasattr(self.basefile, "thumbnailsource") and self.source_url != self.basefile.thumbnailsource.source.url:
+            data["source"] = self.basefile.thumbnailsource
+        elif self.source_url != self.basefile.original.url:
+            # source not basefile and not current thumbnailsource, bail out
+            raise ValidationError("Source")
+        thumb = Thumbnail(
+            job=self,
+            basefile=self.basefile,
+            aspect_ratio=self.custom_aspect_ratio,
+            imagefile=f,
+            file_size=f.size,  # type: ignore[misc]
+            **data,
+        )
+
+        # validate
+        thumb.full_clean()
+
+        # delete existing thumbnail of this size and type
+        Thumbnail.objects.filter(
+            basefile=self.basefile, width=data["width"], height=data["height"], mimetype=data["mimetype"]
+        ).delete()
+
+        # save thumbnail
+        thumb.save()
+
+        # and log message
+        logger.debug(
+            f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
+            f"{self.mimetype} thumbnail {thumb.pk} to {thumb.imagefile.path}"
+        )

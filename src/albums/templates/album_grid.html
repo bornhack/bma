@@ -1,0 +1,35 @@
+{% extends "album_detail.html" %}
+{% load humanize static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+{% endblock extra_head %}
+
+{% block album_detail %}
+<div class="row">
+
+<div class="pswp-gallery" id="gallery">
+{% for file in filter.qs %}
+<span>
+
+{% if file.filetype == "image" %}
+  <a class="gallerya" href="{{ file.fullsize_url }}" data-pswp-width="{{ file.width }}"  data-pswp-height="{{ file.height }}"  data-pswp-type="image"  data-pswp-srcset="{% render_source_set image=file mimetype="image/webp" %}">{% thumbnail file width=200 ratio="1/1" %}</a>
+  {% include "includes/file_pswp_caption.html" %}
+
+{% elif file.filetype == "video" %}
+{# Set max video player size to 1280x1024 #}
+<a class="gallerya" href="{{ file.original.url }}" data-pswp-type="video" data-pswp-width="1280" data-pswp-height="1024">{% thumbnail file width=200 ratio="16/9" %}</a>
+  {% include "includes/file_pswp_caption.html" %}
+
+{% else %}
+<a href="{{ file.original.url }}">
+ {% thumbnail file width=200 ratio="1/1" %}
+</a>
+{% endif %}
+
+</span>
+{% endfor %}
+</div>
+</div>
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock album_detail %}

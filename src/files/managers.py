@@ -35,7 +35,7 @@ class BaseFileManager(PolymorphicManager):
             .annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True)))
             .annotate(jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False)))
             .prefetch_active_albums_list(recursive=True)
-            .prefetch_related("thumbnail")
+            .prefetch_related("thumbnails")
         )
 
 
@@ -56,7 +56,7 @@ class BaseFileQuerySet(PolymorphicQuerySet):
 
     def change_bool(self, *, field: str, value: bool) -> int:
         """Change a bool field on a queryset of files."""
-        kwargs = {field: value, "updated": timezone.now()}
+        kwargs = {field: value, "updated_at": timezone.now()}
         self.update(**kwargs)
         return int(self.count())
 

@@ -12,3 +12,64 @@ main > .container {
 .license-card .card-title {
   min-height: 2.5em;
 }
+
+
+/* photoswipe captions start
+ * https://photoswipe.com/caption/
+ * */
+
+.pswp__custom-caption {
+  background: rgba(75, 150, 75, 0.75);
+  font-size: 16px;
+  color: #fff;
+  /* width: calc(100% - 32px); */
+  /* max-width: 600px; */
+  padding: 2px 8px;
+  border-radius: 4px;
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+}
+.pswp__custom-caption a {
+  color: #fff;
+  text-decoration: underline;
+}
+.hidden-caption-content {
+  display: none;
+}
+
+/* photoswipe captions end */
+
+
+/* photoswipe bullets start
+ * https://photoswipe.com/adding-ui-elements/
+ */
+.pswp__bullets-indicator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+.pswp__bullet {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  margin: 0 5px;
+}
+.pswp__bullet--active {
+  background: green;
+}
+/* photoswipe bullets end */
+
+/* photoswipe autohideui start */
+.pswp__dynamic-caption--aside,
+.pswp__dynamic-caption--below {
+  opacity: 1 !important;
+}
+/* photoswipe autohideui end */
