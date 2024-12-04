@@ -40,3 +40,36 @@ main > .container {
 }
 
 /* photoswipe captions end */
+
+
+/* photoswipe bullets start
+ * https://photoswipe.com/adding-ui-elements/
+ */
+.pswp__bullets-indicator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+.pswp__bullet {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  margin: 0 5px;
+}
+.pswp__bullet--active {
+  background: green;
+}
+/* photoswipe bullets end */
+
+/* photoswipe autohideui start */
+.pswp__dynamic-caption--aside,
+.pswp__dynamic-caption--below {
+  opacity: 1 !important;
+}
+/* photoswipe autohideui end */
