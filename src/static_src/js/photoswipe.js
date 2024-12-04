@@ -89,5 +89,14 @@ lightbox.on('uiRegister', function() {
   });
 });
 
+// update url with a hash/anchor with the uuid of the current slide
+lightbox.on('contentActivate', ({ content }) => {
+  console.log('contentActivate', content);
+  history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid)
+});
+lightbox.on('close', () => {
+  history.replaceState(undefined, '', window.location.pathname + window.location.search);
+});
+
 // disco!
 lightbox.init();
