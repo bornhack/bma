@@ -133,6 +133,7 @@
               <h5 class="card-title">Image Versions</h5>
             </div>
             <div class="card-body">
+                <p>Original: <a href="{{ file.original.url }}">{{ file.width }}*{{ file.height }} AR {{ file.aspect_ratio }}</a> ({{ file.file_size|intcomma }} bytes {{ file.mimetype }})</p>
               <table class="table table-responsive table-small">
                 <thead>
                   <tr><th>Ratio</th><th>Mimetype</th><th>Sizes</th></tr>
