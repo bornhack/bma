@@ -35,7 +35,7 @@ const captionPlugin = new PhotoSwipeDynamicCaption(lightbox, {
   // Plugins options
   type: 'auto',
   captionContent: (slide) => {
-    return slide.data.element.parentElement.querySelector(".pswp-caption-content").innerHTML
+    return slide.data.element.parentElement.querySelector("div.pswp-caption-content").innerHTML
   },
 });
 
@@ -103,6 +103,6 @@ lightbox.init();
 
 // open lightbox on page load?
 if (location.hash && location.hash.substring(0, 10) == "#lightbox=") {
-    let slide = document.querySelector("[data-bma-file-uuid='" + location.hash.substring(10) + "']");
+    let slide = document.querySelector("a.gallerya[data-bma-file-uuid='" + location.hash.substring(10) + "']");
     slide.click();
 }
