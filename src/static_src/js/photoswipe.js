@@ -91,12 +91,18 @@ lightbox.on('uiRegister', function() {
 
 // update url with a hash/anchor with the uuid of the current slide
 lightbox.on('contentActivate', ({ content }) => {
-  console.log('contentActivate', content);
   history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid)
 });
+// remove anchor when lightbox closes
 lightbox.on('close', () => {
   history.replaceState(undefined, '', window.location.pathname + window.location.search);
 });
 
-// disco!
+// initialise the lightbox
 lightbox.init();
+
+// open lightbox on page load?
+if (location.hash && location.hash.substring(0, 10) == "#lightbox=") {
+    let slide = document.querySelector("[data-bma-file-uuid='" + location.hash.substring(10) + "']");
+    slide.click();
+}
