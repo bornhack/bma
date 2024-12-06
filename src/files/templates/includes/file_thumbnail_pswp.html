@@ -32,7 +32,5 @@
   {# do not include documents in photoswipe gallery for now #}
   {% thumbnail record width=width ratio="16/9" %}
 {% endif %}
-<div class="pswp-caption-content" data-bma-file-uuid="{{ record.uuid }}">
-  {{ record.title }}<br><a href="{{ record.get_absolute_url }}">{{ record.uuid }}</a>
-</div>
+{% include "includes/file_pswp_caption.html" with file=record %}
 </span>

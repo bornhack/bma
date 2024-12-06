@@ -1,0 +1,5 @@
+<div class="pswp-caption-content" data-bma-file-uuid="{{ file.uuid }}">
+    <b>{{ file.title }}</b><br>
+    <i class="{{ file.filetype_icon }}"></i> <a href="{{ file.get_absolute_url }}">{{ file.uuid }}</a><br>
+    {% if file.filetype == "image" %}{{ file.get_exif_caption }}{% endif %}
+</div>
