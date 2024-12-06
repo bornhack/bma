@@ -204,9 +204,12 @@ class Image(BaseFile):
             return ""
         return datetime.strptime(dt, "%Y:%m:%d %H:%M:%S").replace(tzinfo=zoneinfo.ZoneInfo(settings.TIME_ZONE))
 
-    def get_exif_fstop(self) -> str:
+    def get_exif_fstop(self) -> float | str:
         """Get f-stop value from exif data."""
-        return self.get_exif_value(idf="EXIF", key="FNumber")
+        fn = self.get_exif_value(idf="EXIF", key="FNumber")
+        if not fn:
+            return ""
+        return round(float(Fraction(fn)), 1)
 
     def get_exif_orientation(self) -> str:
         """Get orientation from exif data."""
@@ -216,28 +219,30 @@ class Image(BaseFile):
         """Return exif caption string."""
         output = ""
         if camera := self.get_exif_camera():
-            output += f'<span><i class="fas fa-camera" title="Camera"></i> {camera}</span><br>'
+            output += f'<span><i class="fas fa-camera fa-fw" title="Camera"></i> {camera}</span>'
 
         if lens := self.get_exif_lens():
-            output += f'<span><i class="fas fa-video" title="Lens"></i> {lens}</span><br>'
+            output += f'<span><i class="fas fa-video ms-3 fa-fw" title="Lens"></i> {lens}</span>'
 
         if focal := self.get_exif_focal():
-            output += f'<span><i class="fas fa-ruler-horizontal" title="Focal Length"></i> {focal} mm</span><br>'
+            output += f'<span><i class="fas fa-ruler-horizontal ms-3 fa-fw" title="Focal Length"></i> {focal}mm</span>'
 
         if shutter := self.get_exif_shutter():
-            output += f'<span><i class="fas fa-stopwatch" title="Shutter speed"></i> {shutter}</span><br>'
+            output += f'<span><i class="fas fa-stopwatch ms-3 fa-fw" title="Shutter speed"></i> {shutter}</span>'
 
         if iso := self.get_exif_iso():
-            output += f'<span><i class="fas fa-eye" title="ISO"></i> {iso}</span><br>'
-
-        if createtime := self.get_exif_createtime():
-            output += f'<span><i class="fas fa-calendar" title="Picture taken time"></i> {createtime}</span><br>'
+            output += f'<span><i class="fas fa-eye ms-3 fa-fw" title="ISO"></i> ISO {iso}</span>'
 
         if fstop := self.get_exif_fstop():
-            output += f'<span><i class="fas fa-florin-sign" title="Aperture/f-stop"></i> {fstop}</span><br>'
+            output += f'<span><i class="fas fa-florin-sign ms-3 fa-fw" title="Aperture/f-stop"></i> {fstop}</span>'
 
         if orientation := self.get_exif_orientation():
-            output += f'<span><i class="fas fa-camera-rotate" title="Image Orientation"></i> {orientation}</span><br>'
+            output += (
+                f'<span><i class="fas fa-camera-rotate ms-3 fa-fw" title="Image Orientation"></i> {orientation}</span>'
+            )
+
+        if createtime := self.get_exif_createtime():
+            output += f'<br><span><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> {createtime}</span>'
 
         return mark_safe(output)  # noqa: S308
 

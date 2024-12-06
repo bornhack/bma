@@ -22,6 +22,7 @@ import PhotoSwipeFullscreen from '/static/js/vendor/photoswipe-fullscreen.v1.0.5
 const lightbox = new PhotoSwipeLightbox({
     gallery: '#gallery',
     children: 'a.gallerya',
+    bgOpacity: 0.90,
     pswpModule: () => import('/static/js/vendor/photoswipe-v5.4.4.esm.min.js')
 });
 

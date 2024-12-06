@@ -75,3 +75,10 @@ main > .container {
   opacity: 1 !important;
 }
 /* photoswipe autohideui end */
+
+
+/* never break after fa icons */
+:root {
+  --fa-display: inline;
+}
+
