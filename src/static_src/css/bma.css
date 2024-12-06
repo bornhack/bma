@@ -69,7 +69,9 @@ main > .container {
 
 /* photoswipe autohideui start */
 .pswp__dynamic-caption--aside,
-.pswp__dynamic-caption--below {
+.pswp__dynamic-caption--below,
+.pswp__bullets-indicator
+{
   opacity: 1 !important;
 }
 /* photoswipe autohideui end */
