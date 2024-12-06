@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.utils.safestring import mark_safe
 
 from files.models import BaseFile
 from files.models import ImageModel
@@ -199,10 +198,14 @@ class Image(BaseFile):
 
     def get_exif_createtime(self) -> datetime | str:
         """Get date taken from exif data."""
-        dt = self.get_exif_value(idf="EXIF", key="DateTimeOriginal")
-        if not dt:
+        odt = self.get_exif_value(idf="EXIF", key="DateTimeOriginal")
+        if not odt:
             return ""
-        return datetime.strptime(dt, "%Y:%m:%d %H:%M:%S").replace(tzinfo=zoneinfo.ZoneInfo(settings.TIME_ZONE))
+        # is there an OffsetTime?
+        ot = self.get_exif_value(idf="EXIF", key="OffsetTime")
+        if ot:
+            return datetime.strptime(f"{odt} {ot}", "%Y:%m:%d %H:%M:%S %z")
+        return datetime.strptime(odt, "%Y:%m:%d %H:%M:%S").replace(tzinfo=zoneinfo.ZoneInfo(settings.TIME_ZONE))
 
     def get_exif_fstop(self) -> float | str:
         """Get f-stop value from exif data."""
@@ -214,37 +217,6 @@ class Image(BaseFile):
     def get_exif_orientation(self) -> str:
         """Get orientation from exif data."""
         return self.get_exif_value(idf="EXIF", key="Orientation")
-
-    def get_exif_caption(self) -> str:
-        """Return exif caption string."""
-        output = ""
-        if camera := self.get_exif_camera():
-            output += f'<span><i class="fas fa-camera fa-fw" title="Camera"></i> {camera}</span>'
-
-        if lens := self.get_exif_lens():
-            output += f'<span><i class="fas fa-video ms-3 fa-fw" title="Lens"></i> {lens}</span>'
-
-        if focal := self.get_exif_focal():
-            output += f'<span><i class="fas fa-ruler-horizontal ms-3 fa-fw" title="Focal Length"></i> {focal}mm</span>'
-
-        if shutter := self.get_exif_shutter():
-            output += f'<span><i class="fas fa-stopwatch ms-3 fa-fw" title="Shutter speed"></i> {shutter}</span>'
-
-        if iso := self.get_exif_iso():
-            output += f'<span><i class="fas fa-eye ms-3 fa-fw" title="ISO"></i> ISO {iso}</span>'
-
-        if fstop := self.get_exif_fstop():
-            output += f'<span><i class="fas fa-florin-sign ms-3 fa-fw" title="Aperture/f-stop"></i> {fstop}</span>'
-
-        if orientation := self.get_exif_orientation():
-            output += (
-                f'<span><i class="fas fa-camera-rotate ms-3 fa-fw" title="Image Orientation"></i> {orientation}</span>'
-            )
-
-        if createtime := self.get_exif_createtime():
-            output += f'<br><span><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> {createtime}</span>'
-
-        return mark_safe(output)  # noqa: S308
 
 
 class ImageVersion(ImageModel, BaseModel):
