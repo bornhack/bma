@@ -64,6 +64,9 @@ lightbox.on('uiRegister', function() {
     className: 'pswp__bullets-indicator',
     appendTo: 'wrapper',
     onInit: (el, pswp) => {
+      if (pswp.getNumItems() == 1) {
+        return;
+      };
       const bullets = [];
       let bullet;
       let prevIndex = -1;
