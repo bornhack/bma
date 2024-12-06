@@ -1,8 +1,8 @@
 """The Image model."""
 
-from __future__ import annotations
-
 import logging
+import zoneinfo
+from datetime import datetime
 from fractions import Fraction
 
 # mypy: disable-error-code="var-annotated"
@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
+from django.utils.safestring import mark_safe
 
 from files.models import BaseFile
 from files.models import ImageModel
@@ -66,7 +67,7 @@ class Image(BaseFile):
         help_text="The total number of pixels in this image. Useful for ordering by image size.",
     )
 
-    def get_fullsize_version(self, mimetype: str) -> ImageVersion | None:
+    def get_fullsize_version(self, mimetype: str) -> "ImageVersion | None":
         """Return the ImageVersion for the fullsize version of this mimetype for this Image."""
         try:
             return self.image_versions.get(width=self.width, aspect_ratio=self.aspect_ratio, mimetype=mimetype)  # type: ignore[no-any-return]
@@ -130,7 +131,7 @@ class Image(BaseFile):
 
     def get_versions(
         self, mimetype: str | None = None, aspect_ratio: Fraction | None = None
-    ) -> dict[Fraction | None, dict[str, dict[int, ImageVersion]]]:
+    ) -> dict[Fraction | None, dict[str, dict[int, "ImageVersion"]]]:
         """Get image versions. Return a dict with ratio: mimetype: size: ImageVersion dicts."""
         versions = {}
         kwargs = {
@@ -155,6 +156,90 @@ class Image(BaseFile):
             # imageversion not found
             return ""
         return version.imagefile.url  # type: ignore[no-any-return]
+
+    def get_exif_value(self, idf: str, key: str) -> str:
+        """Get an exif value from exif data."""
+        if not self.exif or idf not in self.exif or key not in self.exif[idf]:
+            return ""
+        return self.exif[idf][key]  # type: ignore[no-any-return]
+
+    def get_exif_camera(self) -> str:
+        """Get camera make and model from exif data."""
+        make = self.get_exif_value(idf="Image", key="Make")
+        model = self.get_exif_value(idf="Image", key="Model")
+        if make and model:
+            return f"{make} {model}"
+        if make:
+            return make
+        if model:
+            return model
+        return ""
+
+    def get_exif_lens(self) -> str:
+        """Get lens info from exif data."""
+        return self.get_exif_value(idf="EXIF", key="LensModel")
+
+    def get_exif_focal(self) -> str:
+        """Get focal length from exif data."""
+        return self.get_exif_value(idf="EXIF", key="FocalLength")
+
+    def get_exif_shutter(self) -> str:
+        """Get shutter speed from exif data."""
+        shutter = self.get_exif_value(idf="EXIF", key="ExposureTime")
+        if not shutter:
+            return ""
+        exptime = Fraction(shutter)
+        if exptime.denominator == 0:
+            return ""
+        return f"{exptime} s"
+
+    def get_exif_iso(self) -> str:
+        """Get iso speed from exif data."""
+        return self.get_exif_value(idf="EXIF", key="ISOSpeedRatings")
+
+    def get_exif_createtime(self) -> datetime | str:
+        """Get date taken from exif data."""
+        dt = self.get_exif_value(idf="EXIF", key="DateTimeOriginal")
+        if not dt:
+            return ""
+        return datetime.strptime(dt, "%Y:%m:%d %H:%M:%S").replace(tzinfo=zoneinfo.ZoneInfo(settings.TIME_ZONE))
+
+    def get_exif_fstop(self) -> str:
+        """Get f-stop value from exif data."""
+        return self.get_exif_value(idf="EXIF", key="FNumber")
+
+    def get_exif_orientation(self) -> str:
+        """Get orientation from exif data."""
+        return self.get_exif_value(idf="EXIF", key="Orientation")
+
+    def get_exif_caption(self) -> str:
+        """Return exif caption string."""
+        output = ""
+        if camera := self.get_exif_camera():
+            output += f'<span><i class="fas fa-camera" title="Camera"></i> {camera}</span><br>'
+
+        if lens := self.get_exif_lens():
+            output += f'<span><i class="fas fa-video" title="Lens"></i> {lens}</span><br>'
+
+        if focal := self.get_exif_focal():
+            output += f'<span><i class="fas fa-ruler-horizontal" title="Focal Length"></i> {focal} mm</span><br>'
+
+        if shutter := self.get_exif_shutter():
+            output += f'<span><i class="fas fa-stopwatch" title="Shutter speed"></i> {shutter}</span><br>'
+
+        if iso := self.get_exif_iso():
+            output += f'<span><i class="fas fa-eye" title="ISO"></i> {iso}</span><br>'
+
+        if createtime := self.get_exif_createtime():
+            output += f'<span><i class="fas fa-calendar" title="Picture taken time"></i> {createtime}</span><br>'
+
+        if fstop := self.get_exif_fstop():
+            output += f'<span><i class="fas fa-florin-sign" title="Aperture/f-stop"></i> {fstop}</span><br>'
+
+        if orientation := self.get_exif_orientation():
+            output += f'<span><i class="fas fa-camera-rotate" title="Image Orientation"></i> {orientation}</span><br>'
+
+        return mark_safe(output)  # noqa: S308
 
 
 class ImageVersion(ImageModel, BaseModel):
@@ -182,7 +267,7 @@ class ImageVersion(ImageModel, BaseModel):
     )
 
     @property
-    def uploader(self) -> User:
+    def uploader(self) -> "User":
         """Return the uploader of this image version."""
         return self.job.user  # type: ignore[no-any-return]
 
