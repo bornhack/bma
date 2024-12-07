@@ -241,11 +241,12 @@ class FileFilter(django_filters.FilterSet):
         return queryset.exclude(taggings__tagger__handle__in=value)
 
     class Meta:
-        """Set model and fields."""
+        """Set model  and fields."""
 
         model = BaseFile
         fields: ClassVar[dict[str, list[str]]] = {
-            "attribution": ["exact", "icontains"],
+            "attribution": ["icontains"],
+            "mimetype": ["icontains"],
             "title": ["icontains"],
             "approved": ["exact"],
             "published": ["exact"],
