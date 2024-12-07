@@ -57,7 +57,6 @@ const autoHideUI = new PhotoSwipeAutoHideUI(lightbox, {
 const fullscreenPlugin = new PhotoSwipeFullscreen(lightbox);
 
 ///////////////////////////////////////////////////////////////////////////////
-
 // bullets
 lightbox.on('uiRegister', function() {
   lightbox.pswp.ui.registerElement({
@@ -65,6 +64,7 @@ lightbox.on('uiRegister', function() {
     className: 'pswp__bullets-indicator',
     appendTo: 'wrapper',
     onInit: (el, pswp) => {
+      // skip bullets if there is only 1 file
       if (pswp.getNumItems() == 1) {
         return;
       };
@@ -93,6 +93,31 @@ lightbox.on('uiRegister', function() {
   });
 });
 
+///////////////////////////////////////////////////////////////////////////////
+// add download button
+lightbox.on('uiRegister', function() {
+  lightbox.pswp.ui.registerElement({
+    name: 'download-button',
+    order: 8,
+    isButton: true,
+    tagName: 'a',
+    html: {
+      isCustomSVG: true,
+      inner: '<path d="M20.5 14.3 17.1 18V10h-2.2v7.9l-3.4-3.6L10 16l6 6.1 6-6.1ZM23 23H9v2h14Z" id="pswp__icn-download"/>',
+      outlineID: 'pswp__icn-download'
+    },
+    onInit: (el, pswp) => {
+      el.setAttribute('download', '');
+      el.setAttribute('rel', 'noopener');
+      pswp.on('change', () => {
+        el.href = pswp.currSlide.data.element.dataset.bmaFileOrigUrl;
+        el.title = "Download original";
+      });
+    }
+  });
+});
+
+///////////////////////////////////////////////////////////////////////////////
 // update url with a hash/anchor with the uuid of the current slide
 lightbox.on('contentActivate', ({ content }) => {
   history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid)

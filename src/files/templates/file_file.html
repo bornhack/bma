@@ -4,7 +4,13 @@
   {% if file.filetype == "image" %}
   <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
     <div class="pswp-gallery__item">
-      <a class="gallerya" href="{{ file.fullsize_url }}" data-bma-file-uuid="{{ file.uuid }}" data-pswp-width="{{ file.width }}"  data-pswp-height="{{ file.height }}"  data-pswp-type="image"  data-pswp-srcset="{% render_source_set image=file mimetype="image/webp" %}">
+      <a class="gallerya" href="{{ file.fullsize_url }}"
+          data-bma-file-uuid="{{ file.uuid }}"
+          data-bma-file-orig-url="{{ file.original.url }}"
+          data-pswp-width="{{ file.width }}"
+          data-pswp-height="{{ file.height }}"
+          data-pswp-type="image"
+          data-pswp-srcset="{% render_source_set image=file mimetype="image/webp" %}">
       {% render_file file.original img_alt=file.title img_loading="lazy" img_class="img-fluid" lg=9 sm=12 %}
       </a>
       {% include "includes/file_pswp_caption.html" %}
