@@ -58,6 +58,7 @@ class JobFilter(django_filters.FilterSet):
 
     job_types = django_filters.filters.MultipleChoiceFilter(
         choices=(
+            ("fileuploadjob", "FileUploadJob"),
             ("imageconversionjob", "ImageConversionJob"),
             ("imageexifextractionjob", "ImageExifExtractionJob"),
             ("thumbnailsourcejob", "ThumbnailSourceJob"),
@@ -92,4 +93,5 @@ class JobFilter(django_filters.FilterSet):
         fields: ClassVar[dict[str, list[str]]] = {
             "client_uuid": ["exact"],
             "client_version": ["icontains"],
+            "source_url": ["icontains"],
         }

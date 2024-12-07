@@ -37,5 +37,8 @@ class ListFilters(FilterSchema):
 def filter_button(text: str, request: "HttpRequest", **kwargs: str) -> str:
     """Add a filter button before the provided text with a querystring updated with the provided kwargs."""
     querystring = querystring_from_request(request=request, **kwargs)
-    button = f'<a href="{request.path}{querystring}"><i class="fas fa-filter"></i></a>'
+    button = (
+        f'<a href="{request.path}{querystring}" '
+        'class="link-underline link-underline-opacity-0"><i class="fas fa-filter"></i></a>'
+    )
     return mark_safe(f"{button}&nbsp;{text}")  # noqa: S308

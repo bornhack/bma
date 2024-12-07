@@ -1,8 +1,10 @@
 """This module defines the table used to show jobs."""
 
 import django_tables2 as tables
+from django.utils.safestring import mark_safe
 
 from utils.filters import filter_button
+from utils.tables import LocalTimeColumn
 
 from .models import BaseJob
 
@@ -10,9 +12,13 @@ from .models import BaseJob
 class JobTable(tables.Table):
     """Defines the django-tables2 used to show jobs."""
 
+    uuid = tables.Column(verbose_name="Job UUID")
     basefile = tables.Column(verbose_name="File", linkify=True)
     job_type = tables.Column(verbose_name="Job Type")
     user = tables.Column(linkify=True)
+    result_url = tables.Column(verbose_name="Result url")
+    created_at = LocalTimeColumn()
+    updated_at = LocalTimeColumn()
 
     class Meta:
         """Define model, template, fields."""
@@ -28,7 +34,7 @@ class JobTable(tables.Table):
             "filetype",
             "custom_aspect_ratio",
             "source_url",
-            "result",
+            "result_url",
             "user",
             "client_uuid",
             "client_version",
@@ -66,3 +72,15 @@ class JobTable(tables.Table):
     def render_client_version(self, record: BaseJob) -> str:
         """Render the client_version column with a filter button."""
         return filter_button(text=record.client_version, request=self.request, client_version=record.client_version)
+
+    def render_source_url(self, record: BaseJob) -> str:
+        """Render the source url column with a filter button."""
+        return filter_button(
+            text=f'<a href="{record.source_url}">Source</a>',
+            request=self.request,
+            source_url__icontains=record.source_url,
+        )
+
+    def render_result_url(self, record: BaseJob, value: str) -> str:
+        """Render the result url column."""
+        return mark_safe(f'<a href="{value}">Result</a>')  # noqa: S308
