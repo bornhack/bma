@@ -48,7 +48,9 @@
         {% if request.user.is_curator %}
         <a href="{% url 'albums:album_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Album</a>
         {% endif %}
+        <div class="table-responsive">
         {% render_table table %}
+        </div>
         </div>
       </div>
     </div>
