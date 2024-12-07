@@ -1,39 +1,38 @@
 <div class="pswp-caption-content" data-bma-file-uuid="{{ file.uuid }}">
-    <b>{{ file.title }}</b><br>
-    <i class="{{ file.filetype_icon }}"></i> <a href="{{ file.get_absolute_url }}">{{ file.uuid }}</a><br>
+  <p class="d-inline-block"><i class="{{ file.filetype_icon }}"></i> <a href="{{ file.get_absolute_url }}"><b>{{ file.title }}</b></a></p>
 {% if file.filetype == "image" %}
 
 {% if file.get_exif_camera %}
-<span class="d-inline-block me-3"><i class="fas fa-camera fa-fw" title="Camera"></i> {{ file.get_exif_camera }}</span>
+  <span class="d-inline-block me-3"><i class="fas fa-camera fa-fw" title="Camera"></i> {{ file.get_exif_camera }}</span>
 {% endif %}
 
 {% if file.get_exif_lens %}
-<span class="d-inline-block me-3"><i class="fas fa-video fa-fw" title="Lens"></i> {{ file.get_exif_lens }}</span>
+  <span class="d-inline-block me-3"><i class="fas fa-video fa-fw" title="Lens"></i> {{ file.get_exif_lens }}</span>
 {% endif %}
 
 {% if file.get_exif_focal %}
-<span class="d-inline-block me-3"><i class="fas fa-ruler-horizontal fa-fw" title="Focal Length"></i> {{ file.get_exif_focal }}mm</span>
+  <span class="d-inline-block me-3"><i class="fas fa-ruler-horizontal fa-fw" title="Focal Length"></i> {{ file.get_exif_focal }}mm</span>
 {% endif %}
 
 {% if file.get_exif_shutter %}
-<span class="d-inline-block me-3"><i class="fas fa-stopwatch fa-fw" title="Shutter speed"></i> {{ file.get_exif_shutter }}</span> 
+  <span class="d-inline-block me-3"><i class="fas fa-stopwatch fa-fw" title="Shutter speed"></i> {{ file.get_exif_shutter }}</span> 
 {% endif %}
 
 {% if file.get_exif_iso %}
-<span class="d-inline-block me-3"><i class="fas fa-eye fa-fw" title="ISO"></i> ISO {{ file.get_exif_iso }}</span>
+  <span class="d-inline-block me-3"><i class="fas fa-eye fa-fw" title="ISO"></i> ISO {{ file.get_exif_iso }}</span>
 {% endif %}
 
 {% if file.get_exif_fstop %}
-<span class="d-inline-block me-3"><i class="fas fa-florin-sign fa-fw" title="Aperture/f-stop"></i> {{ file.get_exif_fstop }}</span>
+  <span class="d-inline-block me-3"><i class="fas fa-florin-sign fa-fw" title="Aperture/f-stop"></i> {{ file.get_exif_fstop }}</span>
 {% endif %}
 
 
 {% if file.get_exif_orientation %}
-<span class="d-inline-block me-3"><i class="fas fa-camera-rotate fa-fw" title="Image Orientation"></i> {{ file.get_exif_orientation }}</span>
+  <span class="d-inline-block me-3"><i class="fas fa-camera-rotate fa-fw" title="Image Orientation"></i> {{ file.get_exif_orientation }}</span>
 {% endif %}
 
 {% if file.get_exif_createtime %}
-<br><span class="d-inline-block me-3"><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> {{ file.get_exif_createtime }}</span>
+  <br><span class="d-inline-block me-3"><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> {{ file.get_exif_createtime }}</span>
 {% endif %}
 
 {% endif %}

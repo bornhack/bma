@@ -150,6 +150,10 @@ DATE_FORMAT = "l, M jS, Y"
 DATETIME_FORMAT = "l, M jS, Y, H:i (e)"
 TIME_FORMAT = "H:i"
 
+FORMAT_MODULE_PATH = [
+    "bma.formats",
+]
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

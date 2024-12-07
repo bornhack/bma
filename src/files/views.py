@@ -294,6 +294,7 @@ class FileJobsView(SingleTableMixin, FilterView):
         """Add file to context."""
         context = super().get_context_data(**kwargs)
         context["file"] = self.get_object()
+        context["total_jobs"] = self.get_object().jobs.count()
         return context  # type: ignore[no-any-return]
 
 

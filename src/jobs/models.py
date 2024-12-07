@@ -100,6 +100,11 @@ class BaseJob(PolymorphicModel):
 class FileUploadJob(BaseJob):
     """Model to contain file upload jobs. File upload jobs are created on upload. No extra fields."""
 
+    def result_url(self) -> str:
+        """Return the result url."""
+        # the basefile model doesn't have the .original field so this is a bit awkward
+        return str(self.basefile.get_real_instance().original.url)
+
 
 class ImageJob(BaseJob):
     """Fields shared between ThumbnailJobs and ImageConversionJobs."""
@@ -173,9 +178,17 @@ class ImageConversionJob(ImageJob):
             f"{image.mimetype} image {image.uuid} to {image.imagefile.path}"
         )
 
+    def result_url(self) -> str:
+        """Return the result url."""
+        return str(self.imageversion.imagefile.url)
+
 
 class ImageExifExtractionJob(BaseJob):
     """Model to contain image exif exctraction jobs. No extra fields."""
+
+    def result_url(self) -> str:
+        """Return the result url."""
+        return str(self.basefile.get_absolute_url())
 
 
 class ThumbnailSourceJob(BaseJob):
@@ -209,6 +222,10 @@ class ThumbnailSourceJob(BaseJob):
             f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
             f"{self.mimetype} thumbnailsource {ts.uuid} to {ts.source.path}"
         )
+
+    def result_url(self) -> str:
+        """Return the result url."""
+        return str(self.thumbnailsource.source.url)
 
 
 class ThumbnailJob(ImageJob):
@@ -249,3 +266,7 @@ class ThumbnailJob(ImageJob):
             f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
             f"{self.mimetype} thumbnail {thumb.pk} to {thumb.imagefile.path}"
         )
+
+    def result_url(self) -> str:
+        """Return the result url."""
+        return str(self.thumbnail.imagefile.url)

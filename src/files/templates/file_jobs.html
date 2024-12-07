@@ -7,15 +7,20 @@
 
 {% block file_detail %}
 <div class="card-body">
-  <div class="table-responsive">
-    <div class="lead">Per page:
-    <div class="btn-group" role="group" aria-label="Per page">
-      <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-      <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-      <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
+  <div class="row">
+    <div class="col-2">
+    {% include "includes/job_filter.html" %}
     </div>
+    <div class="col-10">
+      <div class="card">
+        <h5 class="card-header">Jobs</h5>
+        <div class="card-body">
+          <div class="table-responsive">
+          {% render_table table %}
+          </div>
+        </div>
+      </div>
     </div>
-    {% render_table table %}
   </div>
 </div>
 {% endblock file_detail %}
