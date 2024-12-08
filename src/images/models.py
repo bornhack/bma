@@ -240,6 +240,7 @@ class ImageVersion(ImageModel, BaseModel):
         help_text="The Job which triggered uploading of this image version.",
     )
 
+    # This FK points to BaseFile instead of Image to make prefetching ImageVersions possible.
     image = models.ForeignKey(
         "files.BaseFile",
         on_delete=NP_CASCADE,  # delete all versions when an Image is deleted
