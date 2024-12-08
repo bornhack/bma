@@ -13,39 +13,7 @@
   <div class="row">
 
     <!-- Sidebar with file filters start -->
-    <div id="FileFilters" class="col-xl-2 col-12 collapse collapse-horizontal show">
-      <div class="card mb-2">
-        <h5 class="card-header">Filters Stats</h5>
-        <div class="card-body">
-          <p>
-            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#FileFilters" aria-expanded="false" aria-controls="FileFilters">
-              <i class="fas fa-funnel"></i> Hide Filters
-            </button>
-          </p>
-          <p class="lead">Showing {{ files.count }} files.</p>
-        </div>
-      </div>
-      <div class="card">
-        <h5 class="card-header">Filter Files</h5>
-        <div class="card-body">
-          <form method="get">
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-            {% bootstrap_form filter.form %}
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    {% include "includes/file_filters.html" %}
     <!-- Sidebar with file filters end -->
 
     <!-- Main content -->
