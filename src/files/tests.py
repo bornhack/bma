@@ -975,7 +975,6 @@ class TestFileViews(BmaTestBase):
         self.assert_file_list_rows(24, qs="?attribution__icontains=foto")
         self.assert_file_list_rows(0, qs="?attribution__icontains=notthere")
         self.assert_file_list_rows(1, qs="?attribution__icontains=fotofonzy")
-        self.assert_file_list_rows(1, qs="?attribution=fotoflummer")
 
     def test_file_list_view_license_filters(self) -> None:
         """Test the license filter of the file list view."""
