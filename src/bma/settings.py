@@ -242,8 +242,8 @@ DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
 BOOTSTRAP5 = {
     "css_url": {
-        "url": "/static/css/vendor/bootstrap-v5.3.3.min.css",
-        "integrity": "sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH",
+        "url": "/static/css/vendor/bootstrap-v5.3.3.bmacustom.css",
+        "integrity": "sha384-bpvHuf6ddouJMiDJVAGzwwrkcBiQ/8TmvS+NocB09TmO4qt7ai0jo/HF8cUomEoJ",
         "crossorigin": "anonymous",
     },
     "javascript_url": {

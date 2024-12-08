@@ -1,0 +1,35 @@
+// bma bootstrap scss, only adds more breakpoints for now
+// build new css:
+//   $ apt install npm sass
+//   $ npm install bootstrap
+//   $ sass bma.scss:bootstrap-v5.3.3.bmacustom.css
+// also update SRI in settings.py:
+//   $ openssl dgst -sha384 -binary bootstrap-v5.3.3.bmacustom.css | openssl base64 -A
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1392px, // 1320 + (12*7)
+  3xl: 1608px, // 1512 + (12*8)
+  4xl: 2004px, // 1896 + (12*9)
+  5xl: 2400px, // 2280 + (12*10)
+  6xl: 2796px // 2664 + (12*11)
+);
+
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+  3xl: 1512px,
+  4xl: 1896px,
+  5xl: 2280px,
+  6xl: 2664px
+);
+
+// Import Bootstrap's source files
+@import 'node_modules/bootstrap/scss/bootstrap';
