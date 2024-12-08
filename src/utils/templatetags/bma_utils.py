@@ -9,7 +9,6 @@ from django.template import loader
 from django.template.context import RequestContext
 from django.utils.safestring import mark_safe
 
-from files.models import Thumbnail
 from pictures.templatetags.pictures import picture
 from pictures.utils import sizes
 
@@ -39,7 +38,7 @@ def get_group_icons(
 
 
 @register.simple_tag()
-def thumbnail(basefile: "BaseFile", width: int, ratio: str) -> str:
+def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "image/webp") -> str:
     """BMA thumbnail tag. Depends on the hardcoded 50,100,150,200px (and 2x)."""
     from files.models import ThumbnailSource
 
@@ -54,31 +53,31 @@ def thumbnail(basefile: "BaseFile", width: int, ratio: str) -> str:
             f"<!-- Error creating thumbnail markup, aspect ratio {ratio} is not supported, "
             f"only {ThumbnailSource.source.field.aspect_ratios} are supported -->"  # type: ignore[attr-defined]
         )
+    t = None
+    t2 = None
+    for thumbnail in basefile.thumbnail_list:
+        if thumbnail.mimetype != mimetype:
+            continue
+        if thumbnail.aspect_ratio != str(Fraction(ratio)):
+            continue
+        if thumbnail.width == width:
+            t = thumbnail
+            continue
+        if thumbnail.width == width * 2:
+            t2 = thumbnail
+            continue
 
-    thumbnails = basefile.thumbnails.filter(
-        width__in=[width, width * 2], aspect_ratio=str(Fraction(ratio)), mimetype="image/webp"
-    )
-    if not thumbnails:
-        # neither requested size or 2x available, return default
+    if not t:
+        # request size not available
         return mark_safe(  # noqa: S308
             '<img class="img-fluid img-thumbnail" '
             f'src="{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
         )
-    try:
-        t = thumbnails.get(width=width, height=width / Fraction(ratio))
-        url = t.imagefile.url
-    except Thumbnail.DoesNotExist:
-        # requested size not available, return default
-        return mark_safe(  # noqa: S308
-            '<img class="img-fluid img-thumbnail" '
-            f'src="{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
-        )
-
-    try:
-        url2x = thumbnails.get(width=width * 2).imagefile.url
+    url = t.imagefile.url
+    if t2:
+        url2x = t2.imagefile.url
         url2x = f", {url2x} 2x"
-    except Thumbnail.DoesNotExist:
-        # 2x requested size not available, skip 2x for this thumbnail
+    else:
         url2x = ""
 
     title = basefile.original_filename
