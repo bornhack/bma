@@ -11,10 +11,16 @@
 
 {% block main_content %}
   <div class="row">
-    <div class="col-2">
+    <!-- Sidebar with file filters -->
+    <div id="FileFilters" class="col-xl-2 col-12 collapse collapse-horizontal">
       <div class="card mb-2">
         <h5 class="card-header">File Stats</h5>
         <div class="card-body">
+          <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#FileFilters" aria-expanded="false" aria-controls="FileFilters">
+              <i class="fas fa-funnel"></i> Hide Filters
+            </button>
+          </p>
           <p class="lead">Showing {{ files.count }} files.</p>
         </div>
       </div>
@@ -40,10 +46,16 @@
         </div>
       </div>
     </div>
-    <div class="col-10">
+    <div class="col">
       <div class="card">
         <h5 class="card-header">Files</h5>
         <div class="card-body">
+          <p>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#FileFilters" aria-expanded="false" aria-controls="FileFilters">
+              <i class="fas fa-funnel"></i> Toggle Filters
+            </button>
+          </p>
+
           <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
             {% include "includes/file_table.html" %}
           </div>
