@@ -8,6 +8,9 @@ from django.utils.safestring import mark_safe
 from files.models import LicenseChoices
 from files.models import license_urls
 from utils.filters import filter_button
+from utils.tables import BPBooleanColumn
+from utils.tables import BPColumn
+from utils.tables import OverflowColumn
 
 from .models import BaseFile
 
@@ -16,17 +19,33 @@ class FileTable(tables.Table):
     """Defines the django-tables2 used to show files."""
 
     selection = tables.CheckBoxColumn(accessor="pk", orderable=False)
-    uuid = tables.Column(linkify=True, verbose_name="File UUID")
+    uuid = OverflowColumn(linkify=True, verbose_name="File UUID")
     thumbnail = tables.TemplateColumn(
         verbose_name="Thumbnail",
         template_name="includes/file_thumbnail_pswp.html",
         extra_context={"width": 100, "ratio": "1/1"},
     )
-    albums = tables.Column(verbose_name="Albums")
-    uploader = tables.Column(linkify=True)
-    hitcount = tables.Column(verbose_name="Hits")
-    jobs = tables.Column(verbose_name="Jobs")
+    title = tables.Column(verbose_name="Title")
     mimetype = tables.Column(verbose_name="File Type")
+    attribution = OverflowColumn(verbose_name="Attribution")
+    uploader = tables.Column(linkify=True)
+
+    # only show on 3xl and up
+    file_size = BPColumn(bp="3xl", verbose_name="File Size")
+
+    # only show on 4xl and up
+    albums = BPColumn(bp="4xl", verbose_name="Albums")
+    license = BPColumn(bp="4xl", verbose_name="License")
+
+    # only show on 5xl and up
+    tags = BPColumn(bp="5xl", verbose_name="Tags")
+    hitcount = BPColumn(bp="5xl", verbose_name="Hits")
+
+    # only show on 6xl and up
+    jobs = BPColumn(bp="6xl", verbose_name="Jobs")
+    approved = BPBooleanColumn(bp="6xl")
+    published = BPBooleanColumn(bp="6xl")
+    deleted = BPBooleanColumn(bp="6xl")
 
     def render_title(self, value: str) -> str:
         """Render title with a filter button."""
