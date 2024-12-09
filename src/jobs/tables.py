@@ -24,7 +24,7 @@ class JobTable(tables.Table):
         """Define model, template, fields."""
 
         model = BaseJob
-        template_name = "django_tables2/bootstrap.html"
+        template_name = "django_tables2/bootstrap5.html"
         fields = (
             "uuid",
             "basefile",

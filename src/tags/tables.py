@@ -24,7 +24,7 @@ class TagTable(tables.Table):
         """Define model, template, fields."""
 
         model = BmaTag
-        template_name = "django_tables2/bootstrap.html"
+        template_name = "django_tables2/bootstrap5.html"
         fields = (
             "name",
             "weight",
@@ -43,7 +43,7 @@ class TaggingTable(tables.Table):
         """Define model, template, fields."""
 
         model = TaggedFile
-        template_name = "django_tables2/bootstrap.html"
+        template_name = "django_tables2/bootstrap5.html"
         fields = (
             "tagger",
             "tag__name",

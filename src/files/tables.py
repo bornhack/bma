@@ -115,7 +115,7 @@ class FileTable(tables.Table):
         """Define model, template, fields."""
 
         model = BaseFile
-        template_name = "django_tables2/bootstrap.html"
+        template_name = "django_tables2/bootstrap5.html"
         fields = (
             "selection",
             "uuid",
