@@ -1,0 +1,26 @@
+{% load static %}
+{% load django_bootstrap5 %}
+<div class="card">
+  <h5 class="card-header">Filter Albums
+    <button class="btn btn-secondary float-end me-1" type="button" data-bs-toggle="collapse" data-bs-target="#AlbumFilters" aria-expanded="false" aria-controls="AlbumFilters"><i class="fas fa-times"></i></button>
+  </h5>
+  <div class="card-body">
+    <p class="lead">Showing {{ filter.qs.count }} of {{ albums.count }} albums</p>
+
+    <form method="get">
+      <div class="row">
+        <div class="btn-group mb-3" role="group">
+          <a class="btn btn-secondary" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
+          <button class="btn btn-success" type="submit"><i class="fas fa-search"></i> Submit Query</button>
+        </div>
+      </div>
+      {% bootstrap_form filter.form %}
+      <div class="row">
+        <div class="btn-group" role="group">
+          <a class="btn btn-secondary" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
+          <button class="btn btn-success" type="submit"><i class="fas fa-search"></i> Submit Query</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

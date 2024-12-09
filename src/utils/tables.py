@@ -62,3 +62,19 @@ class OverflowColumn(tables.Column):
             }
         )
         super().__init__(*args, **kwargs)
+
+
+class BPOverflowColumn(tables.Column):
+    """A breakpoint column type that permits text to break in any place."""
+
+    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+        """Add classes."""
+        if "attrs" not in kwargs:
+            kwargs["attrs"] = {}
+        kwargs["attrs"].update(
+            {
+                "th": {"class": f"d-none d-{bp}-table-cell"},
+                "td": {"class": f"d-none d-{bp}-table-cell text-break"},
+            }
+        )
+        super().__init__(*args, **kwargs)

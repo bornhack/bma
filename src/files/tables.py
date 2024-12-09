@@ -10,6 +10,7 @@ from files.models import license_urls
 from utils.filters import filter_button
 from utils.tables import BPBooleanColumn
 from utils.tables import BPColumn
+from utils.tables import BPOverflowColumn
 from utils.tables import OverflowColumn
 
 from .models import BaseFile
@@ -19,23 +20,23 @@ class FileTable(tables.Table):
     """Defines the django-tables2 used to show files."""
 
     selection = tables.CheckBoxColumn(accessor="pk", orderable=False)
-    uuid = OverflowColumn(linkify=True, verbose_name="File UUID")
+    uuid = BPOverflowColumn(bp="xxl", linkify=True, verbose_name="File UUID")
     thumbnail = tables.TemplateColumn(
         verbose_name="Thumbnail",
         template_name="includes/file_thumbnail_pswp.html",
         extra_context={"width": 100, "ratio": "1/1"},
     )
-    title = tables.Column(verbose_name="Title")
+    title = OverflowColumn(verbose_name="Title")
     mimetype = tables.Column(verbose_name="File Type")
     attribution = OverflowColumn(verbose_name="Attribution")
-    uploader = tables.Column(linkify=True)
 
     # only show on 3xl and up
+    albums = BPOverflowColumn(bp="3xl", verbose_name="Albums")
     file_size = BPColumn(bp="3xl", verbose_name="File Size")
 
     # only show on 4xl and up
-    albums = BPColumn(bp="4xl", verbose_name="Albums")
     license = BPColumn(bp="4xl", verbose_name="License")
+    uploader = BPColumn(bp="4xl", linkify=True)
 
     # only show on 5xl and up
     tags = BPColumn(bp="5xl", verbose_name="Tags")
@@ -47,15 +48,21 @@ class FileTable(tables.Table):
     published = BPBooleanColumn(bp="6xl")
     deleted = BPBooleanColumn(bp="6xl")
 
-    def render_title(self, value: str) -> str:
+    def render_uuid(self, value: str) -> str:
+        """Render uuid with linebreaks."""
+        return mark_safe(str(value).replace("-", "-<br>"))  # noqa: S308
+
+    def render_title(self, record: "BaseFile", value: str) -> str:
         """Render title with a filter button."""
-        return filter_button(text=value, request=self.request, title__icontains=value)
+        return filter_button(
+            text=f'<a href="{record.get_absolute_url()}">{value}</a>', request=self.request, title__icontains=value
+        )
 
     def render_albums(self, record: BaseFile) -> str:
         """Render albums as a list of links."""
         output = ""
         for album in record.active_albums_list:
-            url = reverse("albums:album_table", kwargs={"album_uuid": album.pk})
+            url = reverse("albums:album_detail_table", kwargs={"album_uuid": album.pk})
             output += filter_button(
                 text=f'<a href="{url}">{album.title}&nbsp;({len(album.active_files_list)})</a><br>',
                 request=self.request,
@@ -119,8 +126,8 @@ class FileTable(tables.Table):
         fields = (
             "selection",
             "uuid",
-            "thumbnail",
             "title",
+            "thumbnail",
             "mimetype",
             "file_size",
             "albums",

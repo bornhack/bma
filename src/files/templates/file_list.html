@@ -13,14 +13,18 @@
   <div class="row">
 
     <!-- Sidebar with file filters start -->
+    <div class="col-xl-2 col-12 collapse collapse-horizontal" id="FileFilters">
     {% include "includes/file_filters.html" %}
+    </div>
     <!-- Sidebar with file filters end -->
 
     <!-- Main content -->
     <div class="col">
       <h1>Files</h1>
       <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
+      {% block file_list %}
         {% include "includes/file_table.html" %}
+      {% endblock file_list %}
       </div>
     </div>
   </div>

@@ -72,6 +72,10 @@ class FileListView(SingleTableMixin, FilterView):
     filterset_class = FileFilter
     context_object_name = "files"
 
+    def get_template_names(self) -> list[str]:
+        """Template name depends on the type of listview."""
+        return [f"{self.request.resolver_match.url_name}.html"]
+
     def get_queryset(self, queryset: models.QuerySet[BaseFile] | None = None) -> models.QuerySet[BaseFile]:
         """Use bmanager to get juicy file objects."""
         return BaseFile.bmanager.all()  # type: ignore[no-any-return]
@@ -80,6 +84,8 @@ class FileListView(SingleTableMixin, FilterView):
         """Add form to the context."""
         context = super().get_context_data(**kwargs)
         context["file_action_form"] = FileMultipleActionForm()
+        context["grid_url"] = reverse("files:file_list_grid")
+        context["table_url"] = reverse("files:file_list_table")
         return context  # type: ignore[no-any-return]
 
 

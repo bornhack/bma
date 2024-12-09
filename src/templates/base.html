@@ -58,7 +58,7 @@
               <ul class="navbar-nav me-auto mb-2 mb-md-0">
                   {# frontpage / files / albums #}
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "frontpage" %} active{% endif %}" aria-current="page" href="{% url 'frontpage:frontpage' %}">Frontpage</a></li>
-                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list_table" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a></li>
 
                 {# upload / manage links #}

@@ -1,0 +1,89 @@
+{% load guardian_tags %}
+      <!-- album information -->
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Album Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between mb-3">
+                <div class="col">
+                  {% get_obj_perms request.user for album as "album_perms" %}
+                  {% if "change_album" in album_perms %}
+                  <div class="btn-group">
+                    <a class="btn btn-primary" href="{% url 'albums:album_update' album_uuid=album.pk %}">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                      <small>Edit</small>
+                    </a>
+                    <a class="btn btn-success" href="{% url 'albums:album_add_files' album_uuid=album.pk %}">
+                      <i class="fa-solid fa-plus"></i>
+                      <small>Files</small>
+                    </a>
+                    <a class="btn btn-danger" href="{% url 'albums:album_remove_files' album_uuid=album.pk %}">
+                      <i class="fa-solid fa-minus"></i>
+                      <small>Files</small>
+                    </a>
+                  </div>
+                  {% endif %}
+
+                  <small class="d-block">Title</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.title }}</div>
+
+                  <small class="d-block">UUID</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.uuid }}</div>
+
+                  <small class="d-block">Files</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.active_files_list|length }}</div>
+
+                  <small class="d-block">Owner</small>
+                  <div class="ms-2 mb-1 fw-bolder"><a href="{% url 'users:user_profile' user_handle=album.owner.handle %}">{{ album.owner }}</a></div>
+
+                  <small class="d-block">Hits</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.hits.count }}</div>
+
+                  <small class="d-block">Created</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.created_at }}</div>
+
+                  <small class="d-block">Updated</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.updated_at }}</div>
+
+                  <small class="d-block">Description</small>
+                  <div class="ms-2 mb-1 fw-bolder">{{ album.description|default:"n/a" }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- album statistics -->
+      <div class="row">
+        <div class="col mb-3">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Album Statistics</h5>
+            </div>
+            <div class="card-body">
+              <div class="row justfiy-content-between">
+                <div class="col-12">
+                  <dl class="mb-1">
+                    <dt>Licenses:</dt>
+                    <dd>
+                      <span class="badge bg-success">License_name ({{ album.active_files|length }}/100%)</span>
+                      <span class="badge bg-secondary">License_name ({{ album.active_files|length }}/100%)</span>
+                      <span class="badge bg-primary">License_name ({{ album.active_files|length }}/100%)</span>
+                    </dd>
+
+                    <dt>Attributions:</dt>
+                    <dd>
+                      <span class="badge bg-primary">{{ album.owner }} ({{ album.active_files|length }}/100%)</span>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+

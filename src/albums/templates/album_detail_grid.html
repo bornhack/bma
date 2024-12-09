@@ -1,0 +1,22 @@
+{% extends "album_detail.html" %}
+{% load humanize static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+{% endblock extra_head %}
+
+{% block album_detail %}
+<div class="row">
+  <h1>{{ album.title }}</h1>
+  <form action="{% url 'files:file_multiple_action' %}" method="POST">
+  {% include "includes/file_toolbar.html" %}
+  {% csrf_token %}
+  <div class="pswp-gallery" id="gallery">
+  {% for file in filter.qs %}
+    {% include "includes/file_thumbnail_pswp.html" with record=file width=200 ratio="1/1" %}
+  {% endfor %}
+  </div>
+  </form>
+</div>
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock album_detail %}

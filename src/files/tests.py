@@ -919,7 +919,7 @@ class TestFileViews(BmaTestBase):
     ######### FILE LIST ######################################
     def assert_file_list_rows(self, expected_rows: int, fail_message: str = "", qs: str = "") -> None:
         """Make a file_list call and count the number of table rows (files)."""
-        url = reverse("files:file_list")
+        url = reverse("files:file_list_table")
         response = self.client.get(url + qs)
         content = response.content.decode()
         soup = BeautifulSoup(content, "html.parser")
@@ -1103,7 +1103,7 @@ class TestFileViews(BmaTestBase):
         # create a new album with the 3 published files
         data = {"action": "create_album", "selection": self.files[2:5], "fromurl": "/"}
         response = self.client.post(url, data, follow=True)
-        assert "Showing 3 of 3 files in album" in response.content.decode()
+        assert "Showing 3 files" in response.content.decode()
 
         data = {"action": "add_to_album", "selection": self.files[5:10], "fromurl": "/"}
         response = self.client.post(url, data, follow=True)

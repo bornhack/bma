@@ -1,6 +1,6 @@
 <span>
 {% if record.filetype == "image" %}
-  <a class="gallerya" href="{{ record.fullsize_url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.fullsize_url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="image"
@@ -11,7 +11,7 @@
   </a>
 
 {% elif record.filetype == "video" %}
-  <a class="gallerya" href="{{ record.original.url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="video"
@@ -22,7 +22,7 @@
 
 {% elif record.filetype == "audio" %}
   {# cheat a bit and tell photoswipe this audio is a video, plyr will handle it #}
-  <a class="gallerya" href="{{ record.original.url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="video"
