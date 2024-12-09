@@ -18,8 +18,8 @@
 
       <div class="btn-group me-2 mb-3" role="group" aria-label="View type buttons">
         <span class="input-group-text">Show</span>
-        <a href="{{ grid_url }}" class="btn btn-primary"><i class="fas fa-table-cells"></i> Grid</a>
-        <a href="{{ table_url }}" class="btn btn-primary"><i class="fas fa-table-list"></i> Table</a>
+        <a href="{{ grid_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-cells"></i> Grid</a>
+        <a href="{{ table_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-list"></i> Table</a>
       </div>
 
       <div class="btn-group me-2 mb-3" role="group" aria-label="Pagination buttons">
