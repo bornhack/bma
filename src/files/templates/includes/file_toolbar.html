@@ -12,7 +12,13 @@
       <div class="input-group me-2 mb-3" role="group" aria-label="File actions form">
         <span class="input-group-text">Action</span>
         <input type="hidden" name="fromurl" value="{{ request.path }}{% querystring %}"></input>
-        {% bootstrap_field file_action_form.action show_label=False wrapper_class="" %}
+        {# not using bootstrap_field to get the styling just right #}
+        <label class="visually-hidden" for="id_action">Action</label><select name="action" class="form-select" required="" id="id_action">
+          <option value="" selected="">----</option>
+          <option value="create_album">Create New Album With Files</option>
+          <option value="add_to_album">Add Files To Existing Album</option>
+          <option value="remove_from_album">Remove Files From Existing Album</option>
+        </select>
         <button type="submit" class="btn btn-success">Do it</button>
       </div>
 
