@@ -38,7 +38,8 @@ class BaseFileManager(PolymorphicManager):
             .prefetch_related("thumbnails")
             .prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))
             .prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))
-        )
+            # ordering by BaseFile Meta gets lost :(
+        ).order_by("created_at")
 
 
 class BaseFileQuerySet(PolymorphicQuerySet):

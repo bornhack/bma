@@ -494,6 +494,19 @@ class TestFilesApi(BmaTestBase):
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 0
 
+    def test_file_list_ordering(self) -> None:
+        """Make sure files are ordered by date with the oldest file first."""
+        # upload 15 files and get them all
+        [self.file_upload(title=f"title{i}") for i in range(15)]
+        response = self.client.get(reverse("api-v1-json:file_list"), headers={"authorization": self.superuser.auth})
+        latest = None
+        for f in response.json()["bma_response"]:
+            if not latest:
+                latest = f["created_at"]
+            if latest > f["created_at"]:
+                raise AssertionError(f"Files are sorted wrong! {latest} > {f['created_at']}")
+            latest = f["created_at"]
+
     def test_metadata_get(self) -> None:
         """Get file metadata from the API."""
         self.file_upload()

@@ -39,7 +39,8 @@ class AlbumManager(models.Manager):  # type: ignore[type-arg]
             .prefetch_related("hits")
             .annotate(hitcount=Count("hits", distinct=True))
             .prefetch_active_files_list(recursive=True)
-        )
+            # ordering from Album META gets lost for some reason :(
+        ).order_by("created_at")
 
 
 class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
