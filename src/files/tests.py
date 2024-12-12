@@ -533,7 +533,7 @@ class TestFilesApi(BmaTestBase):
         response = self.client.get(url)
         assert response.status_code == 200
         assert response["content-type"] == "image/png"
-        with (settings.BASE_DIR / "static_src/images/logo_wide_black_500_RGB.png").open("rb") as f:
+        with (settings.BASE_DIR / "static_src/images/file-video-solid.png").open("rb") as f:
             assert f.read() == response.getvalue()
 
     def test_file_metadata_update(self) -> None:
