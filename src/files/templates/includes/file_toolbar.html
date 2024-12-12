@@ -22,13 +22,13 @@
         <button type="submit" class="btn btn-success">Do it</button>
       </div>
 
-      <div class="btn-group me-2 mb-3" role="group" aria-label="View type buttons">
+      <div class="input-group me-2 mb-3" role="group" aria-label="View type buttons">
         <span class="input-group-text">Show</span>
         <a href="{{ grid_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-cells"></i> Grid</a>
         <a href="{{ table_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-list"></i> Table</a>
       </div>
 
-      <div class="btn-group me-2 mb-3" role="group" aria-label="Pagination buttons">
+      <div class="input-group me-2 mb-3" role="group" aria-label="Pagination buttons">
         <span class="input-group-text">Per page</span>
         <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
         <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
