@@ -1,9 +1,17 @@
 {% extends "base.html" %}
+{% load humanize static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock extra_head %}
+
 
 {% block title %}Frontpage{% endblock title %}
 
 {% block main_content %}
   <div class="row justify-content-between">
+
     <div class="col-6 mt-4">
       <div class="row">
         <div class="col-md-12 col-sm-10">
@@ -18,12 +26,10 @@
               <div class="row">
                 {% for image in 6_last_images %}
                   <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <img
-                      src="{{ image.large_thumbnail.url }}"
-                      class="w-100 rounded mb-4"
-                      alt="{{ image.name }}">
-                    </img>
+                    <div class="pswp-gallery" id="gallery">
+                    {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
                     <small class="text-wrap">{{ image.title }}</small>
+                    </div>
                   </div>
                 {% endfor %}
               </div>
@@ -31,6 +37,7 @@
           </div>
         </div>
       </div>
+
       <div class="row mt-4">
         <div class="col-md-6 col-sm-10">
           <div class="row">
@@ -44,10 +51,10 @@
               <div class="row">
                 {% for video in 6_last_videos %}
                   <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <video class="w-75">
-                      <source src="{{ video.original.url }}">
-                    </video>
+                    <div class="pswp-gallery" id="gallery">
+                    {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
                     <small class="text-wrap">{{ video.title }}</small>
+                    </div>
                   </div>
                 {% endfor %}
               </div>
@@ -55,6 +62,7 @@
           </div>
         </div>
       </div>
+
       <div class="row mt-4">
         <div class="col-md-6 col-sm-10">
           <div class="row">
@@ -79,6 +87,7 @@
           </div>
         </div>
       </div>
+
       <div class="row mt-4">
         <div class="col-md-6 col-sm-10">
           <div class="row">
@@ -102,6 +111,7 @@
         </div>
       </div>
     </div>
+
     <div class="col-4 mt-4">
       <div class="row">
         <div class="col-12">
@@ -111,18 +121,11 @@
       </div>
       <div class="row">
         <div class="col-8">
-          {% for image in 6_last_images %}
-            <div class="row">
-              <div class="col-4">
-                <img src="{{ image.large_thumbnail.url }}" class="w-75"></img>
-              </div>
-              <div class="col-8">
-                <div class="row">
-                  <strong>{{ image.name }}</strong>
-                </div>
-                <div class="row">
-                  <p>{{ image.description }}</p>
-                </div>
+          {% for image in 6_most_popular %}
+            <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+              <div class="pswp-gallery" id="gallery">
+              {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
+              <small class="text-wrap">{{ image.title }}</small>
               </div>
             </div>
           {% endfor %}
