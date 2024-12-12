@@ -167,7 +167,7 @@ class TestFilesApi(BmaTestBase):
 
         # test file size filter
         response = self.client.get(
-            reverse("api-v1-json:file_list"), data={"size": 9478}, headers={"authorization": self.creator2.auth}
+            reverse("api-v1-json:file_list"), data={"size": 8424}, headers={"authorization": self.creator2.auth}
         )
         assert len(response.json()["bma_response"]) == 20
 
@@ -1004,7 +1004,7 @@ class TestFileViews(BmaTestBase):
         self.client.login(username="moderator4", password="secret")
 
         # test file size filter
-        self.assert_file_list_rows(24, qs="?file_size=9478")
+        self.assert_file_list_rows(24, qs="?file_size=8424")
         self.assert_file_list_rows(24, qs="?file_size__lt=100000")
         self.assert_file_list_rows(0, qs="?file_size__lt=100")
         self.assert_file_list_rows(0, qs="?file_size__gt=100000")
