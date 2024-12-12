@@ -1133,7 +1133,7 @@ class TestFileViews(BmaTestBase):
     def test_file_detail_view(self) -> None:
         """Test the file detail view."""
         self.client.login(username="creator2", password="secret")
-        response = self.client.get(reverse("files:file_detail", kwargs={"file_uuid": self.files[0]}))
+        response = self.client.get(reverse("files:file_show", kwargs={"file_uuid": self.files[0]}))
         content = response.content.decode()
         assert "Image creator2 file 0" in content
 
@@ -1157,7 +1157,7 @@ class TestFileViews(BmaTestBase):
         # test GET
         response = self.client.get(url)
         content = response.content.decode()
-        assert f"Add Tags to image {self.files[0]}" in content
+        assert "Add Tags to Image" in content
 
         # add new tags
         data = {"tags": "testtag1 testtag2"}

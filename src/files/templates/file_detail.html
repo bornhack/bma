@@ -14,28 +14,18 @@
 
 {% block main_content %}
   <div class="row">
-
-    <div class="col-lg-9 col-sm-12">
-      <div class="row">
-        <div class="col">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="card-title">{{ file.filetype|capfirst }} {{ file.title }}</h5>
-            </div>
-            {% block file_detail %}
-            {% endblock file_detail %}
-          </div>
-        </div>
-      </div>
+    <div class="col mb-3 mb-xl-0">
+      {% block file_detail %}
+      {% endblock file_detail %}
     </div>
 
     <!-- Sidebar start -->
-    <div class="col-sm-12 col-lg-3">
+    <div class="col-xl-3 col-12">
       <div class="row">
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-                <h5 class="card-title">{{ file.filetype|capfirst }} Information<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_detail' file_uuid=file.uuid %}"><i class="{{ file.filetype_icon }}"></i> Show {{ file.filetype|capfirst }}</a></h5>
+                <h5 class="card-title">{{ file.filetype|capfirst }} Information<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_show' file_uuid=file.uuid %}"><i class="{{ file.filetype_icon }}"></i> Show {{ file.filetype|capfirst }}</a></h5>
             </div>
             <div class="card-body">
               <div class="row justfiy-content-between">
@@ -81,7 +71,7 @@
                     <dd class="col-sm-9">{{ file.updated_at }}</dd>
 
                     <dt class="col-sm-3">Jobs</dt>
-                    <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">{{ file.jobs.count }}</a></dd>
+                    <dd class="col-sm-9"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">Show {{ file.jobs.count }} jobs</a></dd>
 
                   </dl>
                 </div>
@@ -161,7 +151,7 @@
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-              <h5 class="card-title">Albums<a class="btn btn-secondary btn-xs float-end" href="{% url 'albums:album_list' %}?files={{ file.uuid }}"><i class="fas fa-list"></i> Album List</a></h5>
+              <h5 class="card-title">Albums<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_albums' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Show Albums</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% for album in file.active_albums_list %}
@@ -177,7 +167,7 @@
         <div class="col mb-3">
           <div id="tag-card" class="card">
             <div class="card-header">
-                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Tag List</a></h5>
+                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Show Tags</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% if file.tags.exists %}

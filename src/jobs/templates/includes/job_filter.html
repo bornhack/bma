@@ -1,36 +1,24 @@
 {% load django_bootstrap5 %}
-      <div class="card">
-        <h5 class="card-header">Filter Info</h5>
-        <div class="card-body">
-          <p class="lead">Showing {{ filter.qs.count }} of {{ total_jobs }} jobs.</p>
-          <div class="lead">Per page:
-          <div class="btn-group" role="group" aria-label="Per page">
-            <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-            <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-            <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
-          </div>
-        </div>
-        </div>
-      </div>
-      <br>
-      <div class="card">
-        <h5 class="card-header">Filter Jobs</h5>
-        <div class="card-body">
-          <form method="get">
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-            {% bootstrap_form filter.form %}
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-          </form>
+<div class="card">
+  <h5 class="card-header">Filter Jobs
+    <button class="btn btn-secondary float-end me-1" type="button" data-bs-toggle="collapse" data-bs-target="#JobFilters" aria-expanded="false" aria-controls="JobFilters"><i class="fas fa-times"></i></button>
+  </h5>
+  <div class="card-body">
+    <p class="lead">Showing {{ filter.qs.count }} of {{ total_jobs }} jobs.</p>
+    <form method="get">
+      <div class="row">
+        <div class="btn-group" role="group">
+          <a class="btn btn-secondary" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
+          <button class="btn btn-success" type="submit"><i class="fas fa-search"></i> Submit Query</button>
         </div>
       </div>
-
+      {% bootstrap_form filter.form %}
+      <div class="row">
+        <div class="btn-group" role="group">
+          <a class="btn btn-secondary" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
+          <button class="btn btn-success" type="submit"><i class="fas fa-search"></i> Submit Query</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

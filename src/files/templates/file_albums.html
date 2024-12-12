@@ -1,0 +1,27 @@
+{% extends "file_detail.html" %}
+{% load render_table from django_tables2 %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% load humanize %}
+{% block title %}File albums{% endblock title %}
+
+{% block file_detail %}
+<h1>{{ file.filetype|capfirst }} {{ file.title }} Albums</h1>
+<div class="row">
+
+  <!-- album filter sidebar -->
+  <div class="col-xxl-2 col-12 mb-3 collapse collapse-horizontal" id="AlbumFilters">
+  {% include "includes/album_filters.html" %}
+  </div>
+
+  <!-- main album table -->
+  <div class="col">
+    {% include "includes/album_toolbar.html" %}
+    {% if filter.qs.count %}
+    {% render_table table %}
+    {% else %}
+    <h2>No albums found</h2>
+    {% endif %}
+  </div>
+</div>
+{% endblock file_detail %}

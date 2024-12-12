@@ -6,16 +6,16 @@ from django.db import models
 from django.db.models import Count
 from django.utils import timezone
 from guardian.shortcuts import get_objects_for_user
-from polymorphic.managers import PolymorphicManager
-from polymorphic.managers import PolymorphicQuerySet
 
 from users.models import UserType
+from utils.polymorphic_related import RelatedPolymorphicManager
+from utils.polymorphic_related import RelatedPolymorphicQuerySet
 
 if TYPE_CHECKING:
     from .models import BaseFile
 
 
-class BaseFileManager(PolymorphicManager):
+class BaseFileManager(RelatedPolymorphicManager):
     """Custom manager for file operations."""
 
     def get_queryset(self) -> models.QuerySet["BaseFile"]:
@@ -42,7 +42,7 @@ class BaseFileManager(PolymorphicManager):
         ).order_by("created_at")
 
 
-class BaseFileQuerySet(PolymorphicQuerySet):
+class BaseFileQuerySet(RelatedPolymorphicQuerySet):
     """Custom queryset for bmanager file operations."""
 
     def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:

@@ -226,7 +226,7 @@ class BaseFile(PolymorphicModel):
 
     def get_absolute_url(self) -> str:
         """The detail url for the file."""
-        return reverse("files:file_detail", kwargs={"file_uuid": self.pk})
+        return reverse("files:file_show", kwargs={"file_uuid": self.pk})
 
     def resolve_links(self, request: HttpRequest | None = None) -> dict[str, str | dict[str, str]]:
         """Return a dict of links for various actions on this object.

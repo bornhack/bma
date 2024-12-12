@@ -4,7 +4,10 @@ import django_tables2 as tables
 from django.utils.safestring import mark_safe
 
 from utils.filters import filter_button
-from utils.tables import LocalTimeColumn
+from utils.tables import BPBooleanColumn
+from utils.tables import BPColumn
+from utils.tables import BPLocalTimeColumn
+from utils.tables import BPOverflowColumn
 
 from .models import BaseJob
 
@@ -12,13 +15,29 @@ from .models import BaseJob
 class JobTable(tables.Table):
     """Defines the django-tables2 used to show jobs."""
 
-    uuid = tables.Column(verbose_name="Job UUID")
+    uuid = BPOverflowColumn(bp="lg", verbose_name="Job UUID")
     basefile = tables.Column(verbose_name="File", linkify=True)
     job_type = tables.Column(verbose_name="Job Type")
-    user = tables.Column(linkify=True)
     result_url = tables.Column(verbose_name="Result url")
-    created_at = LocalTimeColumn()
-    updated_at = LocalTimeColumn()
+
+    # show only at xxl and up
+    width = BPColumn(bp="xxl")
+    height = BPColumn(bp="xxl")
+    filetype = BPColumn(bp="xxl")
+    custom_aspect_ratio = BPColumn(bp="xxl", verbose_name="Custom AR")
+    source_url = BPColumn(bp="xxl")
+
+    # show only at 3xl and up
+    finished = BPBooleanColumn(bp="3xl")
+
+    # show only at 4xl and up
+    user = BPColumn(bp="4xl", linkify=True)
+
+    # show only at 5xl and up
+    client_uuid = BPColumn(bp="5xl")
+    client_version = BPOverflowColumn(bp="5xl")
+    created_at = BPLocalTimeColumn(bp="5xl")
+    updated_at = BPLocalTimeColumn(bp="5xl")
 
     class Meta:
         """Define model, template, fields."""
@@ -29,16 +48,19 @@ class JobTable(tables.Table):
             "uuid",
             "basefile",
             "job_type",
+            "result_url",
+            # xxl
             "width",
             "height",
             "filetype",
             "custom_aspect_ratio",
+            # 3xl
             "source_url",
-            "result_url",
+            "finished",
+            # 4xl
             "user",
             "client_uuid",
             "client_version",
-            "finished",
             "created_at",
             "updated_at",
         )

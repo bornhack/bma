@@ -11,6 +11,9 @@ from ninja.files import UploadedFile
 from polymorphic.models import PolymorphicModel
 
 from utils.models import NP_CASCADE
+from utils.polymorphic_related import RelatedPolymorphicManager
+
+from .managers import JobManager
 
 logger = logging.getLogger("bma")
 
@@ -34,6 +37,10 @@ class FiletypeUnsupportedError(Exception):
 
 class BaseJob(PolymorphicModel):
     """Base model to represent file processing jobs."""
+
+    objects = RelatedPolymorphicManager()
+
+    bmanager = JobManager()
 
     uuid = models.UUIDField(
         primary_key=True,

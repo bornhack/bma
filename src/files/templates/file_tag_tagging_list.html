@@ -1,29 +1,11 @@
-{% extends "base.html" %}
+{% extends "file_detail.html" %}
 {% load django_bootstrap5 %}
 {% load render_table from django_tables2 %}
 
 {% block title %}Tag '{{ tag.name }}' Taggings{% endblock title %}
 
-{% block main_content %}
-  <div class="row">
-    <div class="card">
-        <h5 class="card-header">Taggings with tag '{{ tag.name }}' for {{ file.filetype|capfirst }} {{ file.pk }}</h5>
-      <div class="card-body">
-        <p>
-        <div class="btn-group">
-          <a class="btn btn-primary" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-arrow-left"></i> Back to file taggings</a>
-          <a class="btn btn-primary" href="{% url 'files:file_detail' file_uuid=file.uuid %}"><i class="fas fa-arrow-left"></i> Back to file details</a>
-        </div>
-        </p>
-      <div class="lead">Per page:
-      <div class="btn-group" role="group" aria-label="Per page">
-        <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-        <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-        <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
-      </div>
-      </div>
-      {% render_table table %}
-      </div>
-    </div>
-  </div>
-{% endblock main_content %}
+{% block file_detail %}
+<h1>Taggings with '{{ tag.name }}' for {{ file.filetype|capfirst }} {{ file.pk }}</h1>
+{% include "includes/taggings_toolbar.html" %}
+{% render_table table %}
+{% endblock file_detail %}
