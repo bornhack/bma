@@ -28,3 +28,5 @@ The BornHack Media Archive is a site for sharing pictures and video from BornHac
 
 
 It should now be possible to login to BMA using a BornHack account.
+
+To use the CLI app for uploading or BMA workers make sure the url of the autocreated oauth application for the user matches the BMA instance (for localhost dev change https to http).
