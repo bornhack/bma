@@ -13,7 +13,7 @@
   {% csrf_token %}
   <div class="pswp-gallery" id="gallery">
   {% for file in filter.qs %}
-    {% include "includes/file_thumbnail_pswp.html" with record=file width=200 ratio="1/1" %}
+    {% include "includes/file_thumbnail_pswp.html" with record=file width=150 ratio="1/1" %}
   {% endfor %}
   </div>
   </form>

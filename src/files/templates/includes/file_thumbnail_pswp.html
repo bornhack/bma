@@ -17,7 +17,7 @@
     data-pswp-type="video"
     data-pswp-width="1280"
     data-pswp-height="1024">
-      {% thumbnail record width=width ratio="16/9" %}
+      {% thumbnail record width=width ratio=ratio %}
   </a>
 
 {% elif record.filetype == "audio" %}
@@ -28,12 +28,12 @@
     data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480">
-      {% thumbnail record width=width ratio="1/1" %}
+      {% thumbnail record width=width ratio=ratio %}
   </a>
 
 {% else %}
   {# do not include documents in photoswipe gallery for now #}
-  {% thumbnail record width=width ratio="1/1" %}
+  {% thumbnail record width=width ratio=ratio %}
 {% endif %}
 {% include "includes/file_pswp_caption.html" with file=record %}
 </span>
