@@ -82,11 +82,20 @@ def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "ima
 
     title = basefile.original_filename
     alt = basefile.description or basefile.original_filename
-    return mark_safe(  # noqa: S308
-        f'<img srcset="{url}{url2x}" src="{url}" '
-        f'height="{t.height}" width="{width}" title="{title}" '
-        f'alt="{alt}" class="img-fluid img-thumbnail">'
+    hoverclass = "zoom" if basefile.filetype in ["image", "document"] else "play"
+    tmpl = loader.get_template("thumbnail.html")
+    output = tmpl.render(
+        {
+            "url": url,
+            "url2x": url2x,
+            "hoverclass": hoverclass,
+            "width": width,
+            "height": t.height,
+            "title": title,
+            "alt": alt,
+        }
     )
+    return mark_safe(output)  # noqa: S308
 
 
 @register.simple_tag()

@@ -25,6 +25,9 @@ class FileTable(tables.Table):
         verbose_name="Thumbnail",
         template_name="includes/file_thumbnail_pswp.html",
         extra_context={"width": 100, "ratio": "1/1"},
+        attrs={
+            "td": {"class": "align-middle"},
+        },
     )
     title = OverflowColumn(verbose_name="Title")
     mimetype = tables.Column(verbose_name="File Type")
@@ -47,10 +50,6 @@ class FileTable(tables.Table):
     approved = BPBooleanColumn(bp="6xl")
     published = BPBooleanColumn(bp="6xl")
     deleted = BPBooleanColumn(bp="6xl")
-
-    def render_uuid(self, value: str) -> str:
-        """Render uuid with linebreaks."""
-        return mark_safe(str(value).replace("-", "-<br>"))  # noqa: S308
 
     def render_title(self, record: "BaseFile", value: str) -> str:
         """Render title with a filter button."""
