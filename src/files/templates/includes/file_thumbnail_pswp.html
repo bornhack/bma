@@ -33,7 +33,7 @@
 
 {% else %}
   {# do not include documents in photoswipe gallery for now #}
-  {% thumbnail record width=width ratio="16/9" %}
+  {% thumbnail record width=width ratio="1/1" %}
 {% endif %}
 {% include "includes/file_pswp_caption.html" with file=record %}
 </span>
