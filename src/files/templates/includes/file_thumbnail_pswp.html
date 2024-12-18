@@ -31,9 +31,15 @@
       {% thumbnail record width=width ratio=ratio %}
   </a>
 
-{% else %}
-  {# do not include documents in photoswipe gallery for now #}
-  {% thumbnail record width=width ratio=ratio %}
+{% elif record.filetype == "document" %}
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
+    data-bma-file-uuid="{{ record.uuid }}"
+    data-bma-file-orig-url="{{ record.original.url }}"
+    data-pswp-type="document"
+    data-pswp-width="1920"
+    data-pswp-height="1080">
+      {% thumbnail record width=width ratio=ratio %}
+  </a>
 {% endif %}
 {% include "includes/file_pswp_caption.html" with file=record %}
 </span>

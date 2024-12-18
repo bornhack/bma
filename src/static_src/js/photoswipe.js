@@ -127,6 +127,39 @@ lightbox.on('close', () => {
   history.replaceState(undefined, '', window.location.pathname + window.location.search);
 });
 
+
+///////////////////////////////////////////////////////////////////////////////
+// parse data-bma-file-orig-url attribute
+lightbox.addFilter('itemData', (itemData, index) => {
+  const bmaFileOrigUrl = itemData.element.dataset.bmaFileOrigUrl;
+  if (bmaFileOrigUrl) {
+    itemData.bmaFileOrigUrl = bmaFileOrigUrl;
+  }
+  return itemData;
+});
+
+// override slide content
+lightbox.on('contentLoad', (e) => {
+    const { content } = e;
+    if (content.type === 'document') {
+      console.log("DOCUMENT");
+      // prevent the deafult behavior
+      e.preventDefault();
+
+      // Create a container for iframe
+      // and assign it to the `content.element` property
+      content.element = document.createElement('div');
+      content.element.className = 'pswp__document-container';
+
+      const iframe = document.createElement('iframe');
+      //iframe.setAttribute('allowfullscreen', '');
+      iframe.src = content.data.bmaFileOrigUrl;
+      content.element.appendChild(iframe);
+    }
+});
+
+
+
 // initialise the lightbox
 lightbox.init();
 
