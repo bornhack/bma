@@ -15,11 +15,12 @@ class BMATagManager(_TaggableManager):
     """Custom taggit manager to include tagging user in lookup_kwargs, which is used to find through relations."""
 
     def get_queryset(self, *args: str) -> models.QuerySet[BmaTag]:
-        """Always annotate tags with weight, and order by weight, name, created_at."""
+        """Prefetch and annotate."""
         return (  # type: ignore[no-any-return]
             super()
             .get_queryset()
             .prefetch_related("hits")
+            .prefetch_related("taggings__tagger")
             .annotate(hitcount=Count("hits", distinct=True))
             .annotate(
                 weight=models.Count("name"),

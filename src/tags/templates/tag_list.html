@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% block title %}Tag list{% endblock title %}
+
+{% block main_content %}
+<div class="row">
+
+  <!-- Sidebar with tag filters start -->
+  <div id="TagFilters" class="col-xl-2 col-12 collapse collapse-horizontal">
+  {% include "includes/tag_filter.html" %}
+  </div>
+  <!-- Sidebar with tag filters end -->
+
+  <!-- Main content start -->
+  <div class="col">
+    <h1>Tags</h1>
+    {% include "includes/tag_list_table.html" %}
+  </div>
+  <!-- Main content end -->
+</div>
+{% endblock main_content %}

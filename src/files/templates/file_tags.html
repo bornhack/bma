@@ -1,6 +1,5 @@
 {% extends "file_detail.html" %}
 {% load django_bootstrap5 %}
-{% load render_table from django_tables2 %}
 
 {% block title %}File Tags{% endblock title %}
 
@@ -8,18 +7,16 @@
 <h1>{{ file.filetype|capfirst }} {{ file.title }} Tags</h1>
 <div class="row">
 
-  <!-- tag filter sidebar -->
-  <div class="col-xxl-2 col-12 collapse collapse-horizontal" id="TagFilters">
+  <!-- tag filter sidebar start -->
+  <div class="col-3xl-2 col-12 collapse collapse-horizontal" id="TagFilters">
   {% include "includes/tag_filter.html" %}
   </div>
+  <!-- tag filter sidebar end -->
 
-  <!-- main tag table -->
-  {% include "includes/tag_toolbar.html" %}
-  {% if not filter.qs.count %}
-    <h2>No tags found</h2>
-    <p><a class="btn btn-success" href="{% url 'files:file_tag_create' file_uuid=file.uuid %}"><i class="fas fa-plus"></i> Add new tags</a></p>
-  {% else %}
-    {% render_table table %}
-  {% endif %}
+  <!-- Main content start -->
+  <div class="col">
+    {% include "includes/tag_list_table.html" %}
+  </div>
+  <!-- Main content end -->
 </div>
 {% endblock file_detail %}

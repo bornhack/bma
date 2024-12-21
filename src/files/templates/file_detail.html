@@ -55,7 +55,7 @@
                     <small class="d-block">Uploader</small>
                     <div class="ms-2 mb-1 fw-bolder"><a href="{{ file.uploader.get_absolute_url }}">{{ file.uploader }}</a></div>
 
-                    <small class="d-block">BMA UUID</small>
+                    <small class="d-block">BMA File ID</small>
                     <div class="ms-2 mb-1 fw-bolder">{{ file.uuid }}</div>
 
                     <small class="d-block">Hits</small>
@@ -64,10 +64,10 @@
                     <small class="d-block">Original Filename</small>
                     <div class="ms-2 mb-1 fw-bolder">{{ file.original_filename }}</div>
 
-                    <small class="d-block">Created (uploaded)</small>
+                    <small class="d-block">Uploaded</small>
                     <div class="ms-2 mb-1 fw-bolder">{{ file.created_at }}</div>
 
-                    <small class="d-block">Updated</small>
+                    <small class="d-block">Last Metadata Update</small>
                     <div class="ms-2 mb-1 fw-bolder">{{ file.updated_at }}</div>
 
                     <small class="d-block">Jobs</small>

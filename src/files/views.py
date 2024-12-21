@@ -334,9 +334,13 @@ class FileTagListView(FileViewMixin, SingleTableMixin, FilterView):
     filterset_class = TagFilter
     context_object_name = "tags"
 
+    def get_table_kwargs(self) -> dict[str, BaseFile | tuple[str, str, str]]:
+        """Exclude columns which don't make sense in context of a single file."""
+        return {"basefile": self.file, "exclude": ("tagged_files", "taggings", "taggings_per_file")}
+
     def get_queryset(self, queryset: models.QuerySet[BmaTag] | None = None) -> models.QuerySet[BmaTag]:
         """Get tags for this file."""
-        return self.file.tags.annotate(taggedfile_uuid=models.Value(self.file.uuid)).all()  # type: ignore[no-any-return]
+        return BmaTag.objects.filter(taggings__content_object=self.file).annotate(weight=models.Count("name"))  # type: ignore[no-any-return]
 
 
 class FileTagCreateView(CuratorGroupRequiredMixin, FileViewMixin, FormView):  # type: ignore[type-arg]

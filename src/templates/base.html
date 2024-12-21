@@ -59,6 +59,7 @@
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "frontpage" %} active{% endif %}" aria-current="page" href="{% url 'frontpage:frontpage' %}">Frontpage</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list_table" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "tag_list" %} active{% endif %}" href="{% url 'tags:tag_list' %}">Tags</a></li>
 
                 {# upload / manage links #}
                 {% if not request.user.is_anonymous %}
