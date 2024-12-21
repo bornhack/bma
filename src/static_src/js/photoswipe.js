@@ -61,7 +61,7 @@ const fullscreenPlugin = new PhotoSwipeFullscreen(lightbox);
 lightbox.on('uiRegister', function() {
   lightbox.pswp.ui.registerElement({
     name: 'bulletsIndicator',
-    className: 'pswp__bullets-indicator',
+    className: 'pswp__bullets-indicator d-none d-sm-flex',
     appendTo: 'wrapper',
     onInit: (el, pswp) => {
       // skip bullets if there is only 1 file

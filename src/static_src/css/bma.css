@@ -1,29 +1,15 @@
+/* why is this here? */
 main > .container {
     padding: 60px 15px 0;
 }
 
-/* make images not be too tall maybe */
-.card-img-top {
-    width: 100%;
-    height: 10vw;
-    text-align: center;
-}
-
-.license-card .card-title {
-  min-height: 2.5em;
-}
-
-
 /* photoswipe captions start
  * https://photoswipe.com/caption/
  * */
-
 .pswp__custom-caption {
   background: rgba(75, 150, 75, 0.75);
   font-size: 16px;
   color: #fff;
-  /* width: calc(100% - 32px); */
-  /* max-width: 600px; */
   padding: 2px 8px;
   border-radius: 4px;
   position: absolute;
@@ -39,6 +25,9 @@ main > .container {
   display: none;
 }
 
+.pswp__dynamic-caption--mobile {
+    display: none;
+}
 /* photoswipe captions end */
 
 
@@ -66,15 +55,6 @@ main > .container {
   background: green;
 }
 /* photoswipe bullets end */
-
-/* photoswipe autohideui start */
-.pswp__dynamic-caption--aside,
-.pswp__dynamic-caption--below,
-.pswp__bullets-indicator
-{
-  opacity: 1 !important;
-}
-/* photoswipe autohideui end */
 
 
 /* photoswipe iframe styling start */
