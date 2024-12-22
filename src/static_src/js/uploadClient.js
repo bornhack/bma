@@ -105,8 +105,12 @@ class UploadClient {
    */
   async resize(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
+      let quality = 0.6;
+      if (type in this.config.encoding.images) {
+        quality = this.config.encoding.images[type].quality / 100;
+      }
       new Compressor(file, {
-        quality: 0.6,
+        quality: quality,
         maxWidth: width,
         maxHeight: height,
         mimeType: type,
@@ -133,20 +137,24 @@ class UploadClient {
    */
   async crop(file, width, height, type = 'image/png') {
     return new Promise((resolve, reject) => {
+      let quality = 0.6;
+      if (type in this.config.encoding.images) {
+        quality = this.config.encoding.images[type].quality / 100;
+      }
       new Compressor(file, {
-        quality: 0.6,  
+        quality: quality,
         width: width,
         height: height,
         mimeType: type,
-        convertSize: 50000000,
+        convertSize: -1,
         resize: 'cover',
         success(result) {
           resolve(result);
         },             
-        error(err) {                
+        error(err) {
           console.log(err.message);
           reject(err);
-        },                          
+        },
       });
     });
   }
@@ -219,11 +227,11 @@ class UploadClient {
         this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
           return this.crop(this.source_file_store[job.source_url], job.width, job.height, job.mimetype).then(img=> {
-            this.uploadJobResult(job, img, filename)
+            this.uploadJobResult(job, img, filename, {"width": job.width, "height": job.height, "mimetype": job.mimetype})
           });
         else
           return this.resize(this.source_file_store[job.source_url], job.width, job.height, job.mimetype).then(img=> {
-            this.uploadJobResult(job, img, filename)
+            this.uploadJobResult(job, img, filename, {"width": job.width, "height": job.height, "mimetype": job.mimetype})
           });
       /*
       case "ImageExifExtractionJob":
