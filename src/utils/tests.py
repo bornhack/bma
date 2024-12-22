@@ -126,7 +126,7 @@ class BmaTestBase(TestCase):
         cls,
         *,
         uploader: str = "creator2",
-        filepath: str = settings.BASE_DIR / "static_src/images/logo_wide_black_500_RGB.png",
+        filepath: str = settings.BASE_DIR / "static_src/images/file-video-solid.png",
         title: str = "some title",
         file_license: str = "CC_ZERO_1_0",
         mimetype: str = "image/png",

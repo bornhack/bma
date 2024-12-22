@@ -1,0 +1,12 @@
+{% extends "file_list.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock extra_head %}
+
+{% block file_list %}
+{% include "includes/file_table.html" %}
+{% endblock file_list %}

@@ -159,11 +159,12 @@ def upload(  # noqa: C901,PLR0913
         ts.save()
         logger.debug(f"ThumbnailSource {ts.uuid} created for file {uploaded_file.uuid}")
 
-    # create jobs
-    uploaded_file.create_jobs()
-
     # get file using the manager so the returned object has annotations
     uploaded_file = BaseFile.bmanager.get(uuid=uploaded_file.uuid)
+
+    # create jobs
+    uploaded_file.create_jobs()
+    uploaded_file.refresh_from_db()
 
     # all good
     return 201, {"bma_response": uploaded_file, "message": f"File {uploaded_file.uuid} uploaded OK!"}

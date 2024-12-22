@@ -25,10 +25,11 @@ class FrontpageTemplateView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> dict[str, QuerySet[Image]]:  # noqa: ANN401
         """Add recent files to the context."""
         context = super().get_context_data(**kwargs)
-        context["6_last_image"] = self._query_last_6_uploads(self.request.user, "image")
+        context["6_last_images"] = self._query_last_6_uploads(self.request.user, "image")
         context["6_last_videos"] = self._query_last_6_uploads(self.request.user, "video")
         context["6_last_audios"] = self._query_last_6_uploads(self.request.user, "audio")
         context["6_last_documents"] = self._query_last_6_uploads(self.request.user, "document")
+        context["6_most_popular"] = BaseFile.bmanager.get_permitted(user=self.request.user).order_by("-hits")[:6]
         return context
 
     def _query_last_6_uploads(

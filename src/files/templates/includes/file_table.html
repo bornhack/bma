@@ -1,24 +1,11 @@
 {% load django_bootstrap5 %}
 {% load render_table from django_tables2 %}
-        <form action="{% url 'files:file_multiple_action' %}" method="POST">
-        <div class="row">
-          <div class="col">
-            <div class="input-group">
-              <span class="input-group-text" id="inputGroup-sizing-default">Action</span>
-              <input type="hidden" name="fromurl" value="{{ request.path }}{% querystring %}"></input>
-              {% bootstrap_field file_action_form.action show_label=False %}
-              <button type="submit" class="btn btn-success">Do it</button>
-            </div>
-          </div>
-          <div class="col align-self-end">
-            <div class="btn-group" role="group" aria-label="Per page">
-              <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">Show 25/page</a>
-              <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">Show 100/page</a>
-              <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">Show 250/page</a>
-              <a href="{% querystring per_page=1000 %}" class="btn btn-outline-primary">Show 1000/page</a>
-            </div>
-          </div>
-        </div>
-        {% csrf_token %}
-        {% render_table table %}
-        </form>
+<div class="pswp-gallery pswp-gallery--single-column" id="gallery">
+  <form action="{% url 'files:file_multiple_action' %}" method="POST">
+  {% include "includes/file_toolbar.html" %}
+  {% csrf_token %}
+  <div class="table-responsive-4xl">
+  {% render_table table %}
+  </div>
+  </form>
+</div>

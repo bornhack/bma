@@ -48,7 +48,7 @@ dev = [
 ]
 test = [
     "beautifulsoup4==4.12.3",
-    "coverage==7.6.8",
+    "coverage==7.6.9",
     "django-debug-toolbar==4.4.6",
     "factory-boy==3.3.1",
     "pytest-django==4.9.0",
@@ -107,6 +107,7 @@ convention = "google"
     "D", # https://docs.astral.sh/ruff/rules/#pydocstyle-d
     "ANN201", # https://docs.astral.sh/ruff/rules/missing-return-type-undocumented-public-function/
     "SLF001", # https://docs.astral.sh/ruff/rules/private-member-access/
+    "TRY003", # https://docs.astral.sh/ruff/rules/raise-vanilla-args/
 ]
 "*/migrations/*" = [
     "D" # https://docs.astral.sh/ruff/rules/#pydocstyle-d

@@ -48,8 +48,7 @@
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
             <a class="navbar-brand" href="/">
-              <img class="d-inline-block" src="{% static 'images/logo_wide_white_500_RGB.png' %}" width="135">
-              <span class="align-middle font-weight-bold"> Media Archive</span>
+              <img class="d-inline-block" src="{% static 'images/logo_bma_white.svg' %}" width="275">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
@@ -58,8 +57,9 @@
               <ul class="navbar-nav me-auto mb-2 mb-md-0">
                   {# frontpage / files / albums #}
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "frontpage" %} active{% endif %}" aria-current="page" href="{% url 'frontpage:frontpage' %}">Frontpage</a></li>
-                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list_table" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "tag_list" %} active{% endif %}" href="{% url 'tags:tag_list' %}">Tags</a></li>
 
                 {# upload / manage links #}
                 {% if not request.user.is_anonymous %}
@@ -82,9 +82,10 @@
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "account_login" %} active{% endif %}" href="{% url 'account_login' %}">Login</a></li>
                 {% else %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons %} {{ request.user.username }}</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons %} {{ request.user.handle }}</a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-user"></i> Show Profile</a></li>
                     <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out"></i> Logout</a></li>
                   </ul>
                 </li>

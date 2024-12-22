@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="col">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group me-2 mb-3" role="group" aria-label="Toggle filters button">
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#AlbumFilters" aria-expanded="false" aria-controls="AlbumFilters">
+          <i class="fas fa-filter"></i> Toggle Filters
+        </button>
+      </div>
+      <div class="input-group me-2 mb-3" role="group" aria-label="Pagination buttons">
+        <span class="input-group-text">Per page</span>
+        <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
+        <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
+        <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
+        <a href="{% querystring per_page=1000 %}" class="btn btn-outline-primary">1000</a>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -25,6 +25,11 @@ class BmaTag(TagBase):
         tag = demoji.replace_with_desc(tag)
         return super().slugify(tag, i)  # type: ignore[no-any-return]
 
+    @property
+    def tagged_file_count(self) -> int:
+        """Return the number of files tagged with this tag."""
+        return int(self.taggings.values_list("content_object_id", flat=True).distinct().count())
+
 
 class TaggedFile(ItemBase):
     """BMA uses this instead of the default taggit through model to get the user relation."""

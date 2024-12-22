@@ -39,7 +39,7 @@ class UserSettingsUpdateView(LoginRequiredMixin, UpdateView):  # type: ignore[ty
 
     template_name = "user_form.html"
     model = User
-    fields = ("display_name", "description")
+    fields = ("handle", "display_name", "description")
 
     def get_object(self, queryset: models.QuerySet[UserType] | None = None) -> UserType:
         """Get user from request."""

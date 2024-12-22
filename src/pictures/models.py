@@ -15,6 +15,7 @@ from typing import Any
 from django.conf import settings
 from django.core import checks
 from django.db.models import ImageField
+from django.db.models.fields.files import FileField
 from django.db.models.fields.files import ImageFieldFile
 
 from pictures import utils
@@ -23,7 +24,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from django.core.files.storage import Storage
-    from django.db import models
 
 __all__ = ["PictureField", "PictureFieldFile"]
 
@@ -189,7 +189,7 @@ class PictureField(ImageField):
 
     def check(self, **kwargs: str) -> list[ValueError | checks.CheckMessage]:  # type: ignore[override]
         """Run the checks."""
-        return super().check(**kwargs) + self._check_aspect_ratios() + self._check_width_height_field()  # type: ignore[operator]
+        return FileField.check(self, **kwargs) + self._check_aspect_ratios() + self._check_width_height_field()  # type: ignore[operator]
 
     def _check_aspect_ratios(self) -> list[ValueError]:
         """Check each aspect ratio configured on the field."""
@@ -244,6 +244,3 @@ class PictureField(ImageField):
                 "breakpoints": self.breakpoints,
             },
         )
-
-    def update_dimension_fields(self, instance: models.Model, force: bool = False, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401,FBT001,FBT002
-        """Do nothing method to avoid Django ImageField reading the image dimensions using PIL."""

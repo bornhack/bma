@@ -226,7 +226,7 @@ class BaseFile(PolymorphicModel):
 
     def get_absolute_url(self) -> str:
         """The detail url for the file."""
-        return reverse("files:file_detail", kwargs={"file_uuid": self.pk})
+        return reverse("files:file_show", kwargs={"file_uuid": self.pk})
 
     def resolve_links(self, request: HttpRequest | None = None) -> dict[str, str | dict[str, str]]:
         """Return a dict of links for various actions on this object.
@@ -241,7 +241,7 @@ class BaseFile(PolymorphicModel):
             "original": self.original.url,
         }
         if hasattr(self, "thumbnailsource"):
-            downloads["thumbnail_source"] = self.thumbnailsource.url
+            downloads["thumbnail_source"] = self.thumbnailsource.source.url
         if self.filetype == "image":
             # add download links for smaller versions of this image
             for version in self.image_versions.all():
@@ -349,6 +349,7 @@ class BaseFile(PolymorphicModel):
             # make sure there is a ThumbnailSourceJob
             ThumbnailSourceJob.objects.get_or_create(
                 basefile=self,
+                source_url=self.original.url,
                 finished=False,
             )
             return
@@ -521,8 +522,8 @@ class Thumbnail(ImageModel, BaseModel):
     def __str__(self) -> str:
         """String representation of a thumbnail."""
         return (
-            f"Thumbnail {self.uuid} {self.width}*{self.height} {self.mimetype} "
-            f"for {self.basefile.filetype} {self.basefile.uuid}"
+            f"Thumbnail {self.uuid} {self.width}*{self.height} {self.aspect_ratio} "
+            f"{self.mimetype} for {self.basefile.filetype} {self.basefile.uuid}"
         )
 
 

@@ -14,75 +14,64 @@
 
 {% block main_content %}
   <div class="row">
-
-    <div class="col-lg-9 col-sm-12">
-      <div class="row">
-        <div class="col">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="card-title">{{ file.filetype|capfirst }} {{ file.title }}</h5>
-            </div>
-            {% block file_detail %}
-            {% endblock file_detail %}
-          </div>
-        </div>
-      </div>
+    <div class="col mb-3 mb-xl-0">
+      {% block file_detail %}
+      {% endblock file_detail %}
     </div>
 
     <!-- Sidebar start -->
-    <div class="col-sm-12 col-lg-3">
+    <div class="col-xl-3 col-12">
       <div class="row">
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-                <h5 class="card-title">{{ file.filetype|capfirst }} Information<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_detail' file_uuid=file.uuid %}"><i class="{{ file.filetype_icon }}"></i> Show {{ file.filetype|capfirst }}</a></h5>
+                <h5 class="card-title">{{ file.filetype|capfirst }} Information<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_show' file_uuid=file.uuid %}"><i class="{{ file.filetype_icon }}"></i> Show {{ file.filetype|capfirst }}</a></h5>
             </div>
             <div class="card-body">
               <div class="row justfiy-content-between">
                 <div class="col-12">
                   <dl class="row mb-1">
-                    <h5>CC Attribution</h5>
-                    <dt class="col-sm-3 text-truncate">Title</dt>
-                    <dd class="col-sm-9">{{ file.title }}</dd>
+                    <h5>License &amp; Attribution</h5>
+                    <small class="d-block">Title</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.title }}</div>
 
-                    <dt class="col-sm-3">Attribution</dt>
-                    <dd class="col-sm-9">{{ file.attribution }}</dd>
+                    <small class="d-block">Attribution</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.attribution }}</div>
 
-                    <dt class="col-sm-3">Source</dt>
-                    <dd class="col-sm-9"><a href="{{ file.source }}">{{ file.source }}</a></dd>
+                    <small class="d-block">Source</small>
+                    <div class="ms-2 mb-1 fw-bolder"><a href="{{ file.source }}">{{ file.source }}</a></div>
 
-                    <dt class="col-sm-3">License</dt>
-                    <dd class="col-sm-9">{{ file.get_license_display }}</dd>
+                    <small class="d-block">License</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.get_license_display }}</div>
 
-                    <h5>Downloads</h5>
-                    <dt class="col-sm-3">Original File</dt>
-                    <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{{ file.original.url }}"><i class="fas fa-download"></i> download</a> ({{ file.file_size|intcomma }} bytes {{ file.mimetype }})</dd>
+                    <h5 class="mt-3">Download</h5>
+                    <small class="d-block">Original File</small>
+                    <div class="ms-2 mb-1 fw-bolder"><a href="{{ file.original.url }}"><i class="fas fa-download"></i> download</a> ({{ file.file_size|intcomma }} bytes {{ file.mimetype }})</div>
 
-                    <h5>Metadata</h5>
-                    <dt class="col-sm-3">Description</dt>
-                    <dd class="col-sm-9"><p>{{ file.description|default:"n/a" }}</p></dd>
+                    <h5 class="mt-3">Metadata</h5>
+                    <small class="d-block">Description</small>
+                    <div class="ms-2 mb-1 fw-bolder">{% if file.description %}<p>{{ file.description }}</p>{% else %}N/A{% endif %}</div>
 
-                    <dt class="col-sm-3">Uploader</dt>
-                    <dd class="col-sm-9"><a href="{{ file.uploader.get_absolute_url }}">{{ file.uploader }}</a></dd>
+                    <small class="d-block">Uploader</small>
+                    <div class="ms-2 mb-1 fw-bolder"><a href="{{ file.uploader.get_absolute_url }}">{{ file.uploader }}</a></div>
 
-                    <dt class="col-sm-3 text-truncate">UUID</dt>
-                    <dd class="col-sm-9">{{ file.uuid }}</dd>
+                    <small class="d-block">BMA File ID</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.uuid }}</div>
 
-                    <dt class="col-sm-3">Hits</dt>
-                    <dd class="col-sm-9">{{ file.hits.count }}</dd>
+                    <small class="d-block">Hits</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.hits.count }}</div>
 
-                    <dt class="col-sm-3 text-truncate">Original Filename</dt>
-                    <dd class="col-sm-9">{{ file.original_filename }}</dd>
+                    <small class="d-block">Original Filename</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.original_filename }}</div>
 
-                    <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ file.created_at }}</dd>
+                    <small class="d-block">Uploaded</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.created_at }}</div>
 
-                    <dt class="col-sm-3">Updated</dt>
-                    <dd class="col-sm-9">{{ file.updated_at }}</dd>
+                    <small class="d-block">Last Metadata Update</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.updated_at }}</div>
 
-                    <dt class="col-sm-3">Jobs</dt>
-                    <dd class="col-sm-9"><a class="btn btn-primary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">{{ file.jobs.count }}</a></dd>
-
+                    <small class="d-block">Jobs</small>
+                    <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">Show {{ file.jobs.count }} jobs</a></div>
                   </dl>
                 </div>
               </div>
@@ -161,7 +150,7 @@
         <div class="col mb-3">
           <div class="card">
             <div class="card-header">
-              <h5 class="card-title">Albums<a class="btn btn-secondary btn-xs float-end" href="{% url 'albums:album_list' %}?files={{ file.uuid }}"><i class="fas fa-list"></i> Album List</a></h5>
+              <h5 class="card-title">Albums<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_albums' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Show Albums</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% for album in file.active_albums_list %}
@@ -177,7 +166,7 @@
         <div class="col mb-3">
           <div id="tag-card" class="card">
             <div class="card-header">
-                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Tag List</a></h5>
+                <h5 class="card-title">Tags<a class="btn btn-secondary btn-xs float-end" href="{% url 'files:file_tags' file_uuid=file.uuid %}"><i class="fas fa-list"></i> Show Tags</a></h5>
             </div>
             <div class="card-body" style="max-height:25em; overflow-y:auto;">
               {% if file.tags.exists %}

@@ -27,6 +27,7 @@ urlpatterns = [
     path("widgets/", include("widgets.urls", namespace="widgets")),
     path("users/", include("users.urls", namespace="users")),
     path("jobs/", include("jobs.urls", namespace="jobs")),
+    path("tags/", include("tags.urls", namespace="tags")),
     path("settings/", UserSettingsView.as_view(), name="user_settings"),
     path("settings/update/", UserSettingsUpdateView.as_view(), name="user_settings_update"),
     path("api/v1/json/", api_v1_json.urls),

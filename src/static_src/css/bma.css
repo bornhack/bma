@@ -1,29 +1,15 @@
+/* why is this here? */
 main > .container {
     padding: 60px 15px 0;
 }
 
-/* make images not be too tall maybe */
-.card-img-top {
-    width: 100%;
-    height: 10vw;
-    text-align: center;
-}
-
-.license-card .card-title {
-  min-height: 2.5em;
-}
-
-
 /* photoswipe captions start
  * https://photoswipe.com/caption/
  * */
-
 .pswp__custom-caption {
   background: rgba(75, 150, 75, 0.75);
   font-size: 16px;
   color: #fff;
-  /* width: calc(100% - 32px); */
-  /* max-width: 600px; */
   padding: 2px 8px;
   border-radius: 4px;
   position: absolute;
@@ -39,6 +25,9 @@ main > .container {
   display: none;
 }
 
+.pswp__dynamic-caption--mobile {
+    display: none;
+}
 /* photoswipe captions end */
 
 
@@ -67,18 +56,51 @@ main > .container {
 }
 /* photoswipe bullets end */
 
-/* photoswipe autohideui start */
-.pswp__dynamic-caption--aside,
-.pswp__dynamic-caption--below,
-.pswp__bullets-indicator
-{
-  opacity: 1 !important;
-}
-/* photoswipe autohideui end */
 
+/* photoswipe iframe styling start */
+.pswp__document-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.pswp__document-container iframe {
+  background: #444;
+  width: 100%;
+  height: 100%;
+  max-width: 1920px;
+  max-height: 1080px;
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* photoswipe iframe styling end */
 
 /* never break after fa icons */
 :root {
   --fa-display: inline;
 }
 
+/* hover effect on thumbnails start */
+div.image-hover {
+  position: relative;
+}
+div.image-hover i {
+  top: 50%;
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+div.image-hover img:hover {
+  opacity: 0.2;
+  background-color: black;
+}
+div.image-hover.play:hover i::before{
+  content: "\f144";
+}
+div.image-hover.zoom:hover i::before{
+  content: "\f002";
+}
+/* hover effect on thumbnails end */

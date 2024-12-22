@@ -167,7 +167,7 @@ class TestFilesApi(BmaTestBase):
 
         # test file size filter
         response = self.client.get(
-            reverse("api-v1-json:file_list"), data={"size": 9478}, headers={"authorization": self.creator2.auth}
+            reverse("api-v1-json:file_list"), data={"size": 8424}, headers={"authorization": self.creator2.auth}
         )
         assert len(response.json()["bma_response"]) == 20
 
@@ -494,6 +494,19 @@ class TestFilesApi(BmaTestBase):
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 0
 
+    def test_file_list_ordering(self) -> None:
+        """Make sure files are ordered by date with the oldest file first."""
+        # upload 15 files and get them all
+        [self.file_upload(title=f"title{i}") for i in range(15)]
+        response = self.client.get(reverse("api-v1-json:file_list"), headers={"authorization": self.superuser.auth})
+        latest = None
+        for f in response.json()["bma_response"]:
+            if not latest:
+                latest = f["created_at"]
+            if latest > f["created_at"]:
+                raise AssertionError(f"Files are sorted wrong! {latest} > {f['created_at']}")
+            latest = f["created_at"]
+
     def test_metadata_get(self) -> None:
         """Get file metadata from the API."""
         self.file_upload()
@@ -520,7 +533,7 @@ class TestFilesApi(BmaTestBase):
         response = self.client.get(url)
         assert response.status_code == 200
         assert response["content-type"] == "image/png"
-        with (settings.BASE_DIR / "static_src/images/logo_wide_black_500_RGB.png").open("rb") as f:
+        with (settings.BASE_DIR / "static_src/images/file-video-solid.png").open("rb") as f:
             assert f.read() == response.getvalue()
 
     def test_file_metadata_update(self) -> None:
@@ -919,7 +932,7 @@ class TestFileViews(BmaTestBase):
     ######### FILE LIST ######################################
     def assert_file_list_rows(self, expected_rows: int, fail_message: str = "", qs: str = "") -> None:
         """Make a file_list call and count the number of table rows (files)."""
-        url = reverse("files:file_list")
+        url = reverse("files:file_list_table")
         response = self.client.get(url + qs)
         content = response.content.decode()
         soup = BeautifulSoup(content, "html.parser")
@@ -975,7 +988,6 @@ class TestFileViews(BmaTestBase):
         self.assert_file_list_rows(24, qs="?attribution__icontains=foto")
         self.assert_file_list_rows(0, qs="?attribution__icontains=notthere")
         self.assert_file_list_rows(1, qs="?attribution__icontains=fotofonzy")
-        self.assert_file_list_rows(1, qs="?attribution=fotoflummer")
 
     def test_file_list_view_license_filters(self) -> None:
         """Test the license filter of the file list view."""
@@ -992,7 +1004,7 @@ class TestFileViews(BmaTestBase):
         self.client.login(username="moderator4", password="secret")
 
         # test file size filter
-        self.assert_file_list_rows(24, qs="?file_size=9478")
+        self.assert_file_list_rows(24, qs="?file_size=8424")
         self.assert_file_list_rows(24, qs="?file_size__lt=100000")
         self.assert_file_list_rows(0, qs="?file_size__lt=100")
         self.assert_file_list_rows(0, qs="?file_size__gt=100000")
@@ -1104,7 +1116,7 @@ class TestFileViews(BmaTestBase):
         # create a new album with the 3 published files
         data = {"action": "create_album", "selection": self.files[2:5], "fromurl": "/"}
         response = self.client.post(url, data, follow=True)
-        assert "Showing 3 of 3 files in album" in response.content.decode()
+        assert "Showing 3 files" in response.content.decode()
 
         data = {"action": "add_to_album", "selection": self.files[5:10], "fromurl": "/"}
         response = self.client.post(url, data, follow=True)
@@ -1121,7 +1133,7 @@ class TestFileViews(BmaTestBase):
     def test_file_detail_view(self) -> None:
         """Test the file detail view."""
         self.client.login(username="creator2", password="secret")
-        response = self.client.get(reverse("files:file_detail", kwargs={"file_uuid": self.files[0]}))
+        response = self.client.get(reverse("files:file_show", kwargs={"file_uuid": self.files[0]}))
         content = response.content.decode()
         assert "Image creator2 file 0" in content
 
@@ -1145,7 +1157,7 @@ class TestFileViews(BmaTestBase):
         # test GET
         response = self.client.get(url)
         content = response.content.decode()
-        assert f"Add Tags to image {self.files[0]}" in content
+        assert "Add Tags to Image" in content
 
         # add new tags
         data = {"tags": "testtag1 testtag2"}

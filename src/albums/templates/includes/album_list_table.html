@@ -1,0 +1,7 @@
+{% load django_bootstrap5 %}
+{% load render_table from django_tables2 %}
+{% include "includes/album_toolbar.html" %}
+{% csrf_token %}
+<div class="table-responsive-xl">
+{% render_table table %}
+</div>

@@ -18,7 +18,7 @@ class TagFilters(ListFilters):
 
 
 class TagFilter(django_filters.FilterSet):
-    """The main django-filters filter used in views showing files."""
+    """The main django-filters filter used in views showing tags."""
 
     class Meta:
         """Set model and fields."""

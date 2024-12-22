@@ -1,6 +1,6 @@
-<span>
+<span class="d-inline-block mb-1">
 {% if record.filetype == "image" %}
-  <a class="gallerya" href="{{ record.fullsize_url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.fullsize_url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="image"
@@ -11,7 +11,7 @@
   </a>
 
 {% elif record.filetype == "video" %}
-  <a class="gallerya" href="{{ record.original.url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="video"
@@ -22,18 +22,24 @@
 
 {% elif record.filetype == "audio" %}
   {# cheat a bit and tell photoswipe this audio is a video, plyr will handle it #}
-  <a class="gallerya" href="{{ record.original.url }}"
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
     data-bma-file-uuid="{{ record.uuid }}"
     data-bma-file-orig-url="{{ record.original.url }}"
     data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480">
-      {% thumbnail record width=width ratio="1/1" %}
+      {% thumbnail record width=width ratio=ratio %}
   </a>
 
-{% else %}
-  {# do not include documents in photoswipe gallery for now #}
-  {% thumbnail record width=width ratio="16/9" %}
+{% elif record.filetype == "document" %}
+  <a class="gallerya text-decoration-none" href="{{ record.original.url }}"
+    data-bma-file-uuid="{{ record.uuid }}"
+    data-bma-file-orig-url="{{ record.original.url }}"
+    data-pswp-type="document"
+    data-pswp-width="1920"
+    data-pswp-height="1080">
+      {% thumbnail record width=width ratio=ratio %}
+  </a>
 {% endif %}
 {% include "includes/file_pswp_caption.html" with file=record %}
 </span>

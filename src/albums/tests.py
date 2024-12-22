@@ -112,6 +112,15 @@ class TestAlbumsApi(BmaTestBase):
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 10, "Did not get 10 albums"
 
+        # make sure albums are sorted as expected
+        latest = None
+        for album in response.json()["bma_response"]:
+            if not latest:
+                latest = album["created_at"]
+            if latest > album["created_at"]:
+                raise AssertionError(f"Albums are sorted wrong! {latest} > {album['created_at']}")
+            latest = album["created_at"]
+
         # test the file filter with files in different albums
         response = self.client.get(
             reverse("api-v1-json:album_list"),

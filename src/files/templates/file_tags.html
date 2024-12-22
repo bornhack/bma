@@ -1,36 +1,22 @@
-{% extends "base.html" %}
+{% extends "file_detail.html" %}
 {% load django_bootstrap5 %}
-{% load render_table from django_tables2 %}
 
 {% block title %}File Tags{% endblock title %}
 
-{% block main_content %}
-  <div class="row">
-    <div class="col-2">
-      <div class="card">
-          <h5 class="card-header">Filter Tags</h5>
-        <div class="card-body">
-          <form method="get">
-            {% bootstrap_form filter.form %}
-            <input type="submit" />
-          </form>
-        </div>
-      </div>
-    </div>
-    <div class="col-10">
-      <div class="card">
-        <h5 class="card-header">Tags for {{ file.filetype|capfirst }} {{ file.pk }}</h5>
-        <div class="card-body">
-        <div class="lead">Per page:
-        <div class="btn-group" role="group" aria-label="Per page">
-          <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-          <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-          <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
-        </div>
-        </div>
-        {% render_table table %}
-        </div>
-      </div>
-    </div>
+{% block file_detail %}
+<h1>{{ file.filetype|capfirst }} {{ file.title }} Tags</h1>
+<div class="row">
+
+  <!-- tag filter sidebar start -->
+  <div class="col-3xl-2 col-12 collapse collapse-horizontal" id="TagFilters">
+  {% include "includes/tag_filter.html" %}
   </div>
-{% endblock main_content %}
+  <!-- tag filter sidebar end -->
+
+  <!-- Main content start -->
+  <div class="col">
+    {% include "includes/tag_list_table.html" %}
+  </div>
+  <!-- Main content end -->
+</div>
+{% endblock file_detail %}

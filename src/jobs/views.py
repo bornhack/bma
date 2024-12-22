@@ -28,8 +28,8 @@ class JobListView(SingleTableMixin, FilterView):
     context_object_name = "jobs"
 
     def get_queryset(self, queryset: "QuerySet[BaseJob] | None" = None) -> "QuerySet[BaseJob]":
-        """Get file too. Move this to a seperate manager."""
-        return BaseJob.objects.select_related("basefile", "user")  # type: ignore[no-any-return]
+        """Get jobs using bmanager."""
+        return BaseJob.bmanager.all()  # type: ignore[no-any-return]
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, "Form"]:
         """Add form to the context."""

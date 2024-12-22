@@ -1,37 +1,12 @@
-{% extends "base.html" %}
+{% extends "file_detail.html" %}
 {% load django_bootstrap5 %}
 {% block title %}Add Tags{% endblock title %}
 
-{% block main_content %}
-
-  <div class="row d-flex justify-content-center">
-    <div class="col-8">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Add Tags to {{ file.filetype }} {{ file.uuid }}</h5>
-        </div>
-        <div class="card-body">
-          <div class="row d-flex justify-content-center">
-            <div class="col-8 mt-3 mb-3">
-              <div class="row d-flex justify-content-center">
-                <div class="col">
-                    <form method="post">{% csrf_token %}
-                        {% bootstrap_form form %}
-                        <div class="d-grid gap-2">
-                          <input class="btn btn-success" type="submit" value="Add Tag(s)">
-                          <a href="{% url 'files:file_detail' file_uuid=file.uuid %}" class="btn btn-primary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-
-{% endblock main_content %}
+{% block file_detail %}
+<h1>Add Tags to {{ file.filetype|capfirst }} {{ file.title }}</h1>
+<form method="post">{% csrf_token %}
+  {% bootstrap_form form %}
+  <input class="btn btn-success" type="submit" value="Add Tag(s)">
+  <a href="{% url 'files:file_show' file_uuid=file.uuid %}" class="btn btn-primary">Cancel</a>
+</form>
+{% endblock file_detail %}

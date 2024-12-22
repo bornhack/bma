@@ -3,14 +3,19 @@
 
 import logging
 import uuid
+from fractions import Fraction
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db import transaction
 from ninja.files import UploadedFile
 from polymorphic.models import PolymorphicModel
 
 from utils.models import NP_CASCADE
+from utils.polymorphic_related import RelatedPolymorphicManager
+
+from .managers import JobManager
 
 logger = logging.getLogger("bma")
 
@@ -34,6 +39,10 @@ class FiletypeUnsupportedError(Exception):
 
 class BaseJob(PolymorphicModel):
     """Base model to represent file processing jobs."""
+
+    objects = RelatedPolymorphicManager()
+
+    bmanager = JobManager()
 
     uuid = models.UUIDField(
         primary_key=True,
@@ -204,23 +213,26 @@ class ThumbnailSourceJob(BaseJob):
             basefile=self.basefile,
             source=f,
             file_size=f.size,
+            aspect_ratio=Fraction(int(data["width"]), int(data["height"])),
             **data,
         )
 
-        # validate
-        ts.full_clean()
+        # do not delete existing TS unless the new one passes validation
+        with transaction.atomic():
+            # delete existing source
+            ThumbnailSource.objects.filter(basefile=self.basefile).delete()
 
-        # delete existing source
-        ThumbnailSource.objects.filter(basefile=self.basefile).delete()
+            # validate
+            ts.full_clean()
 
-        # save and create jobs
-        ts.save()
-        self.basefile.create_thumbnail_jobs()
+            # save and create jobs
+            ts.save()
+            self.basefile.create_thumbnail_jobs()
 
         # log message and return
         logger.debug(
-            f"{self.job_type} {self.pk} wrote {f.size} bytes {self.width}x{self.height}"
-            f"{self.mimetype} thumbnailsource {ts.uuid} to {ts.source.path}"
+            f"{self.job_type} {self.pk} wrote {f.size} bytes {ts.width}x{ts.height}"
+            f"{ts.mimetype} thumbnailsource {ts.uuid} to {ts.source.path}"
         )
 
     def result_url(self) -> str:
@@ -236,11 +248,8 @@ class ThumbnailJob(ImageJob):
         from files.models import Thumbnail
 
         # set thumbnailsource FK?
-        if hasattr(self.basefile, "thumbnailsource") and self.source_url != self.basefile.thumbnailsource.source.url:
+        if hasattr(self.basefile, "thumbnailsource"):
             data["source"] = self.basefile.thumbnailsource
-        elif self.source_url != self.basefile.original.url:
-            # source not basefile and not current thumbnailsource, bail out
-            raise ValidationError("Source")
         thumb = Thumbnail(
             job=self,
             basefile=self.basefile,

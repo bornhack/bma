@@ -67,11 +67,15 @@ class Image(BaseFile):
     )
 
     def get_fullsize_version(self, mimetype: str) -> "ImageVersion | None":
-        """Return the ImageVersion for the fullsize version of this mimetype for this Image."""
-        try:
-            return self.image_versions.get(width=self.width, aspect_ratio=self.aspect_ratio, mimetype=mimetype)  # type: ignore[no-any-return]
-        except ImageVersion.DoesNotExist:
-            return None
+        """Return the ImageVersion for the fullsize version of this mimetype for this Image.
+
+        Performance sensitive, called from template tags, do not break prefetching. Loop over
+        self.image_version_list instead of self.image_versions.filter().
+        """
+        for image in self.image_version_list:
+            if image.width == self.width and image.aspect_ratio == self.aspect_ratio and image.mimetype == mimetype:
+                return image  # type: ignore[no-any-return]
+        return None
 
     def create_jobs(self) -> None:
         """Create jobs for exif, smaller versions and thumbnails for this image."""
@@ -131,7 +135,11 @@ class Image(BaseFile):
     def get_versions(
         self, mimetype: str | None = None, aspect_ratio: Fraction | None = None
     ) -> dict[Fraction | None, dict[str, dict[int, "ImageVersion"]]]:
-        """Get image versions. Return a dict with ratio: mimetype: size: ImageVersion dicts."""
+        """Get image versions. Return a dict with ratio: mimetype: size: ImageVersion dicts.
+
+        Performance sensitive, called from template tags, do not break prefetching. Loop over
+        self.image_version_list instead of self.image_versions.filter().
+        """
         versions = {}
         kwargs = {
             "aspect_ratio": aspect_ratio or self.aspect_ratio,
@@ -140,7 +148,11 @@ class Image(BaseFile):
         if mimetype:
             kwargs["mimetype"] = mimetype
         # use requested custom AR or Image original AR
-        for version in self.image_versions.filter(**kwargs):
+        for version in self.image_version_list:
+            if version.aspect_ratio != kwargs["aspect_ratio"]:
+                continue
+            if "mimetype" in kwargs and version.mimetype != kwargs["mimetype"]:
+                continue
             if version.aspect_ratio not in versions:
                 versions[version.aspect_ratio] = {}
             if version.mimetype not in versions[version.aspect_ratio]:
@@ -228,8 +240,9 @@ class ImageVersion(ImageModel, BaseModel):
         help_text="The Job which triggered uploading of this image version.",
     )
 
+    # This FK points to BaseFile instead of Image to make prefetching ImageVersions possible.
     image = models.ForeignKey(
-        "images.Image",
+        "files.BaseFile",
         on_delete=NP_CASCADE,  # delete all versions when an Image is deleted
         related_name="image_versions",
         help_text="The Image this is a smaller version of.",

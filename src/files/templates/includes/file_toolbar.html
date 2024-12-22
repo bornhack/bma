@@ -1,0 +1,40 @@
+{% load django_bootstrap5 %}
+{# this toolbar requires grid_url and table_url to be defined #}
+<div class="row">
+  <div class="col">
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group me-2 mb-3" role="group" aria-label="Toggle filters button">
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#FileFilters" aria-expanded="false" aria-controls="FileFilters">
+          <i class="fas fa-filter"></i> Toggle Filters
+        </button>
+      </div>
+
+      <div class="input-group me-2 mb-3" role="group" aria-label="File actions form">
+        <span class="input-group-text">Action</span>
+        <input type="hidden" name="fromurl" value="{{ request.path }}{% querystring %}"></input>
+        {# not using bootstrap_field to get the styling just right #}
+        <label class="visually-hidden" for="id_action">Action</label><select name="action" class="form-select" required="" id="id_action">
+          <option value="" selected="">----</option>
+          <option value="create_album">Create New Album With Files</option>
+          <option value="add_to_album">Add Files To Existing Album</option>
+          <option value="remove_from_album">Remove Files From Existing Album</option>
+        </select>
+        <button type="submit" class="btn btn-success">Do it</button>
+      </div>
+
+      <div class="input-group me-2 mb-3" role="group" aria-label="View type buttons">
+        <span class="input-group-text">Show</span>
+        <a href="{{ grid_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-cells"></i> Grid</a>
+        <a href="{{ table_url }}{% querystring %}" class="btn btn-primary"><i class="fas fa-table-list"></i> Table</a>
+      </div>
+
+      <div class="input-group me-2 mb-3" role="group" aria-label="Pagination buttons">
+        <span class="input-group-text">Per page</span>
+        <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
+        <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
+        <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
+        <a href="{% querystring per_page=1000 %}" class="btn btn-outline-primary">1000</a>
+      </div>
+    </div>
+  </div>
+</div>

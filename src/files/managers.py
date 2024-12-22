@@ -6,20 +6,20 @@ from django.db import models
 from django.db.models import Count
 from django.utils import timezone
 from guardian.shortcuts import get_objects_for_user
-from polymorphic.managers import PolymorphicManager
-from polymorphic.managers import PolymorphicQuerySet
 
 from users.models import UserType
+from utils.polymorphic_related import RelatedPolymorphicManager
+from utils.polymorphic_related import RelatedPolymorphicQuerySet
 
 if TYPE_CHECKING:
     from .models import BaseFile
 
 
-class BaseFileManager(PolymorphicManager):
+class BaseFileManager(RelatedPolymorphicManager):
     """Custom manager for file operations."""
 
     def get_queryset(self) -> models.QuerySet["BaseFile"]:
-        """Prefetch active albums into a list."""
+        """Prefetch and annotate."""
         return (  # type: ignore[no-any-return]
             super()
             .get_queryset()
@@ -36,10 +36,13 @@ class BaseFileManager(PolymorphicManager):
             .annotate(jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False)))
             .prefetch_active_albums_list(recursive=True)
             .prefetch_related("thumbnails")
-        )
+            .prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))
+            .prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))
+            # ordering from BaseFile Meta gets lost :(
+        ).order_by("created_at")
 
 
-class BaseFileQuerySet(PolymorphicQuerySet):
+class BaseFileQuerySet(RelatedPolymorphicQuerySet):
     """Custom queryset for bmanager file operations."""
 
     def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:

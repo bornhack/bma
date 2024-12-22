@@ -11,43 +11,20 @@
 
 {% block main_content %}
   <div class="row">
-    <div class="col-2">
-      <div class="card mb-2">
-        <h5 class="card-header">File Stats</h5>
-        <div class="card-body">
-          <p class="lead">Showing {{ files.count }} files.</p>
-        </div>
-      </div>
 
-      <div class="card">
-        <h5 class="card-header">Filter Files</h5>
-        <div class="card-body">
-          <form method="get">
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-            {% bootstrap_form filter.form %}
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="{% url 'files:file_list' %}"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+    <!-- Sidebar with file filters start -->
+    <div class="col-xl-2 col-12 collapse collapse-horizontal" id="FileFilters">
+    {% include "includes/file_filters.html" %}
     </div>
-    <div class="col-10">
-      <div class="card">
-        <h5 class="card-header">Files</h5>
-        <div class="card-body">
-          <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
-            {% include "includes/file_table.html" %}
-          </div>
-        </div>
+    <!-- Sidebar with file filters end -->
+
+    <!-- Main content -->
+    <div class="col">
+      <h1>Files</h1>
+      <div class="pswp-gallery pswp-gallery--single-column" id="gallery">
+      {% block file_list %}
+        {% include "includes/file_table.html" %}
+      {% endblock file_list %}
       </div>
     </div>
   </div>

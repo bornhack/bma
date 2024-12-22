@@ -30,9 +30,11 @@ from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from guardian.shortcuts import get_objects_for_user
 
+from albums.filters import AlbumFilter
 from albums.forms import AlbumAddFilesForm
 from albums.forms import AlbumRemoveFilesForm
 from albums.models import Album
+from albums.tables import AlbumTable
 from hitcounter.utils import count_hit
 from jobs.filters import JobFilter
 from jobs.models import BaseJob
@@ -72,6 +74,10 @@ class FileListView(SingleTableMixin, FilterView):
     filterset_class = FileFilter
     context_object_name = "files"
 
+    def get_template_names(self) -> list[str]:
+        """Template name depends on the type of listview."""
+        return [f"{self.request.resolver_match.url_name}.html"]
+
     def get_queryset(self, queryset: models.QuerySet[BaseFile] | None = None) -> models.QuerySet[BaseFile]:
         """Use bmanager to get juicy file objects."""
         return BaseFile.bmanager.all()  # type: ignore[no-any-return]
@@ -80,16 +86,21 @@ class FileListView(SingleTableMixin, FilterView):
         """Add form to the context."""
         context = super().get_context_data(**kwargs)
         context["file_action_form"] = FileMultipleActionForm()
+        context["grid_url"] = reverse("files:file_list_grid")
+        context["table_url"] = reverse("files:file_list_table")
         return context  # type: ignore[no-any-return]
 
 
 class FileDetailView(DetailView):  # type: ignore[type-arg]
     """File detail view. Shows a single file."""
 
-    template_name = "file_file.html"
     model = BaseFile
     pk_url_kwarg = "file_uuid"
     context_object_name = "file"
+
+    def get_template_names(self) -> list[str]:
+        """Template name depends on the type of detailview."""
+        return [f"{self.request.resolver_match.url_name}.html"]  # type: ignore[union-attr]
 
     def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
@@ -247,38 +258,21 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
         return redirect(reverse("files:file_list"))
 
 
-class FileThumbnailsView(DetailView):  # type: ignore[type-arg]
-    """File thumbnails view. Shows all thumbnails for a file."""
-
-    template_name = "file_thumbnails.html"
-    model = BaseFile
-    pk_url_kwarg = "file_uuid"
-    context_object_name = "file"
-
-    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
-        """Check permissions before returning the file."""
-        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
-        if not basefile.permitted(user=self.request.user):
-            # the current user does not have permissions to view this file
-            raise PermissionDenied
-
-        # all good
-        return basefile  # type: ignore[no-any-return]
+########## File job and album views ######################################################
 
 
 class FileJobsView(SingleTableMixin, FilterView):
     """File jobs view. Shows all jobs for a file."""
 
     template_name = "file_jobs.html"
-    model = BaseFile
     pk_url_kwarg = "file_uuid"
     context_object_name = "file"
     table_class = JobTable
     filterset_class = JobFilter
 
     def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:
-        """Get tags for this file."""
-        return BaseJob.objects.filter(basefile=self.get_object())  # type: ignore[no-any-return]
+        """Get jobs."""
+        return BaseJob.bmanager.filter(basefile=self.get_object())  # type: ignore[no-any-return]
 
     def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file. Use manager to get a fat file."""
@@ -298,6 +292,37 @@ class FileJobsView(SingleTableMixin, FilterView):
         return context  # type: ignore[no-any-return]
 
 
+class FileAlbumsView(SingleTableMixin, FilterView):
+    """File albums view. Shows all albums a file is currently member of."""
+
+    template_name = "file_albums.html"
+    pk_url_kwarg = "file_uuid"
+    context_object_name = "file"
+    table_class = AlbumTable
+    filterset_class = AlbumFilter
+
+    def get_queryset(self, queryset: models.QuerySet[Album] | None = None) -> models.QuerySet[Album]:
+        """Get albums."""
+        return Album.bmanager.filter(uuid__in=self.get_object().albums.all().values_list("uuid", flat=True))
+
+    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
+        """Check permissions before returning the file. Use manager to get a fat file."""
+        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
+        if not basefile.permitted(user=self.request.user):
+            # the current user does not have permissions to view this file
+            raise PermissionDenied
+
+        # all good
+        return basefile  # type: ignore[no-any-return]
+
+    def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
+        """Add file to context."""
+        context = super().get_context_data(**kwargs)
+        context["file"] = self.get_object()
+        context["total_albums"] = self.get_object().albums.count()
+        return context  # type: ignore[no-any-return]
+
+
 ########## File tag views ######################################################
 
 
@@ -309,9 +334,13 @@ class FileTagListView(FileViewMixin, SingleTableMixin, FilterView):
     filterset_class = TagFilter
     context_object_name = "tags"
 
+    def get_table_kwargs(self) -> dict[str, BaseFile | tuple[str, str, str]]:
+        """Exclude columns which don't make sense in context of a single file."""
+        return {"basefile": self.file, "exclude": ("tagged_files", "taggings", "taggings_per_file")}
+
     def get_queryset(self, queryset: models.QuerySet[BmaTag] | None = None) -> models.QuerySet[BmaTag]:
         """Get tags for this file."""
-        return self.file.tags.annotate(taggedfile_uuid=models.Value(self.file.uuid)).all()  # type: ignore[no-any-return]
+        return BmaTag.objects.filter(taggings__content_object=self.file).annotate(weight=models.Count("name"))  # type: ignore[no-any-return]
 
 
 class FileTagCreateView(CuratorGroupRequiredMixin, FileViewMixin, FormView):  # type: ignore[type-arg]

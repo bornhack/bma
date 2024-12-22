@@ -55,7 +55,6 @@ class AlbumDetailView(SingleTableMixin, FilterView):
     """Album detail view with file table and filter."""
 
     pk_url_kwarg = "album_uuid"
-    template_name = "album_detail.html"
     table_class = FileTable
     filterset_class = FileFilter
 
@@ -76,10 +75,12 @@ class AlbumDetailView(SingleTableMixin, FilterView):
         return BaseFile.bmanager.get_permitted(user=self.request.user).filter(pk__in=uuids)  # type: ignore[no-any-return]
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
-        """Add album to context."""
+        """Add album and other data to context."""
         context = super().get_context_data(**kwargs)
         context["album"] = self.get_object()
         context["file_action_form"] = FileMultipleActionForm()
+        context["grid_url"] = reverse("albums:album_detail_grid", kwargs={"album_uuid": context["album"].uuid})
+        context["table_url"] = reverse("albums:album_detail_table", kwargs={"album_uuid": context["album"].uuid})
         return context  # type: ignore[no-any-return]
 
 

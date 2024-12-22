@@ -1,0 +1,21 @@
+{% extends "file_list.html" %}
+{% load humanize static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-v5.4.4.css' %}">
+<link rel="stylesheet" href="{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}">
+<script type="module" src="{% static 'js/photoswipe.js' %}"></script>
+{% endblock extra_head %}
+
+{% block file_list %}
+<div class="row">
+  <form action="{% url 'files:file_multiple_action' %}" method="POST">
+  {% include "includes/file_toolbar.html" %}
+  {% csrf_token %}
+  <div class="pswp-gallery" id="gallery">
+  {% for file in filter.qs %}
+    {% include "includes/file_thumbnail_pswp.html" with record=file width=150 ratio="1/1" %}
+  {% endfor %}
+  </div>
+  </form>
+</div>
+{% endblock file_list %}

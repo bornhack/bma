@@ -5,52 +5,19 @@
 
 {% block main_content %}
   <div class="row">
-    <div class="col-2">
-      <div class="card">
-        <h5 class="card-header">Filter Info</h5>
-        <div class="card-body">
-          <p class="lead">Showing {{ filter.qs.count }} of {{ albums|length }} albums.</p>
-        </div>
-      </div>
-      <br>
-      <div class="card">
-        <h5 class="card-header">Filter Albums</h5>
-        <div class="card-body">
-          <form method="get">
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="?"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-            {% bootstrap_form filter.form %}
-            <div class="row">
-              <div class="btn-group" role="group">
-                <a class="btn btn-warning" href="?"><i class="fas fa-times"></i> Clear Filters</a>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Submit Query</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+
+    <!-- Sidebar with album filters start -->
+    <div id="AlbumFilters" class="col-xl-2 col-12 collapse collapse-horizontal">
+    {% include "includes/album_filters.html" %}
     </div>
-    <div class="col-10">
-      <div class="card">
-        <h5 class="card-header">Albums</h5>
-        <div class="card-body">
-        <div class="lead">Per page:
-        <div class="btn-group" role="group" aria-label="Per page">
-          <a href="{% querystring per_page=25 %}" class="btn btn-outline-primary">25</a>
-          <a href="{% querystring per_page=100 %}" class="btn btn-outline-primary">100</a>
-          <a href="{% querystring per_page=250 %}" class="btn btn-outline-primary">250</a>
-        </div>
-        </div>
-        {% if request.user.is_curator %}
-        <a href="{% url 'albums:album_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Album</a>
-        {% endif %}
-        {% render_table table %}
-        </div>
-      </div>
+    <!-- Sidebar with album filters end -->
+
+    <!-- Main content start -->
+    <div class="col">
+      <h1>Albums</h1>
+      {% include "includes/album_list_table.html" %}
     </div>
+    <!-- Main content end -->
+
   </div>
 {% endblock main_content %}

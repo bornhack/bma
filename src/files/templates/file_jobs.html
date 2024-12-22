@@ -6,21 +6,17 @@
 {% block title %}File jobs{% endblock title %}
 
 {% block file_detail %}
-<div class="card-body">
-  <div class="row">
-    <div class="col-2">
-    {% include "includes/job_filter.html" %}
-    </div>
-    <div class="col-10">
-      <div class="card">
-        <h5 class="card-header">Jobs</h5>
-        <div class="card-body">
-          <div class="table-responsive">
-          {% render_table table %}
-          </div>
-        </div>
-      </div>
-    </div>
+<h1>{{ file.filetype|capfirst }} {{ file.title }} Jobs</h1>
+<div class="row">
+
+  <!-- job filter sidebar -->
+  <div class="col-3xl-2 col-12 mb-3 mb-3xl-0 collapse collapse-horizontal" id="JobFilters">
+  {% include "includes/job_filter.html" %}
+  </div>
+
+  <!-- main job table -->
+  <div class="col">
+    {% include "includes/job_list_table.html" %}
   </div>
 </div>
 {% endblock file_detail %}
