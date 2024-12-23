@@ -118,25 +118,6 @@ class FileTable(tables.Table):
         )
 
     class Meta:
-        """Define model, template, fields."""
+        """Define template."""
 
-        model = BaseFile
         template_name = "django_tables2/bootstrap5.html"
-        fields = (
-            "selection",
-            "uuid",
-            "title",
-            "thumbnail",
-            "mimetype",
-            "file_size",
-            "albums",
-            "attribution",
-            "uploader",
-            "license",
-            "tags",
-            "hitcount",
-            "jobs",
-            "approved",
-            "published",
-            "deleted",
-        )

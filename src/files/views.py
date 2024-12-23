@@ -4,6 +4,7 @@ import logging
 import mimetypes
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 from django.conf import settings
@@ -39,6 +40,7 @@ from hitcounter.utils import count_hit
 from jobs.filters import JobFilter
 from jobs.models import BaseJob
 from jobs.tables import JobTable
+from permissions.tables import PermissionTable
 from tags.filters import TagFilter
 from tags.forms import TagForm
 from tags.mixins import TagViewMixin
@@ -55,6 +57,10 @@ from .forms import UploadForm
 from .mixins import FileViewMixin
 from .models import BaseFile
 from .tables import FileTable
+
+if TYPE_CHECKING:
+    from guardian.models import GroupObjectPermission
+    from guardian.models import UserObjectPermission
 
 logger = logging.getLogger("bma")
 
@@ -261,7 +267,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
 ########## File job and album views ######################################################
 
 
-class FileJobsView(SingleTableMixin, FilterView):
+class FileJobsView(FileViewMixin, SingleTableMixin, FilterView):
     """File jobs view. Shows all jobs for a file."""
 
     template_name = "file_jobs.html"
@@ -272,27 +278,16 @@ class FileJobsView(SingleTableMixin, FilterView):
 
     def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:
         """Get jobs."""
-        return BaseJob.bmanager.filter(basefile=self.get_object())  # type: ignore[no-any-return]
-
-    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
-        """Check permissions before returning the file. Use manager to get a fat file."""
-        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
-        if not basefile.permitted(user=self.request.user):
-            # the current user does not have permissions to view this file
-            raise PermissionDenied
-
-        # all good
-        return basefile  # type: ignore[no-any-return]
+        return BaseJob.bmanager.filter(basefile=self.file)  # type: ignore[no-any-return]
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
-        """Add file to context."""
+        """Add total_jobs to context."""
         context = super().get_context_data(**kwargs)
-        context["file"] = self.get_object()
-        context["total_jobs"] = self.get_object().jobs.count()
-        return context  # type: ignore[no-any-return]
+        context["total_jobs"] = self.file.jobs.count()
+        return context
 
 
-class FileAlbumsView(SingleTableMixin, FilterView):
+class FileAlbumsView(FileViewMixin, SingleTableMixin, FilterView):
     """File albums view. Shows all albums a file is currently member of."""
 
     template_name = "file_albums.html"
@@ -301,26 +296,15 @@ class FileAlbumsView(SingleTableMixin, FilterView):
     table_class = AlbumTable
     filterset_class = AlbumFilter
 
-    def get_queryset(self, queryset: models.QuerySet[Album] | None = None) -> models.QuerySet[Album]:
+    def get_table_data(self) -> models.QuerySet[Album]:
         """Get albums."""
         return Album.bmanager.filter(uuid__in=self.get_object().albums.all().values_list("uuid", flat=True))
 
-    def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
-        """Check permissions before returning the file. Use manager to get a fat file."""
-        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
-        if not basefile.permitted(user=self.request.user):
-            # the current user does not have permissions to view this file
-            raise PermissionDenied
-
-        # all good
-        return basefile  # type: ignore[no-any-return]
-
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
-        """Add file to context."""
+        """Add total_albums to context."""
         context = super().get_context_data(**kwargs)
-        context["file"] = self.get_object()
-        context["total_albums"] = self.get_object().albums.count()
-        return context  # type: ignore[no-any-return]
+        context["total_albums"] = self.file.albums.count()
+        return context
 
 
 ########## File tag views ######################################################
@@ -384,3 +368,19 @@ class FileTagDeleteView(TagViewMixin, DeleteView):  # type: ignore[type-arg,misc
         self.object.delete()
         messages.success(self.request, "Tag deleted.")
         return redirect(self.file)
+
+
+########## File permission views ######################################################
+
+
+class FilePermissionsView(FileViewMixin, SingleTableMixin, TemplateView):
+    """File Permissions view. Shows all Permissions (user and group) for a file."""
+
+    template_name = "file_permissions.html"
+    pk_url_kwarg = "file_uuid"
+    context_object_name = "file"
+    table_class = PermissionTable
+
+    def get_table_data(self) -> "list[UserObjectPermission| GroupObjectPermission]":
+        """Get the data for the table."""
+        return list(self.file.user_permissions.all()) + list(self.file.group_permissions.all())

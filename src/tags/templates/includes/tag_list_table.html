@@ -2,7 +2,9 @@
 {% load render_table from django_tables2 %}
 {% if not filter.qs.count %}
   <h2>No tags found</h2>
+  {% if file.uuid %}
   <p><a class="btn btn-success" href="{% url 'files:file_tag_create' file_uuid=file.uuid %}"><i class="fas fa-plus"></i> Add new tags</a></p>
+  {% endif %}
 {% else %}
   {% render_table table %}
 {% endif %}

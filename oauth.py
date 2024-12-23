@@ -61,6 +61,9 @@ data = {
     "allow": "Authorize",
 }
 auth = s.post(host + "/o/authorize/", allow_redirects=False, data=data, headers={"Referer": host + "/o/authorize/"})
+if auth.status_code != 302:  # noqa: PLR2004
+    print(f"/o/authorize/ returned status code {auth.status_code} - no token today")  # noqa: T201
+    sys.exit(1)
 url = auth.headers["Location"]
 result = urlparse(url)
 qs = parse_qs(result.query)

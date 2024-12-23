@@ -1,0 +1,16 @@
+{% extends "file_detail.html" %}
+{% load render_table from django_tables2 %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% load humanize %}
+{% block title %}File Permissions{% endblock title %}
+
+{% block file_detail %}
+<h1>{{ file.filetype|capfirst }} {{ file.title }} Permissions</h1>
+<div class="row">
+  <!-- main permission table -->
+  <div class="col">
+    {% include "includes/permission_list_table.html" %}
+  </div>
+</div>
+{% endblock file_detail %}

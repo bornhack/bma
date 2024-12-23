@@ -83,7 +83,7 @@
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "account_login" %} active{% endif %}" href="{% url 'account_login' %}">Login</a></li>
                 {% else %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons %} {{ request.user.handle }}</a>
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons request.user %} {{ request.user.handle }}</a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
                     <li><a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-user"></i> Show Profile</a></li>
