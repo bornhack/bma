@@ -80,7 +80,7 @@ jQuery(document).ready(function () {
   //Init Dropzone
   dropzone = new Dropzone("#my-dropzone", {
     url: baseURL + "/api/v1/json/files/upload/",
-    paramName: "f",
+    paramName: "file_data",
     autoProcessQueue: false,
   });
 
@@ -105,7 +105,7 @@ jQuery(document).ready(function () {
     };
 
     //Add metadata to request
-    formData.append('f_metadata', JSON.stringify(metadata));
+    formData.append('file_metadata', JSON.stringify(metadata));
     formData.append('client', JSON.stringify({client_version: UC.client_version, client_uuid: UC.client_uuid}));
 
     //Add authenticaton to xhr

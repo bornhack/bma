@@ -442,7 +442,7 @@ class UploadClient {
    */
   async uploadJobResult(job, result, filename, metadata=undefined) {
     var data = new FormData()
-    data.append('f', result, filename);
+    data.append('data', result, filename);
     data.append('client', JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }))
     if (metadata) {
       data.append('metadata', JSON.stringify(metadata))
