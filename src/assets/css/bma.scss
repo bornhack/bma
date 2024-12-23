@@ -31,5 +31,7 @@ $container-max-widths: (
   6xl: 2664px
 );
 
+$color-mode-type: media-query;
+
 // Import Bootstrap's source files
 @import 'node_modules/bootstrap/scss/bootstrap';
