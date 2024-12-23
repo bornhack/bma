@@ -174,9 +174,9 @@ def upload_result(  # noqa: PLR0913
     request: HttpRequest,
     *,
     job_uuid: uuid.UUID,
-    f: UploadedFile,
+    file_data: UploadedFile,
     client: JobClientSchema,
-    metadata: ImageMetadataSchema | None = None,
+    file_metadata: ImageMetadataSchema | None = None,
     check: bool = False,
 ) -> FileApiResponseType:
     """Endpoint for uploading the result of a job."""
@@ -194,14 +194,14 @@ def upload_result(  # noqa: PLR0913
     try:
         # process and save ImageConversionJob result
         if job.job_type in ["ImageConversionJob", "ThumbnailJob", "ThumbnailSourceJob"]:
-            if metadata is None:
-                return 422, {"message": "Result validation error"}
-            data = metadata.dict()
-            job.handle_result(f=f, data=data)
+            if file_metadata is None:
+                return 422, {"message": "Result validation error - metadata missing"}
+            data = file_metadata.dict()
+            job.handle_result(f=file_data, data=data)
 
         # save exif data from ImageExifExtractionJob
         elif job.job_type == "ImageExifExtractionJob":
-            exif = json.load(f)
+            exif = json.load(file_data)
             basefile.exif = exif
             basefile.save(update_fields=["exif", "updated_at"])
 
