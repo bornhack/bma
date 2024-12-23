@@ -55,27 +55,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
               <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                  {# frontpage / files / albums #}
-                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "frontpage" %} active{% endif %}" aria-current="page" href="{% url 'frontpage:frontpage' %}">Frontpage</a></li>
+                  {# files / albums / tags #}
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list_table" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "tag_list" %} active{% endif %}" href="{% url 'tags:tag_list' %}">Tags</a></li>
-
-                {# upload / manage links #}
-                {% if not request.user.is_anonymous %}
-                  {% if request.user.is_creator %}
-                  <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "upload" %} active{% endif %}" href="{% url 'files:file_upload' %}">Upload</a></li>
-                  {% endif %}
-                  {% if request.user.is_creator or request.user.is_moderator %}
-                  <li class="nav-item"><a class="nav-link" href="{% url 'file_admin:files_basefile_changelist' %}">Manage</a></li>
-                  {% endif %}
-                <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "job_list" %} active{% endif %}" href="{% url 'jobs:job_list' %}">Jobs</a></li>
-                {% endif %}
-
-                {# django admin #}
-                {% if request.user.is_staff %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a></li>
-                {% endif %}
 
                 {# login / logout link #}
                 {% if request.user.is_anonymous %}
@@ -84,13 +67,24 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons request.user %} {{ request.user.handle }}</a>
                   <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+                    {% if request.user.is_creator %}
+                    <li><a class="dropdown-item" href="{% url 'files:file_upload' %}"><i class="fas fa-upload"></i> Upload Files</a></li>
+                    {% endif %}
+
+                    {% if request.user.is_staff %}
+                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-hammer"></i> Django Admin</a></li>
+                    {% endif %}
+
+                    {% if request.user.is_creator or request.user.is_moderator %}
+                    <li><a class="dropdown-item" href="{% url 'file_admin:files_basefile_changelist' %}"><i class="fas fa-solid fa-table-cells-column-lock"></i> Manage Files</a></li>
+                    {% endif %}
+
                     <li><a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-user"></i> Show Profile</a></li>
+                    <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-cog"></i> User Settings</a></li>
                     <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out"></i> Logout</a></li>
                   </ul>
                 </li>
                 {% endif %}
-
               </ul>
               <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
