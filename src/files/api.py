@@ -236,9 +236,6 @@ def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResp
     if filters.size_gt:
         files = files.filter(file_size__gt=filters.size_gt)
 
-    if filters.jobs:
-        files = files.filter(jobs__finished=False, jobs__user__isnull=True)
-
     if filters.search:
         # we search title and description fields for now
         files = files.filter(title__icontains=filters.search) | files.filter(
