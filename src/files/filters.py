@@ -32,7 +32,6 @@ class FileFilters(ListFilters):
     attribution: str | None = None
     tags: list[str] | None = None
     taggers: list[uuid.UUID] | None = None
-    jobs: bool | None = None
 
 
 def get_uploader_widget_data() -> list[tuple[str, str]]:
