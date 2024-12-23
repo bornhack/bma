@@ -104,3 +104,7 @@ div.image-hover.zoom:hover i::before{
   content: "\f002";
 }
 /* hover effect on thumbnails end */
+
+/* make navbar and footer colors in darkmode */
+@media (prefers-color-scheme: dark) { .bg-light { background-color: var(--bs-gray-800) !important }}
+@media (prefers-color-scheme: dark) { .bg-dark { background-color: var(--bs-gray-700) !important }}
