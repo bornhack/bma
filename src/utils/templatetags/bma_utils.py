@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from django import template
 from django.conf import settings
 from django.template import loader
-from django.template.context import RequestContext
 from django.utils.safestring import mark_safe
 
 from pictures.templatetags.pictures import picture
@@ -18,22 +17,23 @@ if TYPE_CHECKING:
     from files.models import BaseFile
     from images.models import Image
     from pictures.models import PictureFieldFile
+    from users.models import User
 
 register = template.Library()
 
 
-@register.simple_tag(takes_context=True)
-def get_group_icons(
-    context: RequestContext,
-) -> str:
+@register.simple_tag()
+def get_group_icons(user: "User") -> str:
     """Return icons representing group memberships."""
     output = ""
-    if settings.BMA_CREATOR_GROUP_NAME in context["request"].user.cached_groups:
-        output += '<i class="fa-solid fa-user-ninja"></i> '
-    if settings.BMA_MODERATOR_GROUP_NAME in context["request"].user.cached_groups:
-        output += '<i class="fa-solid fa-user-shield"></i> '
-    if settings.BMA_CURATOR_GROUP_NAME in context["request"].user.cached_groups:
-        output += '<i class="fa-solid fa-user-astronaut"></i> '
+    if settings.BMA_CREATOR_GROUP_NAME in user.cached_groups:
+        output += '<i title="Creator" class="fa-solid fa-user-ninja"></i> '
+    if settings.BMA_MODERATOR_GROUP_NAME in user.cached_groups:
+        output += '<i title="Moderator" class="fa-solid fa-user-shield"></i> '
+    if settings.BMA_CURATOR_GROUP_NAME in user.cached_groups:
+        output += '<i title="Curator" class="fa-solid fa-user-astronaut"></i> '
+    if settings.BMA_WORKER_GROUP_NAME in user.cached_groups:
+        output += '<i title="Worker" class="fa-solid fa-user-gear"></i> '
     return mark_safe(output)  # noqa: S308
 
 

@@ -14,6 +14,8 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from guardian.shortcuts import get_objects_for_user
+from ninja import Body
+from ninja import File
 from ninja import Query
 from ninja import Router
 from ninja.files import UploadedFile
@@ -67,11 +69,12 @@ query: Query = Query(...)  # type: ignore[type-arg]
 )
 def upload(  # noqa: C901,PLR0913
     request: HttpRequest,
-    f: UploadedFile,
-    f_metadata: UploadRequestSchema,
-    client: JobClientSchema,
-    t: UploadedFile | None = None,
-    t_metadata: ImageMetadataSchema | None = None,
+    file_data: File[UploadedFile],
+    file_metadata: Body[UploadRequestSchema],
+    client: Body[JobClientSchema],
+    # https://github.com/bornhack/bma/issues/291
+    thumbnail_data: File[UploadedFile] = None,  # type: ignore[assignment]
+    thumbnail_metadata: Body[ImageMetadataSchema] = None,  # type: ignore[assignment]
 ) -> FileApiResponseType:
     """API endpoint for file uploads."""
     # make sure the uploading user is in the creators group
@@ -79,7 +82,7 @@ def upload(  # noqa: C901,PLR0913
         return 403, {"message": "Missing upload permissions"}
 
     # get the file metadata
-    data = f_metadata.dict(exclude_unset=True)
+    data = file_metadata.dict(exclude_unset=True)
 
     if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
         from images.models import Image as Model
@@ -100,9 +103,9 @@ def upload(  # noqa: C901,PLR0913
     # initiate the model instance
     uploaded_file = Model(
         uploader=request.user,
-        original=f,
-        original_filename=str(f.name),
-        file_size=f.size,
+        original=file_data,
+        original_filename=str(file_data.name),
+        file_size=file_data.size,
         **data,
     )
 
@@ -140,13 +143,13 @@ def upload(  # noqa: C901,PLR0913
     logger.debug(f"New {uploaded_file.filetype} file {uploaded_file.uuid} uploaded")
 
     # was a thumbnailsource included?
-    if t is not None and t_metadata is not None:
-        tdata = t_metadata.dict()
+    if thumbnail_data is not None and thumbnail_metadata is not None:
+        tdata = thumbnail_metadata.dict()
         ts = ThumbnailSource(
             basefile=uploaded_file,
             aspect_ratio=str(Fraction(tdata["width"] / tdata["height"])),
-            source=t,
-            file_size=t.size,  # type: ignore[misc]
+            source=thumbnail_data,
+            file_size=thumbnail_data.size,  # type: ignore[misc]
             **tdata,
         )
         # validate everything and return 422 if something is fucky

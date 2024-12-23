@@ -5,7 +5,6 @@ import logging
 import uuid
 from fractions import Fraction
 from pathlib import Path
-from typing import TypeAlias
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -16,7 +15,6 @@ from django.http import HttpRequest
 from django.urls import reverse
 from guardian.models import GroupObjectPermissionBase
 from guardian.models import UserObjectPermissionBase
-from guardian.shortcuts import assign_perm
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 from taggit.managers import TaggableManager
@@ -24,12 +22,16 @@ from taggit.utils import _parse_tags
 
 from jobs.models import ThumbnailJob
 from jobs.models import ThumbnailSourceJob
+from permissions.models import PermissionModelBase
+from permissions.utils import bma_assign_group_perm
+from permissions.utils import bma_assign_user_perm
 from pictures.models import PictureField
 from pictures.models import PictureFieldFile
 from tags.managers import BMATagManager
 from tags.models import TaggedFile
 from users.models import UserType
-from users.sentinel import get_sentinel_user
+from users.sentinel import get_deleted_user
+from users.sentinel import get_system_user
 from utils.models import NP_CASCADE
 from utils.models import BaseModel
 from utils.upload import get_thumbnail_path
@@ -78,12 +80,13 @@ class BaseFile(PolymorphicModel):
 
         ordering = ("created_at",)
         permissions = (
-            ("unapprove_basefile", "Unapprove file"),
-            ("approve_basefile", "Approve file"),
-            ("unpublish_basefile", "Unpublish file"),
-            ("publish_basefile", "Publish file"),
-            ("undelete_basefile", "Undelete file"),
-            ("softdelete_basefile", "Soft delete file"),
+            ("approve_basefile", "Can approve file"),
+            ("unapprove_basefile", "Can unapprove file"),
+            ("publish_basefile", "Can publish file"),
+            ("unpublish_basefile", "Can unpublish file"),
+            ("softdelete_basefile", "Can softdelete file"),
+            ("unsoftdelete_basefile", "Can unsoftdelete file"),
+            ("manage_basefile_permissions", "Can manage file permissions"),
         )
         verbose_name = "file"
         verbose_name_plural = "files"
@@ -111,7 +114,7 @@ class BaseFile(PolymorphicModel):
 
     uploader = models.ForeignKey(
         "users.User",
-        on_delete=models.SET(get_sentinel_user),
+        on_delete=models.SET(get_deleted_user),
         related_name="files",
         help_text="The uploader of this file.",
     )
@@ -301,18 +304,21 @@ class BaseFile(PolymorphicModel):
 
     def add_initial_permissions(self) -> None:
         """Add initial permissions for newly uploaded files."""
+        sys = get_system_user()
         # add uploader permissions
-        assign_perm("view_basefile", self.uploader, self)
-        assign_perm("change_basefile", self.uploader, self)
-        assign_perm("publish_basefile", self.uploader, self)
-        assign_perm("unpublish_basefile", self.uploader, self)
-        assign_perm("softdelete_basefile", self.uploader, self)
-        assign_perm("undelete_basefile", self.uploader, self)
+        bma_assign_user_perm("view_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("change_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("publish_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("unpublish_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("softdelete_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("unsoftdelete_basefile", self.uploader, obj=self, creator=sys)
+        bma_assign_user_perm("manage_basefile_permissions", user=self.uploader, obj=self, creator=sys)
         # add moderator permissions
         moderators = Group.objects.get(name=settings.BMA_MODERATOR_GROUP_NAME)
-        assign_perm("view_basefile", moderators, self)
-        assign_perm("approve_basefile", moderators, self)
-        assign_perm("unapprove_basefile", moderators, self)
+        bma_assign_group_perm("view_basefile", moderators, obj=self, creator=sys)
+        bma_assign_group_perm("approve_basefile", moderators, obj=self, creator=sys)
+        bma_assign_group_perm("unapprove_basefile", moderators, obj=self, creator=sys)
+        bma_assign_group_perm("manage_basefile_permissions", moderators, obj=self, creator=sys)
 
     def permitted(self, user: UserType | AnonymousUser) -> bool:
         """Convenience method to determine if viewing this file is permitted for a user."""
@@ -527,16 +533,19 @@ class Thumbnail(ImageModel, BaseModel):
         )
 
 
-class FileUserObjectPermission(UserObjectPermissionBase):
-    """Use a direct (non-generic) FK for user file permissions in guardian."""
+class FileUserPermission(PermissionModelBase, UserObjectPermissionBase):  # type: ignore[django-manager-missing]
+    """The user object permissions class used by guardian for file permissions.
 
-    content_object = models.ForeignKey(BaseFile, related_name="user_permissions", on_delete=NP_CASCADE)
+    Uses a direct (non-generic) FK.
+    """
 
-
-class FileGroupObjectPermission(GroupObjectPermissionBase):
-    """Use a direct (non-generic) FK for group file permissions in guardian."""
-
-    content_object = models.ForeignKey(BaseFile, related_name="group_permissions", on_delete=NP_CASCADE)
+    content_object = models.ForeignKey("files.BaseFile", related_name="user_permissions", on_delete=NP_CASCADE)
 
 
-BaseFileType: TypeAlias = BaseFile
+class FileGroupPermission(PermissionModelBase, GroupObjectPermissionBase):  # type: ignore[django-manager-missing]
+    """The group object permissions class used by guardian for file permissions.
+
+    Uses a direct (non-generic) FK.
+    """
+
+    content_object = models.ForeignKey("files.BaseFile", related_name="group_permissions", on_delete=NP_CASCADE)

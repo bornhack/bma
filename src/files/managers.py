@@ -34,6 +34,8 @@ class BaseFileManager(RelatedPolymorphicManager):
             .annotate(hitcount=Count("hits", distinct=True))
             .annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True)))
             .annotate(jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False)))
+            .annotate(user_permission_count=Count("user_permissions"))
+            .annotate(group_permission_count=Count("group_permissions"))
             .prefetch_active_albums_list(recursive=True)
             .prefetch_related("thumbnails")
             .prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))

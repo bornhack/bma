@@ -10,6 +10,7 @@ from files.views import FileDetailView
 from files.views import FileJobsView
 from files.views import FileListView
 from files.views import FileMultipleActionView
+from files.views import FilePermissionsView
 from files.views import FileTagCreateView
 from files.views import FileTagDeleteView
 from files.views import FileTagDetailView
@@ -32,6 +33,7 @@ urlpatterns = [
                 path("", FileDetailView.as_view(), name="file_show"),
                 path("thumbnails/", FileDetailView.as_view(), name="file_thumbnails"),
                 path("jobs/", FileJobsView.as_view(), name="file_jobs"),
+                path("permissions/", FilePermissionsView.as_view(), name="file_permissions"),
                 path("albums/", FileAlbumsView.as_view(), name="file_albums"),
                 path(
                     "tags/",

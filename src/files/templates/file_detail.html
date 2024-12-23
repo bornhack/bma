@@ -70,6 +70,9 @@
                     <small class="d-block">Last Metadata Update</small>
                     <div class="ms-2 mb-1 fw-bolder">{{ file.updated_at }}</div>
 
+                    <small class="d-block">Permissions</small>
+                    <div class="ms-2 mb-1 fw-bolder">{{ file.user_permissions.count }} user permissions, {{ file.group_permissions.count }} group permissions <a class="btn btn-secondary btn-sm" href="{% url 'files:file_permissions' file_uuid=file.uuid %}">Show</a></div>
+
                     <small class="d-block">Jobs</small>
                     <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">Show {{ file.jobs.count }} jobs</a></div>
                   </dl>

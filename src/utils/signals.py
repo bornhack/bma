@@ -6,6 +6,9 @@ from django.conf import settings
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.signals import request_started
 
+from users.sentinel import get_deleted_user
+from users.sentinel import get_system_user
+
 logger = logging.getLogger("bma")
 
 
@@ -33,6 +36,12 @@ def bma_startup(sender: WSGIHandler, **kwargs: dict[str, str]) -> None:
     worker_group, created = Group.objects.get_or_create(name=settings.BMA_WORKER_GROUP_NAME)
     if created:
         logger.info(f"Created worker group {settings.BMA_WORKER_GROUP_NAME}")
+
+    # make sure deleted user exists
+    get_deleted_user()
+
+    # make sure system user exists
+    get_system_user()
 
     # all done
     logger.debug(

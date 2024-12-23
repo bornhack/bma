@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "tags",
     "hitcounter",
     "jobs",
+    "permissions",
 ]
 
 MIDDLEWARE = [

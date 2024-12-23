@@ -107,11 +107,11 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
             return True
         return request.user.has_perm("softdelete_basefile", obj)
 
-    def has_undelete_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
+    def has_unsoftdelete_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
         """Called by the admin to check if the user has permission to undelete this type of/this specific object."""
         if obj is None:
             return True
-        return request.user.has_perm("undelete_basefile", obj)
+        return request.user.has_perm("unsoftdelete_basefile", obj)
 
     def send_message(self, request: HttpRequest, selected: int, valid: int, updated: int, action: str) -> None:
         """Return a message to the user."""
@@ -187,13 +187,13 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         self.send_message(request, selected=selected, valid=valids, updated=updated, action="deleted")
 
     @admin.action(
-        description="Undelete selected %(verbose_name_plural)s",
-        permissions=["undelete_basefile"],
+        description="Unsoftdelete selected %(verbose_name_plural)s",
+        permissions=["unsoftdelete_basefile"],
     )
     def undelete(self, request: HttpRequest, queryset: QuerySet[BaseFile]) -> None:
         """Admin action to undelete files."""
         selected = queryset.count()
-        valid = get_objects_for_user(request.user, "files.undelete_basefile", klass=queryset)
+        valid = get_objects_for_user(request.user, "files.unsoftdelete_basefile", klass=queryset)
         valids = valid.count()
         updated = valid.undelete()
         self.send_message(request, selected=selected, valid=valids, updated=updated, action="undeleted")

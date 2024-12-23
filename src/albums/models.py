@@ -3,7 +3,6 @@
 
 import logging
 import uuid
-from typing import TypeAlias
 
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DateTimeRangeField
@@ -14,11 +13,13 @@ from django.urls import reverse
 from django.utils import timezone
 from guardian.models import GroupObjectPermissionBase
 from guardian.models import UserObjectPermissionBase
-from guardian.shortcuts import assign_perm
 from psycopg2.extras import DateTimeTZRange
 
 from files.models import BaseFile
-from users.sentinel import get_sentinel_user
+from permissions.models import PermissionModelBase
+from permissions.utils import bma_assign_user_perm
+from users.sentinel import get_deleted_user
+from users.sentinel import get_system_user
 from utils.models import NP_CASCADE
 
 from .managers import AlbumManager
@@ -39,7 +40,7 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
 
     owner = models.ForeignKey(
         "users.User",
-        on_delete=models.SET(get_sentinel_user),
+        on_delete=models.SET(get_deleted_user),
         related_name="albums",
         help_text="The creator of this album.",
     )
@@ -117,7 +118,8 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
 
     def add_initial_permissions(self) -> None:
         """Add initial permissions for newly created albums."""
-        assign_perm("change_album", self.owner, self)
+        sys = get_system_user()
+        bma_assign_user_perm("change_album", user=self.owner, obj=self, creator=sys)
 
     def update_members(self, *file_uuids: str, replace: bool) -> None:
         """Update active album members to file_uuids, adding/removing or replacing as needed."""
@@ -185,16 +187,19 @@ class AlbumMember(models.Model):
         return f"{self.basefile.uuid} is in album {self.album.uuid} from {self.period.lower}"
 
 
-class AlbumUserObjectPermission(UserObjectPermissionBase):
-    """Use a direct (non-generic) FK for user album permissions in guardian."""
+class AlbumUserPermission(PermissionModelBase, UserObjectPermissionBase):  # type: ignore[django-manager-missing]
+    """The user object permissions class used by guardian for album permissions.
+
+    Uses a direct (non-generic) FK.
+    """
 
     content_object = models.ForeignKey("albums.Album", related_name="user_permissions", on_delete=NP_CASCADE)
 
 
-class AlbumGroupObjectPermission(GroupObjectPermissionBase):
-    """Use a direct (non-generic) FK for group album permissions in guardian."""
+class AlbumGroupPermission(PermissionModelBase, GroupObjectPermissionBase):  # type: ignore[django-manager-missing]
+    """The group object permissions class used by guardian for album permissions.
+
+    Uses a direct (non-generic) FK.
+    """
 
     content_object = models.ForeignKey("albums.Album", related_name="group_permissions", on_delete=NP_CASCADE)
-
-
-AlbumType: TypeAlias = Album

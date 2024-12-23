@@ -161,8 +161,8 @@ class BmaTestBase(TestCase):
             response = cls.client.post(
                 reverse("api-v1-json:upload"),
                 {
-                    "f": f,
-                    "f_metadata": json.dumps(metadata),
+                    "file_data": f,
+                    "file_metadata": json.dumps(metadata),
                     "client": json.dumps(cls.clientinfo),
                 },
                 headers={"authorization": getattr(cls, uploader).auth},

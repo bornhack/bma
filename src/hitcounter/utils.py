@@ -4,17 +4,19 @@ Most of this code is originally borrowed from https://github.com/thornomad/djang
 """
 
 from ipaddress import ip_address as validate_ip
+from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 from django.conf import settings
 from django.http import HttpRequest
 
-from albums.models import AlbumType
-from files.models import BaseFileType
-from tags.models import BmaTagType
-
 from .models import BlocklistIP
 from .models import BlocklistUserAgent
+
+if TYPE_CHECKING:
+    from albums.models import Album
+    from files.models import BaseFile
+    from tags.models import BmaTag
 
 
 class UpdateHitCountResponse(NamedTuple):
@@ -24,7 +26,7 @@ class UpdateHitCountResponse(NamedTuple):
     reason: str
 
 
-def count_hit(request: HttpRequest, content_object: BaseFileType | AlbumType | BmaTagType) -> UpdateHitCountResponse:
+def count_hit(request: HttpRequest, content_object: "BaseFile | Album | BmaTag") -> UpdateHitCountResponse:
     """Called with a HttpRequest and a model object it will return a namedtuple.
 
     UpdateHitCountResponse(hit_counted=Boolean, hit_message='Message').
