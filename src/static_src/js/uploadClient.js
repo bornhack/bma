@@ -302,10 +302,8 @@ class UploadClient {
         },
       });
       const file = await result.blob();
-      const header = result.headers.get('Content-Disposition');
-      const parts = header.split(';');
-      const filename = parts[1].split('=')[1];
-      if (filename.endsWith(".webp\"")) {
+      const contentType = result.headers.get('Content-Type');
+      if (contentType === "image/webp") {
         return { url: file_url, file: new Blob([file], {type:"image/webp"})}
       }
       return { url: file_url, file: file }
