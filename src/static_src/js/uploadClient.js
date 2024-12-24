@@ -28,12 +28,12 @@ class UploadClient {
     this.running_jobs = 0;
     this.current_jobs = 0;
     this.total_jobs = 0;
-    const cookie = this.getCookie("uc_uuid");
+    const cookie = this.getCookie("bma_uc_uuid");
     if (cookie) {
       this.client_uuid = cookie;
     } else {
       this.client_uuid = this.generateUUID();
-      this.setCookie("uc_uuid", this.client_uuid, 1);
+      this.setCookie("bma_uc_uuid", this.client_uuid, 1);
     }
     this.updateProgress = (_item, _progress) => {};
   }
@@ -515,7 +515,7 @@ class UploadClient {
     let expires = "expires="+d.toUTCString();
 
     if (location.protocol === 'https:')
-      document.cookie = cname + "=" + cvalue + ";Secure;HttpOnly;SameSite=Strict;" + expires + ";path=/";
+      document.cookie = cname + "=" + cvalue + ";Secure;SameSite=Strict;" + expires + ";path=/";
     else
       document.cookie = cname + "=" + cvalue + ";SameSite=Strict;" + expires + ";path=/";
   }
