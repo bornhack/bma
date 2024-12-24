@@ -52,8 +52,8 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         return BaseFile.bmanager.get_permitted(user=request.user)  # type: ignore[no-any-return]
 
     def delete_queryset(self, request: HttpRequest, queryset: QuerySet[BaseFile]) -> None:
-        """Soft delete."""
-        queryset.update(deleted=True)
+        """Really delete, use non_polymorphic to make CASCADE work."""
+        queryset.non_polymorphic().delete()  # type: ignore[attr-defined]
 
     def has_module_permission(self, request: HttpRequest) -> bool:
         """All users may see this modules index page."""

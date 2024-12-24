@@ -49,7 +49,7 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
 
     def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:
         """Return files that are approved, published and not deleted, plus files where the user has view_basefile."""
-        public_files = self.filter(approved=True, published=True).prefetch_related("uploader")
+        public_files = self.filter(approved=True, published=True, deleted=False).prefetch_related("uploader")
         perm_files = get_objects_for_user(
             user=user,
             perms="files.view_basefile",
