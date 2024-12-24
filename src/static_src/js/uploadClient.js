@@ -515,7 +515,11 @@ class UploadClient {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires="+d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+
+    if (location.protocol === 'https:')
+      document.cookie = cname + "=" + cvalue + ";Secure;HttpOnly;SameSite=Strict;" + expires + ";path=/";
+    else
+      document.cookie = cname + "=" + cvalue + ";SameSite=Strict;" + expires + ";path=/";
   }
 
   /**
