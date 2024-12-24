@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
@@ -36,3 +38,9 @@ class JobListView(SingleTableMixin, FilterView):
             basefile__in=BaseFile.bmanager.get_permitted(user=self.request.user)
         ).count()
         return context  # type: ignore[no-any-return]
+
+
+class JobGrindView(LoginRequiredMixin, TemplateView):
+    """The grinder view of many jobs. Uses the API and a js client to grind."""
+
+    template_name = "grinder.html"

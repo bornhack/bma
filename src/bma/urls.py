@@ -19,7 +19,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("manage/", file_admin.urls),
     path("accounts/", include("allauth.urls")),
-    path("api/v1/json/", api_v1_json.urls),
     path("api/csrf/", csrfview),
     path("o/", include((oauth2_endpoint_views, "oauth2_provider"), namespace="oauth2_provider")),
     path("", include("frontpage.urls")),
@@ -31,6 +30,7 @@ urlpatterns = [
     path("tags/", include("tags.urls", namespace="tags")),
     path("settings/", UserSettingsView.as_view(), name="user_settings"),
     path("settings/update/", UserSettingsUpdateView.as_view(), name="user_settings_update"),
+    path("api/v1/json/", api_v1_json.urls),
     # BMA serves media files through nginx using X-Accel-Redirect in prod,
     # and locally during development, determined by the value of 'accel' arg to bma_media_view
     re_path(
