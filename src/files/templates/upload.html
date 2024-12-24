@@ -28,7 +28,7 @@
           {% bootstrap_field field %}
       {% endif %}
   {% endfor %}
-  <form enctype='multipart/form-data' action="{% url 'files:upload' %}" method='POST' class="dropzone dz" id="my-dropzone" >
+  <form enctype='multipart/form-data' action="{% url 'files:file_upload' %}" method='POST' class="dropzone dz" id="my-dropzone" >
       {% csrf_token %}
   </form>
   <button id="btnupload" disabled class="btn btn-primary">
