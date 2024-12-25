@@ -105,7 +105,7 @@ jQuery(document).ready(function () {
             mimetype: file.type,
           }
 
-          //bma_uuid excists after the file is uploaded
+          //bma_uuid exists after the file is uploaded
           if ("bma_uuid" in ThumbnailOrgFile) {
             UC.uploadThumbnailSource(ThumbnailOrgFile.bma_uuid, blob, "thumbnail", ThumbnailOrgFile.thumb_metadata).then(()=> {
               ThumbnailUploadModal.hide();
