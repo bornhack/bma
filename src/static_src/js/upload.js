@@ -97,7 +97,7 @@ jQuery(document).ready(function () {
       if (file.type.match(/image.*/)) {
         ThumbnailOrgFile.thumb = blob;
 
-        //Get the image dimentions
+        //Get the image dimensions
         UC.getImageDimensions(blob).then((size) => {
           ThumbnailOrgFile.thumb_metadata = {
             width: size.width,
