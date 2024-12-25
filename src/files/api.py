@@ -676,6 +676,7 @@ def file_thumbnail(  # noqa: PLR0913
     if check:
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
+
     mdata = metadata.dict()
 
     # initiate the model instance
@@ -693,19 +694,15 @@ def file_thumbnail(  # noqa: PLR0913
         **client.dict(),
     )
     ts.job = tj
-    # validate before saving
-    try:
+    with transaction.atomic():
+        # delete existing ts
+        ThumbnailSource.objects.filter(basefile=basefile).delete()
+        # validate before saving
         ts.full_clean()
-    except ValidationError:
-        logger.exception("Upload thumbnail validation error")
-        return 422, {"message": "Validation error (thumbnail)"}
-    # delete existing ts
-    deleted = ThumbnailSource.objects.filter(basefile=basefile).delete()
-    logger.debug(f"Deleted existing ThumbnailSource {deleted}")
 
-    # save thumbnailsource
-    ts.save()
-    logger.debug(f"ThumbnailSource {ts.uuid} created for file {basefile.uuid}")
+        # save thumbnailsource
+        ts.save()
+        logger.debug(f"ThumbnailSource {ts.uuid} created for file {basefile.uuid}")
 
     # create jobs, refresh object, and return
     basefile.create_jobs()
