@@ -659,11 +659,12 @@ def file_untag(
     },
     summary="Upload thumbnail source image for a file.",
 )
-def file_thumbnail(
+def file_thumbnail(  # noqa: PLR0913
     request: HttpRequest,
     file_uuid: uuid.UUID,
-    f: UploadedFile,
+    data: UploadedFile,
     metadata: ImageMetadataSchema,
+    client: Body[JobClientSchema],
     *,
     check: bool = False,
 ) -> FileApiResponseType:
@@ -675,14 +676,23 @@ def file_thumbnail(
     if check:
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
-    data = metadata.dict()
+    mdata = metadata.dict()
 
     # initiate the model instance
     ts = ThumbnailSource(
         basefile=basefile,
-        source=f,
-        **data,
+        aspect_ratio=str(Fraction(mdata["width"], mdata["height"])),
+        source=data,
+        file_size=data.size,  # type: ignore[misc]
+        **mdata,
     )
+    tj = ThumbnailSourceJob.objects.create(
+        basefile=basefile,
+        user=request.user,
+        finished=True,
+        **client.dict(),
+    )
+    ts.job = tj
     # validate before saving
     try:
         ts.full_clean()
@@ -716,7 +726,7 @@ def file_thumbnail(
 def file_thumbnail_delete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
-    """Delete a thumbnail."""
+    """Delete a thumbnail (revert to autocreated thumbnail for this file)."""
     basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
@@ -724,4 +734,11 @@ def file_thumbnail_delete(
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
     basefile.thumbnail.delete()
+    # create new ThubnailSource job, which will be picked up by a worker,
+    # and autogenerate a new thumbnailsource
+    ThumbnailSourceJob.objects.create(
+        basefile=basefile,
+        user=request.user,
+        finished=False,
+    )
     return 204, None
