@@ -108,7 +108,7 @@ div.image-hover.zoom:hover i::before{
 /* make navbar colors in darkmode */
 @media (prefers-color-scheme: dark) { .bg-dark { background-color: var(--bs-gray-800) !important }}
 
-/* Floating delete action button */
+/* File upload page floating delete action button */
 .fab-delete {
     position: absolute;
     top: 0px;
