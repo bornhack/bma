@@ -41,7 +41,6 @@ jQuery(document).ready(function () {
   $('#editor-save-image').bind('click', () => {
     const data = ImageEditor.toDataURL();
     var blob = dataURItoBlob(data);
-    console.log(blob);
     const file = new File([blob], `edited-` + ImageEditorOrgFile.name, {
       type: "image/jpeg",
       lastModified: new Date(),
