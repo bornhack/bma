@@ -147,7 +147,7 @@ def upload(  # noqa: C901,PLR0913
         tdata = thumbnail_metadata.dict()
         ts = ThumbnailSource(
             basefile=uploaded_file,
-            aspect_ratio=str(Fraction(tdata["width"] / tdata["height"])),
+            aspect_ratio=str(Fraction(tdata["width"], tdata["height"])),
             source=thumbnail_data,
             file_size=thumbnail_data.size,  # type: ignore[misc]
             **tdata,
