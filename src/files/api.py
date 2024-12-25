@@ -24,6 +24,7 @@ from audios.models import Audio
 from documents.models import Document
 from images.models import Image
 from jobs.models import FileUploadJob
+from jobs.models import ThumbnailSourceJob
 from jobs.schema import JobClientSchema
 from tags.models import BmaTag
 from tags.models import TaggedFile
@@ -152,6 +153,13 @@ def upload(  # noqa: C901,PLR0913
             file_size=thumbnail_data.size,  # type: ignore[misc]
             **tdata,
         )
+        tj = ThumbnailSourceJob.objects.create(
+            basefile=uploaded_file,
+            user=request.user,
+            finished=True,
+            **client.dict(),
+        )
+        ts.job = tj
         # validate everything and return 422 if something is fucky
         try:
             ts.full_clean()
