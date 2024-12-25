@@ -162,6 +162,7 @@ jQuery(document).ready(function () {
     url: baseURL + "/api/v1/json/files/upload/",
     paramName: "file_data",
     autoProcessQueue: false,
+    // do not create thumbnails for files bigger than 50MB
     maxThumbnailFilesize: 50,
   });
 
