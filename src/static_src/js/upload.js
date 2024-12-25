@@ -89,19 +89,23 @@ jQuery(document).ready(function () {
       const file = files[0];
       const blob = new Blob([file], { type: file.type });
       if (file.type.match(/image.*/)) {
+        ThumbnailOrgFile.thumb = blob;
+
+        //Get the image dimentions
         UC.getImageDimensions(blob).then((size) => {
           ThumbnailOrgFile.thumb_metadata = {
             width: size.width,
             height: size.height,
             mimetype: file.type,
           }
+
+          //bma_uuid excists after the file is uploaded
           if ("bma_uuid" in ThumbnailOrgFile) {
             UC.uploadThumbnailSource(ThumbnailOrgFile.bma_uuid, blob, "thumbnail", ThumbnailOrgFile.thumb_metadata).then(()=> {
               ThumbnailUploadModal.hide();
             });
           }
         });
-        ThumbnailOrgFile.thumb = blob;
         const fr = new FileReader();
         fr.addEventListener(
           "load",
@@ -112,7 +116,7 @@ jQuery(document).ready(function () {
         );
         UC.crop(blob, 120, 120).then((file) => {
           fr.readAsDataURL(file);
-          if (ThumbnailOrgFile.status === "queued")
+          if (!("bma_uuid" in ThumbnailOrgFile))
             ThumbnailUploadModal.hide();
         })
       } else alert("Not a image");
@@ -123,6 +127,24 @@ jQuery(document).ready(function () {
 
   //Cancel button thumbnail Modal
   $('#thumbnail-cancel').bind('click', () => {
+    ThumbnailUploadModal.hide();
+    ThumbnailOrgFile = undefined;
+  });
+
+  //Delete button thumbnail Modal
+  $('#thumbnail-delete').bind('click', () => {
+    if (!("bma_uuid" in ThumbnailUploadModal)) {
+      delete(ThumbnailUploadModal.thumb);
+      delete(ThumbnailUploadModal.thumb_metadata);
+      for (let thumbnailElement of ThumbnailOrgFile.previewElement.querySelectorAll(
+        "[data-dz-thumbnail]"
+      )) {
+        thumbnailElement.alt = "";
+        thumbnailElement.src = "";
+      }
+    } else {
+      alert("Sorry cant remove if already uploaded");
+    }
     ThumbnailUploadModal.hide();
     ThumbnailOrgFile = undefined;
   });
@@ -178,14 +200,17 @@ jQuery(document).ready(function () {
       }
     } else {
       dropzone.removeFile(file);
-      alert("Invalid filetype");
+      alert("Invalid filetype: " + file.type);
     }
     if (!file.type.match(/image.*/)) {
       file.previewElement.addEventListener("click", function() {
-        console.log("You wanna thumbnail");
-        if ("thumb" in file) return;
-        ThumbnailUploadModal.show();
+        $("#thumbnail").val('');
         ThumbnailOrgFile = file;
+        if ("thumb" in file && !("bma_uuid" in file)) {
+          $("#thumbnail-delete").show();
+        } else
+          $("#thumbnail-delete").hide();
+        ThumbnailUploadModal.show();
       });
     }
   })
