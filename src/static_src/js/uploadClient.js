@@ -18,7 +18,7 @@ class UploadClient {
     this.finished = [];
     this.allowedMimetypes = [];
     this.callback = callback;
-    this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
+    this.bma_version = JSON.parse(document.getElementById('bma-version').textContent);
     this.client_version = `js-client - BMA ${this.bma_version}`;
     this.activeJobs = 0;
     this.maxConcurrent = 2;
