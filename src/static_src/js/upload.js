@@ -10,6 +10,8 @@ const UC = new UploadClient(client_id, () => {
 
 //Init base variables
 var dropzone = undefined;
+var ThumbnailUploadModal = undefined;
+var ThumbnailOrgFile = undefined;
 var ImageEditorModal = undefined;
 var ImageEditor = undefined;
 var ImageEditorOrgFile = undefined;
@@ -19,6 +21,7 @@ tui.usageStatistics = false
 jQuery(document).ready(function () {
   //Init the editor
   ImageEditorModal = new bootstrap.Modal(document.getElementById('image-editor-modal'));
+  ThumbnailUploadModal = new bootstrap.Modal(document.getElementById('thumbnail-upload-modal'));
   ImageEditor = new tui.ImageEditor(document.querySelector('#my-image-editor'), {
     includeUI: {
       theme: {
@@ -77,6 +80,53 @@ jQuery(document).ready(function () {
     ImageEditorModal.hide();
   });
 
+  // Add an event listener to the input
+  $('#thumbnail').bind('change', (event) => { 
+    const fileInput = event.target;
+    const files = fileInput.files;
+
+    if (files.length > 0) {
+      const file = files[0];
+      const blob = new Blob([file], { type: file.type });
+      if (file.type.match(/image.*/)) {
+        UC.getImageDimensions(blob).then((size) => {
+          ThumbnailOrgFile.thumb_metadata = {
+            width: size.width,
+            height: size.height,
+            mimetype: file.type,
+          }
+          if ("bma_uuid" in ThumbnailOrgFile) {
+            UC.uploadThumbnailSource(ThumbnailOrgFile.bma_uuid, blob, "thumbnail", ThumbnailOrgFile.thumb_metadata).then(()=> {
+              ThumbnailUploadModal.hide();
+            });
+          }
+        });
+        ThumbnailOrgFile.thumb = blob;
+        const fr = new FileReader();
+        fr.addEventListener(
+          "load",
+          () => {
+            dropzone.emit("thumbnail", ThumbnailOrgFile, fr.result);
+          },
+          false,
+        );
+        UC.crop(blob, 120, 120).then((file) => {
+          fr.readAsDataURL(file);
+          if (ThumbnailOrgFile.status === "queued")
+            ThumbnailUploadModal.hide();
+        })
+      } else alert("Not a image");
+    } else {
+      console.log('No file selected');
+    }
+  });
+
+  //Cancel button thumbnail Modal
+  $('#thumbnail-cancel').bind('click', () => {
+    ThumbnailUploadModal.hide();
+    ThumbnailOrgFile = undefined;
+  });
+
   //Init Dropzone
   dropzone = new Dropzone("#my-dropzone", {
     url: baseURL + "/api/v1/json/files/upload/",
@@ -108,6 +158,11 @@ jQuery(document).ready(function () {
     formData.append('file_metadata', JSON.stringify(metadata));
     formData.append('client', JSON.stringify({client_version: UC.client_version, client_uuid: UC.client_uuid}));
 
+    if (file.thumb) {
+      formData.append('thumbnail_data', file.thumb);
+      formData.append('thumbnail_metadata', JSON.stringify(file.thumb_metadata));
+    }
+
     //Add authenticaton to xhr
     xhr.setRequestHeader("Authorization", `Bearer ${UC.oauth.token}`);
   });
@@ -125,11 +180,20 @@ jQuery(document).ready(function () {
       dropzone.removeFile(file);
       alert("Invalid filetype");
     }
+    if (!file.type.match(/image.*/)) {
+      file.previewElement.addEventListener("click", function() {
+        console.log("You wanna thumbnail");
+        if ("thumb" in file) return;
+        ThumbnailUploadModal.show();
+        ThumbnailOrgFile = file;
+      });
+    }
   })
 
   //Event triggered when the thumbnail is made 
   dropzone.on("thumbnail", file => {
     file.previewElement.addEventListener("click", function() {
+      if ("thumb" in file) return;
       console.log("Starting editor");
       ImageEditor.loadImageFromURL(file.dataURL,file.name).then( () => {
         ImageEditor.resetZoom();
@@ -151,6 +215,8 @@ jQuery(document).ready(function () {
     //Append images to make album when done
     ImageUploadList.push(uuid)
 
+    file.bma_uuid = uuid;
+
     //Make BMA scripts happy
     const index = formdatas.indexOf(file.name);
     if (index !== -1) {
@@ -168,9 +234,11 @@ jQuery(document).ready(function () {
   //Event triggered after its done uploading
   dropzone.on("queuecomplete", _file => {
     const now = new Date;
-    console.log("Adding album for", ImageUploadList)
-    UC.createAlbum(`Uploaded ${now.toISOString()}`,"", ImageUploadList);
-    ImageUploadList = [];
+    if (ImageUploadList.length > 0) {
+      console.log("Adding album for", ImageUploadList)
+      UC.createAlbum(`Uploaded ${now.toISOString()}`,"", ImageUploadList);
+      ImageUploadList = [];
+    }
   })
 });
 

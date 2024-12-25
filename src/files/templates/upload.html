@@ -36,6 +36,24 @@
     <span class="sr-only">Loading...</span>
   </button>
   <script src={% static 'js/upload.js' %}></script>
+  <div class="modal fade" id="thumbnail-upload-modal" tabindex="-1" aria-labelledby="ThumbnailUploadModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="ThumbnailUploadModalLabel">Upload thumbnail</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <form id="thumbnail-upload">
+                    <input type="file" name="thumbnail" id="thumbnail" />
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" id="thumbnail-cancel" class="btn btn-secondary">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
   <div class="modal fade" id="image-editor-modal" tabindex="-1" aria-labelledby="ImageEditorModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
