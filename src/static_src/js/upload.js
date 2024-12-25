@@ -41,6 +41,7 @@ jQuery(document).ready(function () {
   $('#editor-save-image').bind('click', () => {
     const data = ImageEditor.toDataURL();
     var blob = dataURItoBlob(data);
+    console.log(blob);
     const file = new File([blob], `edited-` + ImageEditorOrgFile.name, {
       type: "image/jpeg",
       lastModified: new Date(),
@@ -48,6 +49,9 @@ jQuery(document).ready(function () {
     file.upload = {
       chunked: false,
     };
+    file.type = "image/jpeg";
+    file.width = ImageEditorOrgFile.width;
+    file.height = ImageEditorOrgFile.height;
     dropzone.addFile(file);
     dropzone.emit("addedfiles", dropzone.files);
     ImageEditorOrgFile = undefined;
@@ -65,6 +69,9 @@ jQuery(document).ready(function () {
     file.upload = {
       chunked: false,
     };
+    file.type = "image/jpeg";
+    file.width = ImageEditorOrgFile.width;
+    file.height = ImageEditorOrgFile.height;
     dropzone.addFile(ImageEditorOrgFile);
     dropzone.addFile(file);
     dropzone.emit("addedfiles", dropzone.files);
@@ -134,8 +141,10 @@ jQuery(document).ready(function () {
   //Delete button thumbnail Modal
   $('#thumbnail-delete').bind('click', () => {
     if (!("bma_uuid" in ThumbnailUploadModal)) {
-      delete(ThumbnailUploadModal.thumb);
-      delete(ThumbnailUploadModal.thumb_metadata);
+      delete(ThumbnailOrgFile.thumb);
+      delete(ThumbnailOrgFile.thumb_metadata);
+      ThumbnailOrgFile.previewElement.classList.remove("dz-image-preview")
+      ThumbnailOrgFile.previewElement.classList.add("dz-file-preview");
       for (let thumbnailElement of ThumbnailOrgFile.previewElement.querySelectorAll(
         "[data-dz-thumbnail]"
       )) {
@@ -154,6 +163,7 @@ jQuery(document).ready(function () {
     url: baseURL + "/api/v1/json/files/upload/",
     paramName: "file_data",
     autoProcessQueue: false,
+    maxThumbnailFilesize: 50,
   });
 
   //Event triggered just before starting upload
@@ -213,6 +223,16 @@ jQuery(document).ready(function () {
         ThumbnailUploadModal.show();
       });
     }
+    // Create the remove button
+    var removeButton = Dropzone.createElement(`<button class="fab-delete" aria-label="Delete"><i class="fa fa-trash"></i></button>`);
+
+    // Listen to the click event
+    removeButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.removeFile(file);
+    });
+    file.previewElement.appendChild(removeButton);
   })
 
   //Event triggered when the thumbnail is made 

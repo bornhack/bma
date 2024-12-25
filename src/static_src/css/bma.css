@@ -107,3 +107,25 @@ div.image-hover.zoom:hover i::before{
 
 /* make navbar colors in darkmode */
 @media (prefers-color-scheme: dark) { .bg-dark { background-color: var(--bs-gray-800) !important }}
+
+/* Floating delete action button */
+.fab-delete {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background-color: #dc3545; /* Bootstrap Danger color */
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    z-index: 250;
+}
+.fab-delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
