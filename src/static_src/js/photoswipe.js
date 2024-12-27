@@ -166,6 +166,7 @@ lightbox.on('contentLoad', (e) => {
 lightbox.on('openingAnimationEnd', () => {
   if (location.hash.includes("autoplay")) {
       slideshowPlugin.setSlideshowState();
+      autoHideUI.hideUI();
   }
 });
 
