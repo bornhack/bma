@@ -18,11 +18,7 @@
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-4xl-6 g-3">
                   {% for item in 6_last %}
                     <div class="col">
-                      {% if file.filetype == "video" %}
-                        {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="16/9" %}
-                      {% else %}
-                        {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
-                      {% endif %}
+                      {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
                       <p class="text-break">{{ item.title }}</p>
                     </div>
                   {% endfor %}
