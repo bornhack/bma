@@ -19,7 +19,7 @@
                   {% for item in 6_last %}
                     <div class="col">
                       {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
-                      <p class="text-break">{{ item.title }}</p>
+                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
                     </div>
                   {% endfor %}
                 </div>
@@ -29,10 +29,10 @@
                 <h3>Most Viewed</h3>
               <hr>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-4xl-6 g-3">
-                  {% for image in 6_most_popular %}
+                  {% for item in 6_most_popular %}
                     <div class="col">
-                        {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
-                        <p class="text-break">{{ image.title }}</p>
+                        {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
+                        <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
                     </div>
                   {% endfor %}
                 </div>
@@ -47,7 +47,7 @@
                 {% for image in 6_last_images %}
                   <div class="col">
                     {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
-                    <p class="text-break">{{ image.title }}</p>
+                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}">{{ image.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -59,7 +59,7 @@
                 {% for document in 6_last_documents %}
                   <div class="col d-block mb-3">
                     {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
-                    <p class="text-break">{{ document.title }}</p>
+                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}">{{ document.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -71,7 +71,7 @@
                 {% for video in 6_last_videos %}
                   <div class="col d-block mb-3">
                       {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
-                      <p class="text-break">{{ video.title }}</p>
+                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}">{{ video.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -84,7 +84,7 @@
                     <audio controls class="w-75">
                       <source src="{{ audio.original.url }}">
                     </audio>
-                    <p class="text-break">{{ audio.title }}</p>
+                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}">{{ audio.title }}</a></p>
                   </div>
                 {% endfor %}
             </div>
