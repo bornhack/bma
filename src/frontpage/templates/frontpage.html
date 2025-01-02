@@ -76,14 +76,12 @@
                 {% endfor %}
               </div>
             </div>
-            <div class="col-md-6 col-lg-3 mb-4">
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
                 <h4>Audio</h4>
                 <hr>
                 {% for audio in 6_last_audios %}
                   <div class="col d-block mb-3">
-                    <audio controls class="w-75">
-                      <source src="{{ audio.original.url }}">
-                    </audio>
+                    {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
                     <p class="text-break"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}">{{ audio.title }}</a></p>
                   </div>
                 {% endfor %}
