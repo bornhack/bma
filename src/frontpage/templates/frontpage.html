@@ -43,7 +43,7 @@
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
               <h4>Images</h4>
               <hr>
-              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2  row-cols-3xl-3 g-3">
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 g-3">
                 {% for image in 6_last_images %}
                   <div class="col">
                     {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
@@ -55,7 +55,7 @@
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
               <h4>Documents</h4>
               <hr>
-              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2  row-cols-3xl-3 g-3">
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 g-3">
                 {% for document in 6_last_documents %}
                   <div class="col d-block mb-3">
                     {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
@@ -67,7 +67,7 @@
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
               <h4>Videos</h4>
               <hr>
-              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2  row-cols-3xl-3 g-3">
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 g-3">
                 {% for video in 6_last_videos %}
                   <div class="col d-block mb-3">
                       {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
@@ -79,12 +79,14 @@
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
                 <h4>Audio</h4>
                 <hr>
-                {% for audio in 6_last_audios %}
-                  <div class="col d-block mb-3">
-                    {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
-                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}">{{ audio.title }}</a></p>
-                  </div>
-                {% endfor %}
+                <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 g-3">
+                  {% for audio in 6_last_audios %}
+                    <div class="col d-block mb-3">
+                      {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
+                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}">{{ audio.title }}</a></p>
+                    </div>
+                  {% endfor %}
+                </div>
             </div>
         </div>
     </div>
