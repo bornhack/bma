@@ -12,7 +12,7 @@
   {% include "includes/file_toolbar.html" %}
   {% csrf_token %}
   <div class="pswp-gallery" id="gallery">
-  {% for file in filter.qs %}
+  {% for file in table.data %}
     {% include "includes/file_thumbnail_pswp.html" with record=file width=150 ratio="1/1" %}
   {% endfor %}
   </div>
