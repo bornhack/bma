@@ -25,7 +25,7 @@ dependencies = [
     "django-oauth-toolkit==3.0.1",
     "django-polymorphic==3.1.0",
     "django-stubs-ext==5.1.1",
-    "django-tables2==2.7.4",
+    "django-tables2==2.7.5",
     "django-taggit==6.1.0",
     "environs[django]==11.2.1",
     "fontawesomefree==6.6.0",
