@@ -62,6 +62,14 @@ def get_tagger_widget_data() -> list[tuple[str, str]]:
     ]
 
 
+FILETYPE_CHOICES = (
+    ("image", "Image"),
+    ("video", "Video"),
+    ("audio", "Audio"),
+    ("document", "Document"),
+)
+
+
 class FileFilter(django_filters.FilterSet):
     """The main django-filters filter used in views showing files."""
 
@@ -72,6 +80,18 @@ class FileFilter(django_filters.FilterSet):
         return BaseFile.bmanager.get_permitted(user=self.request.user).filter(  # type: ignore[no-any-return]
             pk__in=queryset.values_list("pk", flat=True)
         )
+
+    ####### FILETYPES ##############
+    file_types = django_filters.MultipleChoiceFilter(
+        method="file_types_filter", choices=FILETYPE_CHOICES, label="File Types"
+    )
+
+    def file_types_filter(
+        self, queryset: models.QuerySet[BaseFile], name: str, value: list[str]
+    ) -> models.QuerySet[BaseFile]:
+        """Filter by filetype/polymorphic subclass."""
+        selected_types = [model for model in BaseFile.__subclasses__() if model.__name__.lower() in value]
+        return queryset.instance_of(*selected_types)  # type: ignore[no-any-return,attr-defined]
 
     ####### ALBUMS #################
     in_all_albums = django_filters.filters.ModelMultipleChoiceFilter(
