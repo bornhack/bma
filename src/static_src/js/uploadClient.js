@@ -115,6 +115,7 @@ class UploadClient {
         maxHeight: height,
         mimeType: type,
         convertSize: -1,
+        retainExif: true,
         success(result) {
           resolve(result);
         },
@@ -148,6 +149,7 @@ class UploadClient {
         mimeType: type,
         convertSize: -1,
         resize: 'cover',
+        retainExif: true,
         success(result) {
           resolve(result);
         },             
