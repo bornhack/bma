@@ -5,7 +5,6 @@
 
 {% block extra_head %}
     {{ user.webapp_oauth_client_id|json_script:"client_id" }}
-    {{ bma_version|json_script:"bma_version" }}
     <script src="{% static 'js/vendor/base64.min.js' %}"></script>
     <script src="{% static 'js/vendor/dropzone-min.js' %}"></script>
     <script src="{% static 'js/vendor/compressor.js' %}"></script>
@@ -35,13 +34,31 @@
     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
     <span class="sr-only">Loading...</span>
   </button>
+  <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#upload-help-modal">Help</button>
   <script src={% static 'js/upload.js' %}></script>
+  <div class="modal fade" id="thumbnail-upload-modal" tabindex="-1" aria-labelledby="ThumbnailUploadModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="ThumbnailUploadModalLabel">Upload thumbnail</h1>
+              </div>
+              <div class="modal-body">
+                  <form id="thumbnail-upload">
+                    <input type="file" name="thumbnail" id="thumbnail" />
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" id="thumbnail-delete" class="btn btn-warning">Remove thumbnail</button>
+                  <button type="button" id="thumbnail-cancel" class="btn btn-secondary">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
   <div class="modal fade" id="image-editor-modal" tabindex="-1" aria-labelledby="ImageEditorModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
               <div class="modal-header">
                   <h1 class="modal-title fs-5" id="ImageEditorModalLabel">Editor</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
                   <div id="my-image-editor" style="height: 800px">
@@ -52,6 +69,27 @@
                   <button type="button" id="editor-cancel" class="btn btn-secondary">Close</button>
                   <button type="button" id="editor-save-image" class="btn btn-primary">Save</button>
                   <button type="button" id="editor-save-new-image" class="btn btn-primary">Save as New</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="modal fade" id="upload-help-modal" tabindex="-1" aria-labelledby="UploadHelpModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="UploadHelpModalLabel">Help</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <h4>Uploading</h4>
+                You can upload files by clicking the `Drop files here to upload` box or by dragging files into this box. Then click the upload button. If the upload button remains grayed out, it means you have not completed the form above.
+                <h4>Editor</h4>
+                Clicking on a picture file will open the editor. After editing, you can choose to save your changes or save the edit as a copy. This can only be done before the files are uploaded.
+                <h4>Thumbnails</h4>
+                Files that are not pictures can have their thumbnail images uploaded by clicking on the file. You can do this before or after uploading the file 
+              </div>
+              <div class="modal-footer">
+                  <button type="button" data-bs-dismiss="modal" aria-label="Close" class="btn btn-secondary">Close</button>
               </div>
           </div>
       </div>

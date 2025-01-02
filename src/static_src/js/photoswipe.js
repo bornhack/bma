@@ -120,7 +120,11 @@ lightbox.on('uiRegister', function() {
 ///////////////////////////////////////////////////////////////////////////////
 // update url with a hash/anchor with the uuid of the current slide
 lightbox.on('contentActivate', ({ content }) => {
-  history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid)
+  if (location.hash.includes("autoplay")) {
+      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid+"&autoplay");
+  } else {
+      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid);
+  }
 });
 // remove anchor when lightbox closes
 lightbox.on('close', () => {
@@ -159,12 +163,19 @@ lightbox.on('contentLoad', (e) => {
 });
 
 
+lightbox.on('openingAnimationEnd', () => {
+  if (location.hash.includes("autoplay")) {
+      slideshowPlugin.setSlideshowState();
+      autoHideUI.hideUI();
+  }
+});
 
 // initialise the lightbox
 lightbox.init();
 
 // open lightbox on page load?
 if (location.hash && location.hash.substring(0, 10) == "#lightbox=") {
-    let slide = document.querySelector("a.gallerya[data-bma-file-uuid='" + location.hash.substring(10) + "']");
+    let uuid = location.hash.substring(10, 46);
+    let slide = document.querySelector("a.gallerya[data-bma-file-uuid='" + uuid + "']");
     slide.click();
 }

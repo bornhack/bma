@@ -10,6 +10,8 @@ const UC = new UploadClient(client_id, () => {
 
 //Init base variables
 var dropzone = undefined;
+var ThumbnailUploadModal = undefined;
+var ThumbnailOrgFile = undefined;
 var ImageEditorModal = undefined;
 var ImageEditor = undefined;
 var ImageEditorOrgFile = undefined;
@@ -19,6 +21,7 @@ tui.usageStatistics = false
 jQuery(document).ready(function () {
   //Init the editor
   ImageEditorModal = new bootstrap.Modal(document.getElementById('image-editor-modal'));
+  ThumbnailUploadModal = new bootstrap.Modal(document.getElementById('thumbnail-upload-modal'));
   ImageEditor = new tui.ImageEditor(document.querySelector('#my-image-editor'), {
     includeUI: {
       theme: {
@@ -45,6 +48,9 @@ jQuery(document).ready(function () {
     file.upload = {
       chunked: false,
     };
+    file.type = "image/jpeg";
+    file.width = ImageEditorOrgFile.width;
+    file.height = ImageEditorOrgFile.height;
     dropzone.addFile(file);
     dropzone.emit("addedfiles", dropzone.files);
     ImageEditorOrgFile = undefined;
@@ -62,6 +68,9 @@ jQuery(document).ready(function () {
     file.upload = {
       chunked: false,
     };
+    file.type = "image/jpeg";
+    file.width = ImageEditorOrgFile.width;
+    file.height = ImageEditorOrgFile.height;
     dropzone.addFile(ImageEditorOrgFile);
     dropzone.addFile(file);
     dropzone.emit("addedfiles", dropzone.files);
@@ -77,11 +86,84 @@ jQuery(document).ready(function () {
     ImageEditorModal.hide();
   });
 
+  // Add an event listener to the input
+  $('#thumbnail').bind('change', (event) => { 
+    const fileInput = event.target;
+    const files = fileInput.files;
+
+    if (files.length > 0) {
+      const file = files[0];
+      const blob = new Blob([file], { type: file.type });
+      if (file.type.match(/image.*/)) {
+        ThumbnailOrgFile.thumb = blob;
+
+        //Get the image dimensions
+        UC.getImageDimensions(blob).then((size) => {
+          ThumbnailOrgFile.thumb_metadata = {
+            width: size.width,
+            height: size.height,
+            mimetype: file.type,
+          }
+
+          //bma_uuid exists after the file is uploaded
+          if ("bma_uuid" in ThumbnailOrgFile) {
+            UC.uploadThumbnailSource(ThumbnailOrgFile.bma_uuid, blob, "thumbnail", ThumbnailOrgFile.thumb_metadata).then(()=> {
+              ThumbnailUploadModal.hide();
+            });
+          }
+        });
+        const fr = new FileReader();
+        fr.addEventListener(
+          "load",
+          () => {
+            dropzone.emit("thumbnail", ThumbnailOrgFile, fr.result);
+          },
+          false,
+        );
+        UC.crop(blob, 120, 120).then((file) => {
+          fr.readAsDataURL(file);
+          if (!("bma_uuid" in ThumbnailOrgFile))
+            ThumbnailUploadModal.hide();
+        })
+      } else alert("Not a image");
+    } else {
+      console.log('No file selected');
+    }
+  });
+
+  //Cancel button thumbnail Modal
+  $('#thumbnail-cancel').bind('click', () => {
+    ThumbnailUploadModal.hide();
+    ThumbnailOrgFile = undefined;
+  });
+
+  //Delete button thumbnail Modal
+  $('#thumbnail-delete').bind('click', () => {
+    if (!("bma_uuid" in ThumbnailUploadModal)) {
+      delete(ThumbnailOrgFile.thumb);
+      delete(ThumbnailOrgFile.thumb_metadata);
+      ThumbnailOrgFile.previewElement.classList.remove("dz-image-preview")
+      ThumbnailOrgFile.previewElement.classList.add("dz-file-preview");
+      for (let thumbnailElement of ThumbnailOrgFile.previewElement.querySelectorAll(
+        "[data-dz-thumbnail]"
+      )) {
+        thumbnailElement.alt = "";
+        thumbnailElement.src = "";
+      }
+    } else {
+      alert("Sorry cant remove if already uploaded");
+    }
+    ThumbnailUploadModal.hide();
+    ThumbnailOrgFile = undefined;
+  });
+
   //Init Dropzone
   dropzone = new Dropzone("#my-dropzone", {
     url: baseURL + "/api/v1/json/files/upload/",
     paramName: "file_data",
     autoProcessQueue: false,
+    // do not create thumbnails for files bigger than 50MB
+    maxThumbnailFilesize: 50,
   });
 
   //Event triggered just before starting upload
@@ -108,6 +190,11 @@ jQuery(document).ready(function () {
     formData.append('file_metadata', JSON.stringify(metadata));
     formData.append('client', JSON.stringify({client_version: UC.client_version, client_uuid: UC.client_uuid}));
 
+    if (file.thumb) {
+      formData.append('thumbnail_data', file.thumb);
+      formData.append('thumbnail_metadata', JSON.stringify(file.thumb_metadata));
+    }
+
     //Add authenticaton to xhr
     xhr.setRequestHeader("Authorization", `Bearer ${UC.oauth.token}`);
   });
@@ -123,13 +210,35 @@ jQuery(document).ready(function () {
       }
     } else {
       dropzone.removeFile(file);
-      alert("Invalid filetype");
+      alert("Invalid filetype: " + file.type);
     }
+    if (!file.type.match(/image.*/)) {
+      file.previewElement.addEventListener("click", function() {
+        $("#thumbnail").val('');
+        ThumbnailOrgFile = file;
+        if ("thumb" in file && !("bma_uuid" in file)) {
+          $("#thumbnail-delete").show();
+        } else
+          $("#thumbnail-delete").hide();
+        ThumbnailUploadModal.show();
+      });
+    }
+    // Create the remove button
+    var removeButton = Dropzone.createElement(`<button class="fab-delete" aria-label="Delete"><i class="fa fa-trash"></i></button>`);
+
+    // Listen to the click event
+    removeButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.removeFile(file);
+    });
+    file.previewElement.appendChild(removeButton);
   })
 
   //Event triggered when the thumbnail is made 
   dropzone.on("thumbnail", file => {
     file.previewElement.addEventListener("click", function() {
+      if ("thumb" in file) return;
       console.log("Starting editor");
       ImageEditor.loadImageFromURL(file.dataURL,file.name).then( () => {
         ImageEditor.resetZoom();
@@ -151,6 +260,8 @@ jQuery(document).ready(function () {
     //Append images to make album when done
     ImageUploadList.push(uuid)
 
+    file.bma_uuid = uuid;
+
     //Make BMA scripts happy
     const index = formdatas.indexOf(file.name);
     if (index !== -1) {
@@ -168,9 +279,11 @@ jQuery(document).ready(function () {
   //Event triggered after its done uploading
   dropzone.on("queuecomplete", _file => {
     const now = new Date;
-    console.log("Adding album for", ImageUploadList)
-    UC.createAlbum(`Uploaded ${now.toISOString()}`,"", ImageUploadList);
-    ImageUploadList = [];
+    if (ImageUploadList.length > 0) {
+      console.log("Adding album for", ImageUploadList)
+      UC.createAlbum(`Uploaded ${now.toISOString()}`,"", ImageUploadList);
+      ImageUploadList = [];
+    }
   })
 });
 
