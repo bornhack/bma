@@ -5,7 +5,6 @@
 
 {% block extra_head %}
     {{ user.webapp_oauth_client_id|json_script:"client_id" }}
-    {{ bma_version|json_script:"bma_version" }}
     <script src="{% static 'js/vendor/base64.min.js' %}"></script>
     <script src="{% static 'js/vendor/compressor.js' %}"></script>
     <script src="{% static 'js/vendor/exifr.js' %}"></script>

@@ -18,7 +18,7 @@ class UploadClient {
     this.finished = [];
     this.allowedMimetypes = [];
     this.callback = callback;
-    this.bma_version = JSON.parse(document.getElementById('bma_version').textContent);
+    this.bma_version = JSON.parse(document.getElementById('bma-version').textContent);
     this.client_version = `js-client - BMA ${this.bma_version}`;
     this.activeJobs = 0;
     this.maxConcurrent = 2;
@@ -448,6 +448,42 @@ class UploadClient {
 
     try {
       const response = await fetch(`/api/v1/json/jobs/${job.job_uuid}/result/`, {
+        headers: {
+          "Authorization": `Bearer ${this.oauth.token}`,
+        },
+        method: "POST",
+        body: data,
+      });
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      const json = await response.json();
+      return json.bma_response 
+    } catch (error) {
+      console.log(error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Uploading ThumbnailSource images for thumbnails. 
+   *
+   * @param {string} uuid - UUID of file 
+   * @param {object} result - Result to upload. 
+   * @param {string} filename - Name of the file 
+   * @param {object} metadata - Metadata of the uploaded result 
+   * @returns {array} bma_response 
+   */
+  async uploadThumbnailSource(uuid, result, filename, metadata=undefined) {
+    var data = new FormData()
+    data.append('data', result, filename);
+    data.append('client', JSON.stringify({ "client_uuid": this.client_uuid, "client_version": this.client_version }))
+    if (metadata) {
+      data.append('metadata', JSON.stringify(metadata))
+    }
+
+    try {
+      const response = await fetch(`/api/v1/json/files/${uuid}/thumbnail/`, {
         headers: {
           "Authorization": `Bearer ${this.oauth.token}`,
         },
