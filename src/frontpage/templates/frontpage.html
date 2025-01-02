@@ -19,7 +19,7 @@
                   {% for item in 12_last %}
                     <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col">
                       {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
-                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
+                      <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}" title="{{ item.title }}">{{ item.title }}</a></p>
                     </div>
                   {% endfor %}
                 </div>
@@ -32,7 +32,7 @@
                   {% for item in 12_most_popular %}
                     <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col">
                         {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
-                        <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
+                        <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}" title="{{ item.title }}">{{ item.title }}</a></p>
                     </div>
                   {% endfor %}
                 </div>
@@ -47,7 +47,7 @@
                 {% for image in 6_last_images %}
                   <div class="col">
                     {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
-                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}">{{ image.title }}</a></p>
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}" title="{{ image.title }}">{{ image.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -59,7 +59,7 @@
                 {% for document in 6_last_documents %}
                   <div class="col d-block mb-3">
                     {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
-                    <p class="text-break"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}">{{ document.title }}</a></p>
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}" title="{{ document.title }}">{{ document.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -71,7 +71,7 @@
                 {% for video in 6_last_videos %}
                   <div class="col d-block mb-3">
                       {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
-                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}">{{ video.title }}</a></p>
+                      <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}" title="{{ video.title }}">{{ video.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
@@ -83,7 +83,7 @@
                   {% for audio in 6_last_audios %}
                     <div class="col d-block mb-3">
                       {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
-                      <p class="text-break"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}">{{ audio.title }}</a></p>
+                      <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}" title="{{ audio.title }}">{{ audio.title }}</a></p>
                     </div>
                   {% endfor %}
                 </div>
