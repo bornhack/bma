@@ -16,8 +16,8 @@
               <h3>Most Recent Uploads</h3>
               <hr>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-4xl-6 g-3">
-                  {% for item in 6_last %}
-                    <div class="col">
+                  {% for item in 12_last %}
+                    <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col">
                       {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
                       <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
                     </div>
@@ -29,8 +29,8 @@
                 <h3>Most Viewed</h3>
               <hr>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-4xl-6 g-3">
-                  {% for item in 6_most_popular %}
-                    <div class="col">
+                  {% for item in 12_most_popular %}
+                    <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col">
                         {% include "includes/file_thumbnail_pswp.html" with record=item width=200 ratio="1/1" %}
                         <p class="text-break"><a class="text-decoration-none text-body" href="{{ item.get_absolute_url }}">{{ item.title }}</a></p>
                     </div>
