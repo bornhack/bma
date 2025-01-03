@@ -995,8 +995,9 @@ class TestFileViews(BmaTestBase):
         self.client.login(username="moderator4", password="secret")
 
         # test license filter
-        self.assert_file_list_rows(1, qs="?license=CC_BY_4_0")
-        self.assert_file_list_rows(1, qs="?license=CC_BY_SA_4_0")
+        self.assert_file_list_rows(1, qs="?licenses=CC_BY_4_0")
+        self.assert_file_list_rows(1, qs="?licenses=CC_BY_SA_4_0")
+        self.assert_file_list_rows(2, qs="?licenses=CC_BY_4_0&licenses=CC_BY_SA_4_0")
 
     def test_file_list_view_file_size_filters(self) -> None:
         """Test the size filter of the file list view."""

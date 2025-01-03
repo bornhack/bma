@@ -8,6 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from albums.models import Album
+from files.models import LicenseChoices
 from tags.models import BmaTag
 from users.models import User
 from utils.filters import ListFilters
@@ -92,6 +93,17 @@ class FileFilter(django_filters.FilterSet):
         """Filter by filetype/polymorphic subclass."""
         selected_types = [model for model in BaseFile.__subclasses__() if model.__name__.lower() in value]
         return queryset.instance_of(*selected_types)  # type: ignore[no-any-return,attr-defined]
+
+    ####### LICENSES ##############
+    licenses = django_filters.MultipleChoiceFilter(
+        method="licenses_filter", choices=LicenseChoices, label="Files With Licenses"
+    )
+
+    def licenses_filter(
+        self, queryset: models.QuerySet[BaseFile], name: str, value: list[str]
+    ) -> models.QuerySet[BaseFile]:
+        """Filter by license."""
+        return queryset.filter(license__in=value)
 
     ####### ALBUMS #################
     in_all_albums = django_filters.filters.ModelMultipleChoiceFilter(
@@ -271,6 +283,5 @@ class FileFilter(django_filters.FilterSet):
             "approved": ["exact"],
             "published": ["exact"],
             "deleted": ["exact"],
-            "license": ["exact"],
             "file_size": ["exact", "lt", "gt"],
         }
