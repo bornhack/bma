@@ -10,127 +10,107 @@
 {% block title %}Frontpage{% endblock title %}
 
 {% block main_content %}
-  <div class="row justify-content-between">
-
-    <div class="col-6 mt-4">
-      <div class="row">
-        <div class="col-md-12 col-sm-10">
-          <div class="row">
-            <div class="col-12">
-              <h3>Recent images</h3>
-              <hr/>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="row">
-                {% for image in 6_last_images %}
-                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <div class="pswp-gallery" id="gallery">
+    <div>
+        <div class="row mt-5">
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-hitcount">Popular images</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for image in popular_images %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
                     {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
-                    <small class="text-wrap">{{ image.title }}</small>
-                    </div>
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}" title="{{ image.title }}">{{ image.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mt-4">
-        <div class="col-md-6 col-sm-10">
-          <div class="row">
-            <div class="col-12">
-              <h3>Recent videos</h3>
-              <hr/>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="row">
-                {% for video in 6_last_videos %}
-                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <div class="pswp-gallery" id="gallery">
-                    {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="1/1" %}
-                    <small class="text-wrap">{{ video.title }}</small>
-                    </div>
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-hitcount">Popular documents</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for document in popular_documents %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                    {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}" title="{{ document.title }}">{{ document.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mt-4">
-        <div class="col-md-6 col-sm-10">
-          <div class="row">
-            <div class="col-12">
-              <h3>Recent audios</h3>
-              <hr/>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="row">
-                {% for audio in 6_last_audios %}
-                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <audio controls class="w-75">
-                      <source src="{{ audio.original.url }}">
-                    </audio>
-                    <small class="text-wrap">{{ audio.title }}</small>
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-hitcount">Popular videos</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for video in popular_videos %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                      {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
+                      <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}" title="{{ video.title }}">{{ video.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mt-4">
-        <div class="col-md-6 col-sm-10">
-          <div class="row">
-            <div class="col-12">
-              <h3>Recent documents</h3>
-              <hr/>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-              <div class="row">
-                {% for document in 6_last_documents %}
-                  <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                    <i class="fa-solid fa-file fa-2x"></i>
-                    <small class="text-wrap">{{ document.title }}</small>
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-hitcount">Popular audios</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for audio in popular_audios %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                    {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}" title="{{ audio.title }}">{{ audio.title }}</a></p>
                   </div>
                 {% endfor %}
               </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-
-    <div class="col-4 mt-4">
-      <div class="row">
-        <div class="col-12">
-          <h3>Most viewed</h3>
-          <hr class="w-75"/>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-8">
-          {% for image in 6_most_popular %}
-            <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-              <div class="pswp-gallery" id="gallery">
-              {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
-              <small class="text-wrap">{{ image.title }}</small>
+        <div class="row mt-5">
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-created_at">Last images</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for image in last_images %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                    {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}" title="{{ image.title }}">{{ image.title }}</a></p>
+                  </div>
+                {% endfor %}
               </div>
             </div>
-          {% endfor %}
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-created_at">Last documents</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for document in last_documents %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                    {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}" title="{{ document.title }}">{{ document.title }}</a></p>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-created_at">Last videos</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for video in last_videos %}
+                  <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                      {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
+                      <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}" title="{{ video.title }}">{{ video.title }}</a></p>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-created_at">Last audios</a></h4>
+              <hr>
+              <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
+                {% for audio in last_audios %}
+                <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
+                    {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
+                    <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}" title="{{ audio.title }}">{{ audio.title }}</a></p>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
         </div>
-      </div>
     </div>
   </div>
 {% endblock main_content %}
