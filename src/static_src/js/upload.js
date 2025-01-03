@@ -8,7 +8,7 @@ const UC = new UploadClient(client_id, () => {
   console.log("Loaded UC client");
 });
 
-//Init base variables
+//Init base global variables
 var dropzone = undefined;
 var ThumbnailUploadModal = undefined;
 var ThumbnailOrgFile = undefined;
@@ -17,6 +17,7 @@ var ImageEditor = undefined;
 var ImageEditorOrgFile = undefined;
 var ImageUploadList = [];
 tui.usageStatistics = false
+var formdatas = [];
 
 jQuery(document).ready(function () {
   //Init the editor
@@ -303,4 +304,19 @@ function dataURItoBlob(dataURI) {
 	  ia[i] = byteString.charCodeAt(i);
 	}
 	return new Blob([ab], { type: mimeString });
+}
+
+/**
+ * Enable the upload button
+ */
+async function enableUploadButton() {
+    // show upload button if required fields are filled
+    let select = document.getElementById("id_license");
+    let license = select.options[select.selectedIndex].value;
+    let attribution = document.getElementById("id_attribution").value;
+    if (license && attribution && formdatas.length) {
+        document.getElementById("btnupload").disabled=false;
+    } else {
+        document.getElementById("btnupload").disabled=true;
+    };
 }
