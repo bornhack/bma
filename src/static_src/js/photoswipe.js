@@ -163,6 +163,7 @@ lightbox.on('contentLoad', (e) => {
 });
 
 
+// support autoplay
 lightbox.on('openingAnimationEnd', () => {
   if (location.hash.includes("autoplay")) {
       slideshowPlugin.setSlideshowState();

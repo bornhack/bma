@@ -1,7 +1,25 @@
-check = document.querySelector("th > input");
-check.addEventListener("click", toggleCheckboxes);
-function toggleCheckboxes() {
-  document.querySelectorAll("td > input[type='checkbox']").forEach((element) => {
-    element.click();
-  });
-}
+window.addEventListener("load", (event) => {
+  // make "select/unselect all" checkboxes in <th> work
+  check = document.querySelector("th > input");
+  if (check) {
+    check.addEventListener("click", function() {
+      document.querySelectorAll("td > input[type='checkbox']").forEach((element) => {
+        element.click();
+      });
+    });
+  }
+
+  // disable unused filter inputs from form on submit to make the filtered url shorter
+  document.forms["FilterForm"].addEventListener('submit', function() {
+    Array.prototype.forEach.call(this.elements, function(el) {
+      if (el.type == "select-one") {
+        // select-one type selects default to "unknown" when not used
+        el.disabled = el.value == 'unknown';
+      } else if (el.type == "text" || el.type == "number") {
+        // text and number inputs default to the empty string when not used
+        el.disabled = el.value == '';
+      }
+    });
+  }, false);
+
+});

@@ -7,7 +7,7 @@
   <div class="card-body">
     <p class="lead">Showing {{ filter.qs.count }} of {{ albums.count }} albums</p>
 
-    <form method="get">
+    <form name="FilterForm" method="get">
       <div class="row">
         <div class="btn-group mb-3" role="group">
           <a class="btn btn-secondary" href="{{ request.path }}"><i class="fas fa-times"></i> Clear Filters</a>
