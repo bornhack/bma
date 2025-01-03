@@ -12,7 +12,7 @@
 {% block main_content %}
   <div>
     <div class="row mt-5">
-      {% if popular_images|length > 0 %}
+      {% if popular_images.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-hitcount">Popular images</a></h4>
           <hr>
@@ -26,7 +26,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_documents|length > 0 %}
+      {% if popular_documents.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-hitcount">Popular documents</a></h4>
           <hr>
@@ -40,7 +40,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_videos|length > 0 %}
+      {% if popular_videos.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-hitcount">Popular videos</a></h4>
           <hr>
@@ -54,7 +54,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_audios|length > 0 %}
+      {% if popular_audios.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-hitcount">Popular audios</a></h4>
           <hr>
@@ -70,7 +70,7 @@
       {% endif %}
     </div>
     <div class="row mt-5">
-      {% if last_images|length > 0 %}
+      {% if last_images.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-created_at">Latest images</a></h4>
           <hr>
@@ -84,7 +84,7 @@
           </div>
         </div>
       {% endif %}
-      {% if last_documents|length > 0 %}
+      {% if last_documents.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-created_at">Latest documents</a></h4>
           <hr>
@@ -98,7 +98,7 @@
           </div>
         </div>
       {% endif %}
-      {% if last_videos|length > 0 %}
+      {% if last_videos.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-created_at">Latest videos</a></h4>
           <hr>
@@ -112,7 +112,7 @@
           </div>
         </div>
       {% endif %}
-      {% if last_audios|length > 0 %}
+      {% if last_audios.count > 0 %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-created_at">Latest audios</a></h4>
           <hr>
