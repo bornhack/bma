@@ -63,7 +63,7 @@
         </div>
         <div class="row mt-5">
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
-              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-created_at">Last images</a></h4>
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-created_at">Latest images</a></h4>
               <hr>
               <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
                 {% for image in last_images %}
@@ -75,7 +75,7 @@
               </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
-              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-created_at">Last documents</a></h4>
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-created_at">Latest documents</a></h4>
               <hr>
               <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
                 {% for document in last_documents %}
@@ -87,7 +87,7 @@
               </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
-              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-created_at">Last videos</a></h4>
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-created_at">Latest videos</a></h4>
               <hr>
               <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
                 {% for video in last_videos %}
@@ -99,7 +99,7 @@
               </div>
             </div>
             <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
-              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-created_at">Last audios</a></h4>
+              <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-created_at">Latest audios</a></h4>
               <hr>
               <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
                 {% for audio in last_audios %}
