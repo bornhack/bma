@@ -63,7 +63,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 prefix = "ts"
 
             elif re.match(
-                r"^user_[2-9A-HJ-NP-Za-km-z]{22}\/image\/bma_image_[2-9A-HJ-NP-Za-km-z]{22}\/\w+\/[2-9A-HJ-NP-Za-km-z]{22}_\d+w\.\w+",
+                r"^user_[2-9A-HJ-NP-Za-km-z]{22}\/image\/bma_image_[2-9A-HJ-NP-Za-km-z]{22}\/\w+\/imageversion_\d+w_[2-9A-HJ-NP-Za-km-z]{22}.\w+",
                 name,
             ):
                 # file is an imageversion
@@ -72,7 +72,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 prefix = "iv"
 
             elif re.match(
-                r"^user_[2-9A-HJ-NP-Za-km-z]{22}\/\w+\/bma_\w+_[2-9A-HJ-NP-Za-km-z]{22}\/thumbnails\/\w+\/[2-9A-HJ-NP-Za-km-z]{22}_\d+w\.\w+",
+                r"^user_[2-9A-HJ-NP-Za-km-z]{22}\/\w+\/bma_\w+_[2-9A-HJ-NP-Za-km-z]{22}\/thumbnails\/\w+\/thumbnail_\d+w_[2-9A-HJ-NP-Za-km-z]{22}\.\w+",
                 name,
             ):
                 # file is a thumbnail
