@@ -207,7 +207,8 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
         response = HttpResponse(status=200)
         # remove the Content-Type header to allow nginx to add it
         del response["Content-Type"]
-        response["X-Accel-Redirect"] = f"/public/{quote(filepath)}"
+        public_url = str(Path(filepath).relative_to(settings.MEDIA_ROOT)).encode()
+        response["X-Accel-Redirect"] = f"/public/{quote(public_url)}"
     else:
         # we are serving the file locally
         f = Path.open(Path(settings.MEDIA_ROOT) / filepath, "rb")
