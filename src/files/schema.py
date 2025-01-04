@@ -103,6 +103,7 @@ class FileResponseSchema(ModelSchema):
     exif: dict[str, dict[str, str]] | None = None
     width: int | None = None
     height: int | None = None
+    aspect_ratio: str | None = None
 
     class Config:
         """Specify the model fields to include."""
