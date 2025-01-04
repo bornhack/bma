@@ -238,24 +238,39 @@ class BaseFile(PolymorphicModel):
         """The detail url for the file."""
         return reverse("files:file_show", kwargs={"file_uuid": self.pk})
 
-    def resolve_links(self, request: HttpRequest | None = None) -> dict[str, str | dict[str, str]]:
+    def resolve_links(self, request: HttpRequest | None = None) -> dict[str, str | dict[str, str | dict[str, str]]]:  # noqa: C901
         """Return a dict of links for various actions on this object.
 
         Only return the actions the current user has permission to do.
         """
-        links: dict[str, str | dict[str, str]] = {
+        links: dict[str, str | dict[str, str | dict[str, str]]] = {
             "self": reverse("api-v1-json:file_get", kwargs={"file_uuid": self.uuid}),
             "html": self.get_absolute_url(),
         }
-        downloads: dict[str, str] = {
+
+        # add links for downloads
+        links["downloads"] = {
             "original": self.original.url,
         }
         if hasattr(self, "thumbnailsource"):
-            downloads["thumbnail_source"] = self.thumbnailsource.source.url
+            links["downloads"]["thumbnail_source"] = self.thumbnailsource.source.url  # type: ignore[index]
         if self.filetype == "image":
             # add download links for smaller versions of this image
             for version in self.image_versions.all():
-                downloads[f"{version.width}*{version.height}"] = version.imagefile.url
+                ar = str(version.aspect_ratio)
+                if ar not in links["downloads"]:
+                    links["downloads"][ar] = {}  # type: ignore[index]
+                links["downloads"][ar][f"{version.width}*{version.height}"] = version.imagefile.url  # type: ignore[index]
+
+        # add links for thumbnails
+        links["thumbnails"] = {}
+        for thumb in self.thumbnails.all():
+            ar = str(thumb.aspect_ratio)
+            if ar not in links["thumbnails"]:
+                links["thumbnails"][ar] = {}  # type: ignore[index]
+            links["thumbnails"][ar][f"{thumb.width}*{thumb.height}"] = thumb.imagefile.url  # type: ignore[index]
+
+        # add request specific links if possible
         if request:
             if request.user.has_perm("approve_basefile", self):
                 links["approve"] = reverse(
@@ -277,7 +292,6 @@ class BaseFile(PolymorphicModel):
                     "api-v1-json:unpublish_file",
                     kwargs={"file_uuid": self.uuid},
                 )
-        links["downloads"] = downloads
         return links
 
     def update_field(self, *, field: str, value: bool) -> None:

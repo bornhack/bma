@@ -84,7 +84,7 @@ class FileResponseSchema(ModelSchema):
 
     albums: list[uuid.UUID]
     filename: str
-    links: dict[str, str | dict[str, str]]
+    links: dict[str, str | dict[str, str | dict[str, str]]]
     filetype: str
     filetype_icon: str
     source: str
@@ -136,7 +136,9 @@ class FileResponseSchema(ModelSchema):
         return 0
 
     @staticmethod
-    def resolve_links(obj: BaseFile, context: dict[str, HttpRequest]) -> dict[str, str | dict[str, str]]:
+    def resolve_links(
+        obj: BaseFile, context: dict[str, HttpRequest]
+    ) -> dict[str, str | dict[str, str | dict[str, str]]]:
         """Get the value for the links field."""
         return obj.resolve_links(request=context["request"])
 
