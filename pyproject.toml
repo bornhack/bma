@@ -16,6 +16,7 @@ dependencies = [
     "Django==5.1.4",
     "django-allauth[socialaccount]==65.3.1",
     "django-bootstrap5==24.3",
+    "django-cleanup==9.0.0",
     "django-cors-headers==4.6.0",
     "django-decorator-include==3.2",
     "django-filter==24.3",
@@ -31,6 +32,7 @@ dependencies = [
     "fontawesomefree==6.6.0",
     "orjson==3.10.13",
     "psycopg2-binary==2.9.10",
+    "shortuuid==1.0.13",
 ]
 name = "bma"
 description = "BornHack Media Archive Django project"

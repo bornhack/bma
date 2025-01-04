@@ -19,6 +19,7 @@ from jobs.models import ImageExifExtractionJob
 from pictures.models import PictureField
 from utils.models import NP_CASCADE
 from utils.models import BaseModel
+from utils.storage import BmaFileSystemStorage
 from utils.upload import get_image_version_path
 from utils.upload import get_mimetype_from_extension
 from utils.upload import get_upload_path
@@ -33,6 +34,7 @@ class Image(BaseFile):
     """The Image model."""
 
     original = PictureField(
+        storage=BmaFileSystemStorage,
         upload_to=get_upload_path,
         max_length=255,
         width_field="width",
@@ -249,6 +251,7 @@ class ImageVersion(ImageModel, BaseModel):
     )
 
     imagefile = PictureField(
+        storage=BmaFileSystemStorage,
         upload_to=get_image_version_path,
         max_length=255,
         width_field="width",

@@ -2,6 +2,7 @@
 
 import uuid
 
+import shortuuid
 from django.db import models
 
 
@@ -16,6 +17,11 @@ class BaseModel(models.Model):
         """This is an abstract class."""
 
         abstract = True
+
+    @property
+    def shortuuid(self) -> str:
+        """Return a shortuuid encoded version of the pk."""
+        return shortuuid.encode(self.uuid)
 
 
 def NP_CASCADE(  # type: ignore[no-untyped-def]  # noqa: N802

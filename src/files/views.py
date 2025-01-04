@@ -1,15 +1,15 @@
 """File views."""
 
 import logging
-import mimetypes
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import quote
 
+import shortuuid
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.forms import Form
@@ -37,6 +37,7 @@ from albums.forms import AlbumRemoveFilesForm
 from albums.models import Album
 from albums.tables import AlbumTable
 from hitcounter.utils import count_hit
+from images.models import ImageVersion
 from jobs.filters import JobFilter
 from jobs.models import BaseJob
 from jobs.tables import JobTable
@@ -56,6 +57,8 @@ from .forms import FileMultipleActionForm
 from .forms import UploadForm
 from .mixins import FileViewMixin
 from .models import BaseFile
+from .models import Thumbnail
+from .models import ThumbnailSource
 from .tables import FileTable
 
 if TYPE_CHECKING:
@@ -124,42 +127,78 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
 
 @support_authbearer_user
 def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileResponse | HttpResponse:
-    """Serve media files using nginx x-accel-redirect, or serve directly for dev use.
+    """Authenticated file serving view for shortuuid based BMA URLs.
+
+    This view serves media files using nginx x-accel-redirect, or directly for dev use,
+    controlled by the accel argument.
 
     This view is used in browsers as well as by api clients, so it permits both regular
     sessioncookie based auth and api token auth.
-    """
-    # get last uuid from the path
-    match = re.match(
-        r"^.*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).*$",
-        path,
-    )
-    if not match:
-        # regex parsing failed
-        logger.debug("Unable to parse filename regex to find file UUID, returning 404")
-        raise Http404
 
-    # get the file from database
+    BMA file serving is done using a prefix based on the class of file. The path under
+    settings.MEDIA_URL is:
+      - /oi/shortuuid.ext for original Image files
+      - /ov/shortuuid.ext for original Video files
+      - /oa/shortuuid.ext for original Audio files
+      - /od/shortuuid.ext for original Document files
+      - /ts/shortuuid.ext for ThumbnailSource files
+      - /iv/shortuuid.ext for ImageVersion files (smaller versions of original images)
+      - /t/shortuuid.ext for Thumbnail files
+
+    Args:
+      request(HttpRequest): The HTTP request object
+      path(str): The requested path under settings.MEDIA_URL
+      accel(bool): Set True to serve using nginx, False to serve files with Djangos devserver.
+
+    Returns: An HttpResponse or FileResponse.
+    """
     try:
-        dbfile = BaseFile.objects.get(uuid=match.group(1))
-    except BaseFile.DoesNotExist as e:
-        logger.debug(
-            f"File UUID {match.group(1)} not found in database, returning 404",
-        )
+        prefix, filename = path.split("/")
+        shortid, _ = filename.split(".")
+    except ValueError as e:
         raise Http404 from e
 
-    # check file permissions
-    if not dbfile.permitted(user=request.user):
-        # the current user does not have permissions to view this file
-        raise PermissionDenied
+    pk = shortuuid.decode(shortid)
 
-    # check if the file exists in the filesystem
-    if not Path(dbfile.original.path).exists():
-        logger.debug(f"File does not exist on dist: {dbfile.original.path}")
+    try:
+        obj = None
+        if prefix[0] == "o":
+            # original
+            obj = BaseFile.objects.get(pk=pk)
+            basefile = obj
+            filepath = obj.original.path
+
+        elif prefix == "ts":
+            # thumbnailsource
+            obj = ThumbnailSource.objects.get(pk=pk)
+            basefile = obj.basefile
+            filepath = obj.source.path
+
+        elif prefix == "iv":
+            # imageversion
+            obj = ImageVersion.objects.get(pk=pk)
+            basefile = obj.image
+            filepath = obj.imagefile.path
+
+        elif prefix == "t":
+            # thumbnail
+            obj = Thumbnail.objects.get(pk=pk)
+            basefile = obj.basefile
+            filepath = obj.imagefile.path
+
+    except ObjectDoesNotExist as e:
+        raise Http404 from e
+
+    # check if the obj was found and file exists in the filesystem
+    if not obj or not Path(filepath).exists():
         raise Http404
 
+    # check if the basefile this obj is related to is permitted for the user
+    if not basefile.permitted(user=request.user):
+        raise PermissionDenied
+
     # count the hit
-    count_hit(request, dbfile)
+    count_hit(request, basefile)
 
     # OK, show the file
     response: FileResponse | HttpResponse
@@ -168,14 +207,12 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
         response = HttpResponse(status=200)
         # remove the Content-Type header to allow nginx to add it
         del response["Content-Type"]
-        response["X-Accel-Redirect"] = f"/public/{quote(path)}"
+        response["X-Accel-Redirect"] = f"/public/{quote(filepath)}"
     else:
         # we are serving the file locally
-        f = Path.open(Path(settings.MEDIA_ROOT) / path, "rb")
-        response = FileResponse(f, filename=Path(path).name, status=200)
-        mimetype, _encoding = mimetypes.guess_type(path, strict=False)
-        if mimetype:
-            response["Content-Type"] = mimetype
+        f = Path.open(Path(settings.MEDIA_ROOT) / filepath, "rb")
+        response = FileResponse(f, filename=Path(filepath).name, status=200)
+        response["Content-Type"] = obj.mimetype
         # cache for an hour in development for a more
         # pleasant (and closer to realworld) dev experience
         response["Cache-Control"] = "max-age=3600"

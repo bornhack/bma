@@ -6,7 +6,6 @@ from typing import ClassVar
 
 import django_filters
 from django.utils import timezone
-from ninja import Field
 
 from files.models import BaseFile
 from utils.filters import ListFilters
@@ -21,7 +20,7 @@ if TYPE_CHECKING:
 class AlbumFilters(ListFilters):
     """The filters used for the album_list django-ninja API endpoint."""
 
-    files: list[uuid.UUID] = Field(None, alias="files")
+    files: list[uuid.UUID] | None = None
 
 
 def get_permitted_files(request: "HttpRequest") -> "QuerySet[BaseFile]":

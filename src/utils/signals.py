@@ -1,18 +1,21 @@
 """BMA signal handlers."""
 
 import logging
+from typing import TYPE_CHECKING
 
 from django.conf import settings
-from django.core.handlers.wsgi import WSGIHandler
 from django.core.signals import request_started
 
 from users.sentinel import get_deleted_user
 from users.sentinel import get_system_user
 
+if TYPE_CHECKING:
+    from django.core.handlers.wsgi import WSGIHandler
+
 logger = logging.getLogger("bma")
 
 
-def bma_startup(sender: WSGIHandler, **kwargs: dict[str, str]) -> None:
+def bma_startup(sender: "WSGIHandler", **kwargs: dict[str, str]) -> None:
     """Create the BMA groups and disconnect signal."""
     logger.debug("This is the first request, running bma_startup()...")
     from django.contrib.auth.models import Group

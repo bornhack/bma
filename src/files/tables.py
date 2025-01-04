@@ -114,7 +114,7 @@ class FileTable(tables.Table):
         url = license_urls[record.license]
         title = LicenseChoices[record.license]
         return filter_button(
-            text=f'<a title="{title}" href="{url}">{record.license}</a>', request=self.request, license=record.license
+            text=f'<a title="{title}" href="{url}">{record.license}</a>', request=self.request, licenses=record.license
         )
 
     class Meta:

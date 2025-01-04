@@ -6,6 +6,7 @@ import uuid
 from fractions import Fraction
 from pathlib import Path
 
+import shortuuid
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -34,6 +35,7 @@ from users.sentinel import get_deleted_user
 from users.sentinel import get_system_user
 from utils.models import NP_CASCADE
 from utils.models import BaseModel
+from utils.storage import BmaFileSystemStorage
 from utils.upload import get_thumbnail_path
 from utils.upload import get_thumbnail_source_path
 
@@ -192,6 +194,11 @@ class BaseFile(PolymorphicModel):
         manager=BMATagManager,
         help_text="The tags for this file",
     )
+
+    @property
+    def shortuuid(self) -> str:
+        """Return a shortuuid encoded version of the pk."""
+        return shortuuid.encode(self.uuid)
 
     @property
     def filetype(self) -> str:
@@ -457,6 +464,7 @@ class ThumbnailSource(ImageModel, BaseModel):
     )
 
     source = PictureField(
+        storage=BmaFileSystemStorage,
         upload_to=get_thumbnail_source_path,
         max_length=255,
         width_field="width",
@@ -509,6 +517,7 @@ class Thumbnail(ImageModel, BaseModel):
     )
 
     imagefile = PictureField(
+        storage=BmaFileSystemStorage,
         upload_to=get_thumbnail_path,
         max_length=255,
         width_field="width",

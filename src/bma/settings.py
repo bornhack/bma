@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     "hitcounter",
     "jobs",
     "permissions",
+    # django-cleanup must come last
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [

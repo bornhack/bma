@@ -4,6 +4,7 @@ import uuid
 from typing import ClassVar
 from typing import TypeAlias
 
+import shortuuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -49,6 +50,11 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
     def get_absolute_url(self) -> str:
         """Return the URL for the users public profile."""
         return reverse("users:user_profile", kwargs={"user_handle": self.handle})
+
+    @property
+    def shortuuid(self) -> str:
+        """Return a shortuuid encoded version of the pk."""
+        return shortuuid.encode(self.uuid)
 
     @property
     def is_creator(self) -> bool:
