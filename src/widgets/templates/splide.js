@@ -111,8 +111,13 @@
         // loop over files and add splide slides
         for (const [fileid, metadata] of Object.entries(files)) {
             // get URLs from metadata
-            let url = metadata["links"]["downloads"]["medium"];
-            let thumburl = metadata["links"]["downloads"]["small_thumbnail"];
+            let urls = metadata["links"]["downloads"][metadata["aspect_ratio"]];
+            let srcset = "";
+            for (const [size, url] of Object.entries(urls)) {
+                const sizes = size.split("*");
+                srcset = srcset + "//" + host + url + " " + sizes[0] + "w, ";
+            }
+            let thumburl = metadata["links"]["thumbnails"]["1"]["200*200"];
             // create metadata table
             let tbl = '<table class="table">';
             tbl += '<tr><th>Title</th><td>' + metadata["title"] + '</td></tr>';
@@ -121,8 +126,9 @@
             tbl += '<tr><th>License</th><td><a href="' + metadata["license_url"] + '" target="_blank">' + metadata["license_name"] + '</a></td></tr>';
             tbl += '<tr><th>Description</th><td>' + metadata["description"] + '</td></tr>';
             tbl += '</table>';
+
             // add slide li to splide__list ul
-            splide_main_div.querySelector("div > div > ul").innerHTML += '<li class="splide__slide"><div class="splide-center"><img src="//' + host + url + '"></div><div>' + tbl + '</div></li>';
+            splide_main_div.querySelector("div > div > ul").innerHTML += '<li class="splide__slide"><div class="splide-center"><img srcset="' + srcset + '" sizes="100wv"></div><div>' + tbl + '</div></li>';
             // add thumbnail for this file
             splide_thumb_ul.innerHTML += '<li class="splide-thumbnail"><img src="//' + host + thumburl + '"></li>';
         };

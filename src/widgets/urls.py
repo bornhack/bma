@@ -9,5 +9,5 @@ app_name = "widgets"
 
 urlpatterns = [
     path("picture/<uuid:image_uuid>/", picture_embed_view, name="picture_embed_view"),
-    path("embed/<str:style>/<int:count>/<uuid:uuid>/", bma_widget_view),
+    path("<str:style>/<int:count>/<uuid:uuid>/", bma_widget_view),
 ]
