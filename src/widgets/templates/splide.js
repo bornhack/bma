@@ -59,42 +59,47 @@
     }
 
     async function getFileMetadata(file_uuid) {
-        const response = await fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'});
-        if (!response.ok) {
-            // handle non-2xx response code
-            if (response.status === 404) {
-                throw new BmaNotFoundError("File UUID " + file_uuid + " not found!");
-            } else if (response.status === 403) {
-                throw new BmaPermissionError("No permission for file UUID " + file_uuid + "!");
-            } else {
-                throw new BmaApiError("BMA API returned unexpected response code " + response.status);
-            }
+      const response = fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'})
+      .then((x) => {
+        if (!x.ok) {
+          // handle non-2xx x code
+          if (x.status === 404) {
+            throw new BmaNotFoundError("File UUID " + file_uuid + " not found!");
+          } else if (x.status === 403) {
+            throw new BmaPermissionError("No permission for file UUID " + file_uuid + "!");
+          } else {
+            throw new BmaApiError("BMA API returned unexpected x code " + x.status);
+          }
         }
-        const data = await response.json();
-        const file = data["bma_response"];
-        return {[file_uuid]: file};
+        return x.json()
+      })
+      .then((x) => ({[file_uuid]: x['bma_response']}))
+      .catch((response) => {
+        console.log(response);
+      });
+      return response
     }
 
     async function getAlbumMetadata(album_uuid) {
-        let result = {};
-        const response = await fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'});
-        if (!response.ok) {
+      const response = fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'})
+        .then((response) => {
+          if (!response.ok) {
             // handle non-2xx response code
             if (response.status === 404) {
-                throw new BmaNotFoundError("Album UUID " + album_uuid + " not found!");
+              throw new BmaNotFoundError("Album UUID " + album_uuid + " not found!");
             } else if (response.status === 403) {
-                throw new BmaPermissionError("No permission for album UUID " + album_uuid + "!");
+              throw new BmaPermissionError("No permission for album UUID " + album_uuid + "!");
             } else {
-                throw new BmaApiError("BMA API returned unexpected response code " + response.status);
+              throw new BmaApiError("BMA API returned unexpected response code " + response.status);
             }
-        }
-        const data = await response.json();
-        const album = data["bma_response"];
-        for (file of album["files"]) {
-            metadata = await getFileMetadata(file);
-            result[file] = metadata[file];
-        }
-        return result;
+          }
+          return response.json();
+        })
+        .then((data) => data["bma_response"])
+        .catch((response) => {
+          console.log(response);
+        });
+      return response;
     }
 
     async function createSplide(files) {
@@ -180,7 +185,10 @@
 
         // is this uuid a file?
         try {
-            files = await getFileMetadata(uuid);
+          const metadata = await getFileMetadata(uuid);
+          if (metadata)
+            files[uuid] = metadata[uuid];
+
         } catch (error) {
             if (!error instanceof BmaNotFoundError) {
                 // API returned an error other than 404
@@ -193,7 +201,11 @@
         if (!(uuid in files)) {
             // check if the uuid is an album
             try {
-                files = await getAlbumMetadata(uuid);
+              const album = await getAlbumMetadata(uuid);
+              for (const file of album["files"]) {
+                metadata = await getFileMetadata(file);
+                files[file] = metadata[file];
+              }
             } catch (error) {
                 // API returned an error
                 console.error("BMA API returned an error: ", error);

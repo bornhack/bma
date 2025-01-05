@@ -119,24 +119,10 @@ lightbox.on('uiRegister', function() {
   });
 });
 
-///////////////////////////////////////////////////////////////////////////////
-// update url with a hash/anchor with the uuid of the current slide
-lightbox.on('contentActivate', ({ content }) => {
-  if (location.hash.includes("autoplay")) {
-      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid+"&autoplay");
-  } else {
-      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid);
-  }
-});
-// remove anchor when lightbox closes
-lightbox.on('close', () => {
-  history.replaceState(undefined, '', window.location.pathname + window.location.search);
-});
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // parse data-bma-file-orig-url attribute
-lightbox.addFilter('itemData', (itemData, index) => {
+lightbox.addFilter('itemData', (itemData, _index) => {
   const bmaFileOrigUrl = itemData.element.dataset.bmaFileOrigUrl;
   if (bmaFileOrigUrl) {
     itemData.bmaFileOrigUrl = bmaFileOrigUrl;

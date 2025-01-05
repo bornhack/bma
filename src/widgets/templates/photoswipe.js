@@ -83,7 +83,6 @@
   }
 
   async function getAlbumMetadata(album_uuid) {
-    let result = {};
     const response = fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'})
       .then((response) => {
         if (!response.ok) {
@@ -98,7 +97,10 @@
         }
         return response.json();
       })
-    .then((data) => data["bma_response"])
+      .then((data) => data["bma_response"])
+      .catch((response) => {
+        console.log(response);
+      });
     return response;
   }
 
@@ -243,11 +245,6 @@
     for (const [_fileid, metadata] of Object.entries(files)) {
       if (metadata)
         photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(metadata);
-      else {
-        console.log("Missing metadata", count, _fileid, metadata)
-        //let m = await getFileMetadata(_fileid);
-        //photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(m[_fileid]);
-      }
     };
     // closing divs and ul elements are added automatically,
     // just add the photoswipe to DOM right where the embed was made
