@@ -5,6 +5,9 @@
   const uuid = "{{ uuid }}";
   const host = "{{ host }}";
   const count = "{{ count }}";
+  const photoswipe_main_loader = document.createElement('div');
+  photoswipe_main_loader.id = "photoswipe-" + count + "-loader"
+  photoswipe_main_loader.innerHTML = `<div class="spinner-grow" role="status"></div><span class="h3">Loading Gallery....</span>`;
 
   // custom error class
   class BmaNotFoundError extends Error {
@@ -28,6 +31,7 @@
 
   // A reference to the currently running script
   const bma_script = document.scripts[document.scripts.length - 1];
+  bma_script.parentElement.insertBefore(photoswipe_main_loader, bma_script);
 
   // load photoswipe css and js, which in turn calls init() when it is done loading
   loadPhotoswipe();
@@ -195,6 +199,7 @@
     };
     // closing divs and ul elements are added automatically,
     // just add the photoswipe to DOM right where the embed was made
+    photoswipe_main_loader.remove();
     bma_script.parentElement.insertBefore(photoswipe_main_div, bma_script);
   }
 

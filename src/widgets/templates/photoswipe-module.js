@@ -1,22 +1,24 @@
+{% load static %}
+
 const count = "{{ count }}";
 
 // https://github.com/dimsemenov/PhotoSwipe
-import PhotoSwipeLightbox from "/static/js/vendor/photoswipe-lightbox-v5.4.4.esm.min.js";
+import PhotoSwipeLightbox from "{% static 'js/vendor/photoswipe-lightbox-v5.4.4.esm.min.js' %}";
 
 // https://github.com/dimsemenov/photoswipe-video-plugin
-import PhotoSwipeVideoPlugin from '/static/js/vendor/photoswipe-video-plugin-v1.0.2.esm.min.js';
+import PhotoSwipeVideoPlugin from '{% static 'js/vendor/photoswipe-video-plugin-v1.0.2.esm.min.js' %}';
 
 // https://github.com/dimsemenov/photoswipe-dynamic-caption-plugin
-import PhotoSwipeDynamicCaption from '/static/js/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.esm.js';
+import PhotoSwipeDynamicCaption from '{% static 'js/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.esm.js' %}';
 
 // https://github.com/junkfix/photoswipe-slideshow
-import PhotoSwipeSlideshow from '/static/js/vendor/photoswipe-slideshow.21b9b68e9ffa5bbd370d57888ebf001dd08e36e2.esm.js';
+import PhotoSwipeSlideshow from '{% static 'js/vendor/photoswipe-slideshow.21b9b68e9ffa5bbd370d57888ebf001dd08e36e2.esm.js' %}';
 
 // https://github.com/arnowelzel/photoswipe-auto-hide-ui
-import PhotoSwipeAutoHideUI from '/static/js/vendor/photoswipe-auto-hide-ui.v1.0.1.esm.js';
+import PhotoSwipeAutoHideUI from '{% static 'js/vendor/photoswipe-auto-hide-ui.v1.0.1.esm.js' %}';
 
 // https://github.com/arnowelzel/photoswipe-fullscreen
-import PhotoSwipeFullscreen from '/static/js/vendor/photoswipe-fullscreen.v1.0.5.esm.js';
+import PhotoSwipeFullscreen from '{% static 'js/vendor/photoswipe-fullscreen.v1.0.5.esm.js' %}';
 
 ///////////////////////////////////////////////////////////////////////////////
 export const lightbox = new PhotoSwipeLightbox({                                     
