@@ -3,9 +3,6 @@
 (async function(){
   {% include "includes/base.js" %}
 
-  // A reference to the currently running script
-  const bma_script = document.scripts[document.scripts.length - 1];
-
   // load splide css and js, which in turn calls init() when it is done loading
   loadSplide();
 
@@ -72,6 +69,7 @@
     };
     // closing divs and ul elements are added automatically,
     // just add the splide to DOM right where the embed was made
+    main_loader.remove();
     bma_script.parentElement.insertBefore(splide_main_div, bma_script);
     bma_script.parentElement.insertBefore(splide_thumb_ul, bma_script);
 

@@ -23,6 +23,14 @@ class BmaPermissionError extends Error {
   }
 }
 
+const main_loader = document.createElement('div');
+main_loader.id = "photoswipe-" + count + "-loader"
+main_loader.innerHTML = `<div class="spinner-grow" role="status"></div><span class="h3">Loading Gallery....</span>`;
+// A reference to the currently running script
+const bma_script = document.scripts[document.scripts.length - 1];
+bma_script.parentElement.insertBefore(main_loader, bma_script);
+
+
 async function getFileMetadata(file_uuid) {
   const response = fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'})
     .then((x) => {
