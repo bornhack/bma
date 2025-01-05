@@ -1,6 +1,7 @@
 {% load static %}
 
 const count = "{{ count }}";
+const uuid = "{{ uuid }}";
 
 // https://github.com/dimsemenov/PhotoSwipe
 import PhotoSwipeLightbox from "{% static 'js/vendor/photoswipe-lightbox-v5.4.4.esm.min.js' %}";
@@ -22,8 +23,8 @@ import PhotoSwipeFullscreen from '{% static 'js/vendor/photoswipe-fullscreen.v1.
 
 ///////////////////////////////////////////////////////////////////////////////
 export const lightbox = new PhotoSwipeLightbox({                                     
-  gallery: `#photoswipe-${count}-main`,
-  children: `a.gallery-${count}`, 
+  gallery: `#photoswipe-${count}-${uuid}-main`,
+  children: `a.gallery-${count}-${uuid}`, 
   pswpModule: () => import('/static/js/vendor/photoswipe-v5.4.4.esm.min.js') 
 });
 

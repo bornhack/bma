@@ -34,7 +34,7 @@
   bma_script.parentElement.insertBefore(photoswipe_main_loader, bma_script);
 
   // load photoswipe css and js, which in turn calls init() when it is done loading
-  loadPhotoswipe();
+  await loadPhotoswipe();
 
   async function loadPhotoswipe() {
     // load photoswipe JS
@@ -61,42 +61,45 @@
   }
 
   async function getFileMetadata(file_uuid) {
-    const response = await fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'});
-    if (!response.ok) {
-      // handle non-2xx response code
-      if (response.status === 404) {
-        throw new BmaNotFoundError("File UUID " + file_uuid + " not found!");
-      } else if (response.status === 403) {
-        throw new BmaPermissionError("No permission for file UUID " + file_uuid + "!");
-      } else {
-        throw new BmaApiError("BMA API returned unexpected response code " + response.status);
+    const response = fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'})
+    .then((x) => {
+      if (!x.ok) {
+        // handle non-2xx x code
+        if (x.status === 404) {
+          throw new BmaNotFoundError("File UUID " + file_uuid + " not found!");
+        } else if (x.status === 403) {
+          throw new BmaPermissionError("No permission for file UUID " + file_uuid + "!");
+        } else {
+          throw new BmaApiError("BMA API returned unexpected x code " + x.status);
+        }
       }
-    }
-    const data = await response.json();
-    const file = data["bma_response"];
-    return {[file_uuid]: file};
+      return x.json()
+    })
+    .then((x) => ({[file_uuid]: x['bma_response']}))
+    .catch((response) => {
+      console.log(response);
+    });
+    return response
   }
 
   async function getAlbumMetadata(album_uuid) {
     let result = {};
-    const response = await fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'});
-    if (!response.ok) {
-      // handle non-2xx response code
-      if (response.status === 404) {
-        throw new BmaNotFoundError("Album UUID " + album_uuid + " not found!");
-      } else if (response.status === 403) {
-        throw new BmaPermissionError("No permission for album UUID " + album_uuid + "!");
-      } else {
-        throw new BmaApiError("BMA API returned unexpected response code " + response.status);
-      }
-    }
-    const data = await response.json();
-    const album = data["bma_response"];
-    for (file of album["files"]) {
-      metadata = await getFileMetadata(file);
-      result[file] = metadata[file];
-    }
-    return result;
+    const response = fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'})
+      .then((response) => {
+        if (!response.ok) {
+          // handle non-2xx response code
+          if (response.status === 404) {
+            throw new BmaNotFoundError("Album UUID " + album_uuid + " not found!");
+          } else if (response.status === 403) {
+            throw new BmaPermissionError("No permission for album UUID " + album_uuid + "!");
+          } else {
+            throw new BmaApiError("BMA API returned unexpected response code " + response.status);
+          }
+        }
+        return response.json();
+      })
+    .then((data) => data["bma_response"])
+    return response;
   }
 
   /**
@@ -108,6 +111,10 @@
    */
   function PswpSourceSet(metadata, source, aspect_ratio) {
     let urls = metadata["links"][source][aspect_ratio];
+    if (!urls) {
+      console.log("Source set error", metadata, source, aspect_ratio);
+      return "";
+    }
     let srcset = "";
     for (const [size, url] of Object.entries(urls)) {
       const sizes = size.split("*");
@@ -168,7 +175,7 @@
   function createThumbnailPswp(record) {
     let thumb = `<span class="d-inline-block mb-1">`;
     if (record.filetype === "image") {
-      thumb += `<a class="gallery-${count} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
     data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
     data-pswp-type="image"
@@ -181,21 +188,66 @@
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
+    else if (record.filetype === "video") {
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+    data-bma-file-uuid="${record.uuid}"
+    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-pswp-type="video"
+    data-pswp-width="1280"
+    data-pswp-height="1024"
+    <div class="image-hover zoom">
+      <i class="fas fa-2x"></i>
+      <img srcset="${PswpSourceSet(record, "thumbnails", "16/9")}" height="150" />
+    </div>
+</a>${createThumbnailCaption(record)}`;
+    }
+    else if (record.filetype === "audio") {
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+    data-bma-file-uuid="${record.uuid}"
+    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-pswp-type="audio"
+    data-pswp-width="640"
+    data-pswp-height="480"
+    <div class="image-hover zoom">
+      <i class="fas fa-2x"></i>
+      <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" height="150" width="150"/>
+    </div>
+</a>${createThumbnailCaption(record)}`;
+    }
+    else if (record.filetype === "document") {
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+    data-bma-file-uuid="${record.uuid}"
+    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-pswp-type="document"
+    data-pswp-width="1920"
+    data-pswp-height="1080"
+    <div class="image-hover zoom">
+      <i class="fas fa-2x"></i>
+      <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" height="150" width="150"/>
+    </div>
+</a>${createThumbnailCaption(record)}`;
+    } else {
+      console.log("Filetype not found", record)
+    }
     return thumb;
   }
 
   async function createPhotoswipe(files) {
     const photoswipe_main_div = document.createElement('div');
-    const photoswipe_main_id = "photoswipe-" + count + "-main";
 
     // begin main photoswipe
     photoswipe_main_div.className = "row";
-    photoswipe_main_div.innerHTML = `<div class="pswp-gallery" id="${photoswipe_main_id}">`;
+    photoswipe_main_div.innerHTML = `<div class="pswp-gallery" id="photoswipe-${count}-${uuid}-main">`;
     // begin thumbnail photoswipe
     // loop over files and add photoswipe slides
     for (const [_fileid, metadata] of Object.entries(files)) {
       if (metadata)
-        photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(metadata); 
+        photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(metadata);
+      else {
+        console.log("Missing metadata", count, _fileid, metadata)
+        //let m = await getFileMetadata(_fileid);
+        //photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(m[_fileid]);
+      }
     };
     // closing divs and ul elements are added automatically,
     // just add the photoswipe to DOM right where the embed was made
@@ -209,7 +261,9 @@
 
     // is this uuid a file?
     try {
-      files = await getFileMetadata(uuid);
+      const metadata = await getFileMetadata(uuid);
+      if (metadata)
+        files[uuid] = metadata;
     } catch (error) {
       if (!error instanceof BmaNotFoundError) {
         // API returned an error other than 404
@@ -222,7 +276,11 @@
     if (!(uuid in files)) {
       // check if the uuid is an album
       try {
-        files = await getAlbumMetadata(uuid);
+        const album = await getAlbumMetadata(uuid);
+        for (const file of album["files"]) {
+          metadata = await getFileMetadata(file);
+          files[file] = metadata[file];
+        }
       } catch (error) {
         // API returned an error
         console.error("BMA API returned an error: ", error);
