@@ -130,7 +130,7 @@
    */
   function createThumbnailCaption(file) {
     let caption = `<div class="pswp-caption-content" data-bma-file-uuid="${file.uuid}">
-  <p class="d-inline-block"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.self}"><b>${file.title}</b></a></p>`;
+  <p class="d-inline-block"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.html}"><b>${file.title}</b></a></p>`;
 
     if (file.description)
       caption += `<span class="d-inline-block me-3"><i class="fas fa-newspaper fa-fw"></i> ${file.description}</span>`;
@@ -205,7 +205,7 @@
       thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
     data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
-    data-pswp-type="audio"
+    data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480"
     <div class="image-hover zoom">
@@ -263,7 +263,7 @@
     try {
       const metadata = await getFileMetadata(uuid);
       if (metadata)
-        files[uuid] = metadata;
+        files[uuid] = metadata[uuid];
     } catch (error) {
       if (!error instanceof BmaNotFoundError) {
         // API returned an error other than 404
