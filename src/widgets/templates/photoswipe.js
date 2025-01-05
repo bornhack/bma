@@ -34,7 +34,7 @@
 
   async function loadPhotoswipe() {
     // load photoswipe JS
-    const {lightbox} = await import(`http://${host}/widgets/photoswipe-module/${count}/${uuid}/`);
+    const {lightbox} = await import(`${window.location.protocol}//${host}/widgets/photoswipe-module/${count}/${uuid}/`);
 
     // load photoswipe CSS
     let photoswipe_css = document.createElement( "link" );
@@ -98,10 +98,12 @@
   /**
    * Render the source set
    * @param {object} metadata - file metadata record
+   * @param {string} source - Download or Thumbnail sources
+   * @param {string} aspect_ration - the required aspect ratio
    * @returns {string}
    */
-  function PswpSourceSet(metadata) {
-    let urls = metadata["links"]["downloads"][metadata["aspect_ratio"]];
+  function PswpSourceSet(metadata, source, aspect_ratio) {
+    let urls = metadata["links"][source][aspect_ratio];
     let srcset = "";
     for (const [size, url] of Object.entries(urls)) {
       const sizes = size.split("*");
@@ -160,7 +162,6 @@
    * @returns {string}
    */
   function createThumbnailPswp(record) {
-    const srcset = PswpSourceSet(record);
     let thumb = `<span class="d-inline-block mb-1">`;
     if (record.filetype === "image") {
       thumb += `<a class="gallery-${count} text-decoration-none" href="//${host}/${record.links.downloads.original}"
@@ -169,10 +170,10 @@
     data-pswp-type="image"
     data-pswp-width="${record.width}"
     data-pswp-height="${record.height}"
-    data-pswp-srcset="${srcset}">
+    data-pswp-srcset="${PswpSourceSet(record, "downloads", record["aspect_ratio"])}">
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${srcset}" width="150" height="150" />
+      <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" width="150" height="150" />
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
