@@ -205,7 +205,8 @@
         const album = await getAlbumMetadata(uuid);
         for (const file of album["files"]) {
           metadata = await getFileMetadata(file);
-          files[file] = metadata[file];
+          if (metadata)
+            files[file] = metadata[file];
         }
       } catch (error) {
         // API returned an error
