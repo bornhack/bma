@@ -69,10 +69,10 @@
    */
   function createThumbnailCaption(file) {
     let caption = `<div class="pswp-caption-content" data-bma-file-uuid="${file.uuid}">
-  <p class="d-inline-block"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.html}"><b>${file.title}</b></a></p>`;
+  <span class="d-inline-block me-3"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.html}"><b>${file.title}</b></a></span>`;
 
     caption += `<span class="d-inline-block me-3"><i class="fas fa-user fa-fw"></i> ${file.attribution}</span>`;
-    caption += `<span class="d-inline-block me-3">${createLicenseIcon(file.license)} ${file.license}</span>`;
+    caption += `<span class="d-inline-block me-3">${createLicenseIcon(file.license)} ${file.license_name}</span>`;
     if (file.description)
       caption += `<span class="d-inline-block me-3"><i class="fas fa-newspaper fa-fw"></i> ${file.description}</span>`;
     if (file.filetype === "image" && file.exif) {
@@ -99,7 +99,7 @@
           caption += `<span class="d-inline-block me-3"><i class="fas fa-camera-rotate fa-fw" title="Image Orientation"></i> ${file.exif.EXIF.Orientation}</span>`;
 
         if (file.exif.EXIF.DateTimeOriginal) {
-          caption += `<br><span class="d-inline-block me-3"><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> ${file.exif.EXIF.DateTimeOriginal}</span>`;
+          caption += `<span class="d-inline-block me-3"><i class="fas fa-calendar fa-fw" title="Picture taken time"></i> ${file.exif.EXIF.DateTimeOriginal}</span>`;
         }
 
       }
