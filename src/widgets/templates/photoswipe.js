@@ -21,7 +21,7 @@
     photoswipe_css.media = "screen,print";
     document.head.appendChild(photoswipe_css);
 
-    // load photoswipe CSS
+    // load photoswipe widget CSS
     let photoswipe_widget_css = document.createElement( "link" );
     photoswipe_widget_css.href = "//" + host + "{% static 'css/photoswipe-widget.css' %}";
     photoswipe_widget_css.type = "text/css";
@@ -195,7 +195,12 @@
     } else {
       console.log("Filetype not found", record)
     }
-    thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block"><span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}"><a class="text-truncate text-reset" href="//${host}/${record.links.html}">${record.attribution}</a></span><class title="${record.license_name}"><a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a></class></div>`;
+    thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block">
+    <span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}">
+      <a class="text-truncate text-reset" href="//${host}/${record.links.html}">${record.attribution}</a>
+    </span><class title="${record.license_name}">
+      <a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a>
+    </class></div>`;
     thumb += "</span>"
     return thumb;
   }
@@ -221,38 +226,11 @@
   async function init() {
     // figure out which file(s) to show
     let files = {};
+    const tFiles = JSON.parse(templateFiles);
 
-    // is this uuid a file?
-    try {
-      const metadata = await getFileMetadata(uuid);
-      if (metadata)
-        files[uuid] = metadata[uuid];
-    } catch (error) {
-      if (!error instanceof BmaNotFoundError) {
-        // API returned an error other than 404
-        console.error("BMA API returned an error: ", error);
-        return;
-      }
+    for (const t of tFiles) {
+      files[t['uuid']] = t;
     }
-
-    // is this uuid an album?
-    if (!(uuid in files)) {
-      // check if the uuid is an album
-      try {
-        const album = await getAlbumMetadata(uuid);
-        for (const file of album["files"]) {
-          metadata = await getFileMetadata(file);
-          if (metadata)
-            files[file] = metadata[file];
-        }
-      } catch (error) {
-        // API returned an error
-        console.error("BMA API returned an error: ", error);
-        return;
-      }
-    }
-
-    // ready
     await createPhotoswipe(files);
   }
 })()

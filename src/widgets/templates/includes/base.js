@@ -3,8 +3,7 @@ const uuid = "{{ uuid }}";
 const host = "{{ host }}";
 const count = "{{ count }}";
 
-const album = "{{ album|escapejs }}";
-const images = "{{ images|escapejs }}";
+const templateFiles = "{{ files|escapejs }}";
 
 // custom error class
 class BmaNotFoundError extends Error {
