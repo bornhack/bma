@@ -112,38 +112,10 @@
 
   async function init() {
     // figure out which file(s) to show
-    let files = {};
-
-    // is this uuid a file?
-    try {
-      const metadata = await getFileMetadata(uuid);
-      if (metadata)
-        files[uuid] = metadata[uuid];
-
-    } catch (error) {
-      if (!error instanceof BmaNotFoundError) {
-        // API returned an error other than 404
-        console.error("BMA API returned an error: ", error);
-        return;
-      }
-    }
-
-    // is this uuid an album?
-    if (!(uuid in files)) {
-      // check if the uuid is an album
-      try {
-        const album = await getAlbumMetadata(uuid);
-        for (const file of album["files"]) {
-          metadata = await getFileMetadata(file);
-          if (metadata)
-            files[file] = metadata[file];
-        }
-      } catch (error) {
-        // API returned an error
-        console.error("BMA API returned an error: ", error);
-        return;
-      }
-    }
+    const files = JSON.parse(templateFiles).reduce((acc, t) => {
+      acc[t.uuid] = t;
+      return acc;
+    }, {});
 
     // ready
     await createSplide(files);

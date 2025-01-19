@@ -225,12 +225,10 @@
 
   async function init() {
     // figure out which file(s) to show
-    let files = {};
-    const tFiles = JSON.parse(templateFiles);
-
-    for (const t of tFiles) {
-      files[t['uuid']] = t;
-    }
+    const files = JSON.parse(templateFiles).reduce((acc, t) => {
+      acc[t.uuid] = t;
+      return acc;
+    }, {});
     await createPhotoswipe(files);
   }
 })()
