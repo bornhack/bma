@@ -21,6 +21,14 @@
     photoswipe_css.media = "screen,print";
     document.head.appendChild(photoswipe_css);
 
+    // load photoswipe CSS
+    let photoswipe_widget_css = document.createElement( "link" );
+    photoswipe_widget_css.href = "//" + host + "{% static 'css/photoswipe-widget.css' %}";
+    photoswipe_widget_css.type = "text/css";
+    photoswipe_widget_css.rel = "stylesheet";
+    photoswipe_widget_css.media = "screen,print";
+    document.head.appendChild(photoswipe_widget_css);
+
     // load custom css
     let custom_css = document.createElement( "link" );
     custom_css.href = "//" + host + "{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}";
@@ -63,6 +71,8 @@
     let caption = `<div class="pswp-caption-content" data-bma-file-uuid="${file.uuid}">
   <p class="d-inline-block"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.html}"><b>${file.title}</b></a></p>`;
 
+    caption += `<span class="d-inline-block me-3"><i class="fas fa-user fa-fw"></i> ${file.attribution}</span>`;
+    caption += `<span class="d-inline-block me-3">${createLicenseIcon(file.license)} ${file.license}</span>`;
     if (file.description)
       caption += `<span class="d-inline-block me-3"><i class="fas fa-newspaper fa-fw"></i> ${file.description}</span>`;
     if (file.filetype === "image" && file.exif) {
@@ -99,12 +109,30 @@
   }
 
   /**
+   * Creates license icon
+   * @param {string} license - License name
+   * @returns {string}
+   */
+  function createLicenseIcon(license) {
+    switch(license) {
+      case "CC_ZERO_1_0":
+        return '<i class="fa-brands fa-creative-commons-zero"></i>'; 
+      case "CC_BY_4_0":
+        return '<i class="fa-brands fa-creative-commons-by"></i>'; 
+      case "CC_BY_SA_4_0":
+        return '<i class="fa-brands fa-creative-commons-sa"></i>'; 
+      default:
+        return license; 
+    }
+  }
+
+  /**
    * Creates a photoswipe thumbnail
    * @param {object} record - file record
    * @returns {string}
    */
   function createThumbnailPswp(record) {
-    let thumb = `<span class="d-inline-block mb-1">`;
+    let thumb = `<span class="d-inline-block m-1">`;
     if (record.filetype === "image") {
       thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
@@ -112,9 +140,10 @@
     data-pswp-type="image"
     data-pswp-width="${record.width}"
     data-pswp-height="${record.height}"
-    data-pswp-srcset="${PswpSourceSet(record, "downloads", record["aspect_ratio"])}">
+    data-pswp-srcset="${PswpSourceSet(record, "downloads", record["aspect_ratio"])}"
+    title="${record.title}"
+    >
     <div class="image-hover zoom">
-      <i class="fas fa-2x"></i>
       <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" width="150" height="150" />
     </div>
 </a>${createThumbnailCaption(record)}`;
@@ -126,6 +155,8 @@
     data-pswp-type="video"
     data-pswp-width="1280"
     data-pswp-height="1024"
+    title="${record.title}"
+    >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
       <img srcset="${PswpSourceSet(record, "thumbnails", "16/9")}" height="150" />
@@ -139,6 +170,8 @@
     data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480"
+    title="${record.title}"
+    >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
       <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" height="150" width="150"/>
@@ -152,6 +185,8 @@
     data-pswp-type="document"
     data-pswp-width="1920"
     data-pswp-height="1080"
+    title="${record.title}"
+    >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
       <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" height="150" width="150"/>
@@ -160,6 +195,8 @@
     } else {
       console.log("Filetype not found", record)
     }
+    thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block"><span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}"><a class="text-truncate text-reset" href="//${host}/${record.links.html}">${record.attribution}</a></span><class title="${record.license_name}"><a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a></class></div>`;
+    thumb += "</span>"
     return thumb;
   }
 
