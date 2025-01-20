@@ -42,7 +42,7 @@ class TestGrid:
     def test_key_error(self):
         with pytest.raises(KeyError) as e:
             list(utils._grid(columns=12, settings=settings, xxxxl=6))
-        assert "Invalid breakpoint: xxxxl. Choices are: xs, s, m, l, xl" in str(e.value)
+        assert "Invalid breakpoint 'xxxxl' - available breakpoints: xs,s,m,l,xl" in str(e.value)
 
 
 class TestSizes:

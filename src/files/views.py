@@ -237,7 +237,9 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
         form = super().get_form()
         # any filters in the view decide what choices are actually rendered in the html form,
         # but all permitted files uuids are added as choices to make sure validation passes
-        form.fields["selection"].choices = BaseFile.bmanager.all().values_list("pk", "pk")
+        form.fields["selection"].choices = BaseFile.bmanager.get_permitted(user=self.request.user).values_list(
+            "pk", "pk"
+        )
         return form  # type: ignore[no-any-return]
 
     def form_valid(self, form: Form) -> HttpResponse:

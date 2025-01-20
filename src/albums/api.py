@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from ninja import Query
 from ninja import Router
 
+from files.models import BaseFile
 from utils.api import AlbumApiResponseType
 from utils.auth import BMAuthBearer
 from utils.auth import permit_anonymous_api_use
@@ -62,8 +63,10 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
     # save album object to db
     album.save()
     if "files" in payload.dict():
-        # save m2m
-        album.files.set(payload.dict()["files"])
+        # save m2m, avoid adding files to the album that are not permitted for the user
+        requested_files = set(payload.dict()["files"])
+        permitted_files = set(BaseFile.bmanager.get_permitted(user=request.user).values_list("uuid", flat=True))
+        album.files.set(permitted_files.intersection(requested_files))
 
     # assign permissions and return response
     album.add_initial_permissions()

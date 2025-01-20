@@ -21,6 +21,7 @@ from oauth2_provider.models import get_application_model
 from oauth2_provider.models import get_grant_model
 
 from users.factories import UserFactory
+from users.models import User
 
 Application = get_application_model()
 AccessToken = get_access_token_model()
@@ -29,6 +30,26 @@ Grant = get_grant_model()
 
 class BmaTestBase(TestCase):
     """The base class used by all BMA tests."""
+
+    users: list[User]
+    files: list[str]
+    albums: list[str]
+    user0: User
+    user1: User
+    creator2: User
+    creator3: User
+    moderator4: User
+    moderator5: User
+    curator6: User
+    curator7: User
+    superuser: User
+    clientinfo: dict[str, str]
+    creator2_album: str
+    creator3_album: str
+    allfiles_album: str
+    tokeninfos: dict[User, dict[str, str]]
+    tokens: dict[User, str]
+    file_uuid: str
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -39,8 +60,10 @@ class BmaTestBase(TestCase):
 
         # create 2 regular users, 2 creators, 2 moderators, 2 curators, and 1 superuser
         cls.users = []
+        cls.tokeninfos = {}
+        cls.tokens = {}
         for i in range(9):
-            kwargs = {}
+            kwargs: dict[str, bool | str] = {}
             if i in [0, 1]:
                 kwargs["username"] = f"user{i}"
             elif i in [2, 3]:
@@ -59,7 +82,7 @@ class BmaTestBase(TestCase):
             user.save()
             setattr(cls, user.username, user)
             cls.users.append(user)
-            user.auth = cls.get_access_token(user)
+            cls.tokens[user] = cls.get_access_token(user)
             user.save()
             cls.client.logout()
         # clientinfo
@@ -74,7 +97,7 @@ class BmaTestBase(TestCase):
         curators.user_set.add(cls.creator2, cls.creator3, cls.moderator4, cls.moderator5, cls.curator6, cls.curator7)
 
     @classmethod
-    def get_access_token(cls, user) -> str:  # noqa: ANN001
+    def get_access_token(cls, user: User) -> str:
         """Test the full oauth2 public client authorization code pkce token flow."""
         # generate a verifier string from 43-128 chars
         alphabet = string.ascii_uppercase + string.digits
@@ -87,7 +110,7 @@ class BmaTestBase(TestCase):
         cls.client.force_login(user)
 
         # get the authorization code
-        data = {
+        data: dict[str, str | bool] = {
             "client_id": user.webapp_oauth_client_id,
             "state": "something",
             "redirect_uri": "https://localhost/api/csrf/",
@@ -118,15 +141,15 @@ class BmaTestBase(TestCase):
             },
         )
         assert response.status_code == 200
-        user.tokeninfo = json.loads(response.content)
-        return f"Bearer {user.tokeninfo['access_token']}"
+        cls.tokeninfos[user] = json.loads(response.content)
+        return f"Bearer {cls.tokeninfos[user]['access_token']}"
 
     @classmethod
     def file_upload(  # noqa: PLR0913
         cls,
         *,
         uploader: str = "creator2",
-        filepath: str = settings.BASE_DIR / "static_src/images/file-video-solid.png",
+        filepath: str | Path = settings.BASE_DIR / "static_src/images/file-video-solid.png",
         title: str = "some title",
         file_license: str = "CC_ZERO_1_0",
         mimetype: str = "image/png",
@@ -135,13 +158,12 @@ class BmaTestBase(TestCase):
         original_source: str = "https://example.com/something.png",
         tags: list[str] | None = None,
         thumbnail_url: str = "",
-        return_full: bool = False,
         expect_status_code: int = 201,
-        width: int | None = 800,
-        height: int | None = 600,
-    ) -> str | dict[str, str]:
+        width: int = 800,
+        height: int = 600,
+    ) -> str:
         """The upload method used by many tests."""
-        metadata = {
+        metadata: dict[str, str | int | list[str]] = {
             "title": title,
             "license": file_license,
             "attribution": attribution,
@@ -165,11 +187,11 @@ class BmaTestBase(TestCase):
                     "file_metadata": json.dumps(metadata),
                     "client": json.dumps(cls.clientinfo),
                 },
-                headers={"authorization": getattr(cls, uploader).auth},
+                headers={"authorization": cls.tokens[getattr(cls, uploader)]},
             )
         assert response.status_code == expect_status_code
         if expect_status_code == 422:
-            return None
+            return ""
         data = response.json()["bma_response"]
         assert "uuid" in data
         if not title:
@@ -178,14 +200,14 @@ class BmaTestBase(TestCase):
         assert data["attribution"] == attribution, "wrong attribution"
         assert data["license"] == file_license, "wrong license"
         assert data["source"] == original_source, "wrong source"
-        cls.file_uuid = data["uuid"]
         if tags:
             tags.sort()
             assert data["tags"] == [{"name": tag, "slug": tag, "weight": 1} for tag in tags]
-        return data if return_full else data["uuid"]
+        cls.file_uuid = data["uuid"]
+        return data["uuid"]  # type: ignore[no-any-return]
 
     @classmethod
-    def album_create(
+    def album_create_api(
         cls,
         *,
         title: str = "album title here",
@@ -193,7 +215,7 @@ class BmaTestBase(TestCase):
         files: list[str] | None = None,
         creator: str = "curator6",
     ) -> str:
-        """Create an album optionally with some files."""
+        """Create an album using the api, optionally with some files."""
         response = cls.client.post(
             reverse("api-v1-json:album_create"),
             {
@@ -201,16 +223,39 @@ class BmaTestBase(TestCase):
                 "description": description,
                 "files": files if files else [],
             },
-            headers={"authorization": getattr(cls, creator).auth},
+            headers={"authorization": cls.tokens[getattr(cls, creator)]},
             content_type="application/json",
         )
         assert response.status_code == 201
-        return response.json()["bma_response"]["uuid"]
+        return response.json()["bma_response"]["uuid"]  # type: ignore[no-any-return]
+
+    @classmethod
+    def album_create_view(
+        cls,
+        *,
+        title: str = "album title here",
+        description: str = "album description here",
+        files: list[str] | None = None,
+        creator: str = "curator6",
+    ) -> str:
+        """Create an album using the html view, optionally with some files."""
+        cls.client.login(username=creator, password="secret")
+        response = cls.client.post(
+            path=reverse("albums:album_create"),
+            data={
+                "title": title,
+                "description": description,
+                "files": files if files else [],
+            },
+            follow=True,
+        )
+        assert response.status_code == 200
+        assert " created!" in response.content.decode()
+        return response.context_data["album"].uuid  # type: ignore[no-any-return, attr-defined]
 
     @classmethod
     def admin_files_action(cls, *file_uuids: str, username: str, action: str) -> None:
         """Approve or publish or other action on the files using the admin."""
-        # make moderator4 approve 5 of the files owned by creator2 (using the admin)
         adminurl = reverse("file_admin:files_basefile_changelist")
         data = {"action": action, "_selected_action": file_uuids}
         cls.client.login(username=username, password="secret")
@@ -218,38 +263,16 @@ class BmaTestBase(TestCase):
         assert response.status_code == 200
 
     @classmethod
-    def api_album_create(
-        cls,
-        username: str,
-        title: str = "album title",
-        description: str = "album description goes here",
-        files: list[str] | None = None,
-    ) -> str:
-        """Create album using the api and return the album uuid."""
-        response = cls.client.post(
-            reverse("api-v1-json:album_create"),
-            {
-                "title": title,
-                "description": description,
-                "files": files,
-            },
-            headers={"authorization": getattr(cls, username).auth},
-            content_type="application/json",
-        )
-        assert response.status_code == 201
-        return response.json()["bma_response"]["uuid"]
-
-    @classmethod
     def upload_initial_test_files(cls) -> None:
         """Upload some files for testing."""
         # upload some files as creator2
         cls.files = [cls.file_upload(title=f"creator2 file {i}", tags=[f"tag{i}", "foo"]) for i in range(11)]
-        cls.creator2_album = cls.api_album_create(username="curator6", title="creator2 first 11", files=cls.files)
+        cls.creator2_album = cls.album_create_view(creator="creator2", title="creator2 first 11", files=cls.files)
 
         # upload some files as creator3
         for i in range(9):
             cls.files.append(cls.file_upload(uploader="creator3", title=f"creator3 file {i}", tags=[f"tag{i}", "bar"]))
-        cls.creator3_album = cls.api_album_create(username="curator7", title="creator3 first 9", files=cls.files[10:20])
+        cls.creator3_album = cls.album_create_api(creator="creator3", title="creator3 first 9", files=cls.files[10:20])
 
         # upload with attribution
         cls.files.append(cls.file_upload(attribution="fotoflummer"))
@@ -260,7 +283,8 @@ class BmaTestBase(TestCase):
         cls.files.append(cls.file_upload(file_license="CC_BY_SA_4_0"))
 
         # create an album with all files
-        cls.allfiles_album = cls.api_album_create(username="curator7", title="all files", files=cls.files)
+        cls.allfiles_album = cls.album_create_api(creator="superuser", title="all files", files=cls.files)
+        cls.albums = [cls.creator2_album, cls.creator3_album, cls.allfiles_album]
 
     @classmethod
     def change_initial_test_files(cls) -> None:
@@ -282,7 +306,69 @@ class BmaTestBase(TestCase):
                 data={
                     "tags": tags,
                 },
-                headers={"authorization": cls.curator6.auth},
+                headers={"authorization": cls.tokens[cls.curator6]},
                 content_type="application/json",
             )
             assert response.status_code == 201
+
+    @classmethod
+    def approve_files_api(cls, files: list[str], user: User) -> None:
+        """Approve files."""
+        response = cls.client.patch(
+            reverse("api-v1-json:approve_files"),
+            {"files": files},
+            headers={"authorization": cls.tokens[user]},
+            content_type="application/json",
+        )
+        assert f"approve {len(files)} files OK" in response.content.decode()
+        assert response.status_code == 200
+
+    @classmethod
+    def publish_files_api(cls, files: list[str], user: User) -> None:
+        """Publish files."""
+        response = cls.client.patch(
+            reverse("api-v1-json:publish_files"),
+            {"files": files},
+            headers={"authorization": cls.tokens[user]},
+            content_type="application/json",
+        )
+        assert f"publish {len(files)} files OK" in response.content.decode()
+        assert response.status_code == 200
+
+    @classmethod
+    def create_albums(cls) -> None:
+        """Create some albums for testing."""
+        cls.albums = []
+        # upload some files as creator2
+        cls.files = []
+        for _ in range(10):
+            cls.files.append(cls.file_upload())
+        # publish all the files
+        response = cls.client.patch(
+            reverse("api-v1-json:publish_files"),
+            {"files": cls.files[0:10]},
+            headers={"authorization": cls.tokens[cls.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert "publish 10 files OK" in response.content.decode()
+
+        # upload some files as creator3
+        for _ in range(10):
+            cls.files.append(cls.file_upload(uploader="creator3"))
+        # publish all the files
+        response = cls.client.patch(
+            reverse("api-v1-json:publish_files"),
+            {"files": cls.files[10:20]},
+            headers={"authorization": cls.tokens[cls.creator3]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert "publish 10 files OK" in response.content.decode()
+
+        # approve files
+        cls.approve_files_api(files=cls.files, user=cls.superuser)
+
+        # create albums
+        cls.albums.append(cls.album_create_api(title="creator2 files", files=cls.files[0:10], creator="curator6"))
+        cls.albums.append(cls.album_create_view(title="creator3 files", files=cls.files[10:20], creator="curator7"))

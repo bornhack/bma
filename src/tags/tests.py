@@ -22,7 +22,7 @@ class TestTagsApi(BmaTestBase):
                 data={
                     "tags": tags,
                 },
-                headers={"authorization": self.creator2.auth},
+                headers={"authorization": self.tokens[self.creator2]},
                 content_type="application/json",
             )
             assert response.status_code == 201
@@ -36,7 +36,7 @@ class TestTagsApi(BmaTestBase):
                 data={
                     "tags": tags,
                 },
-                headers={"authorization": self.curator6.auth},
+                headers={"authorization": self.tokens[self.curator6]},
                 content_type="application/json",
             )
             assert response.status_code == 201
@@ -59,7 +59,7 @@ class TestTagsApi(BmaTestBase):
                 data={
                     "tags": tags,
                 },
-                headers={"authorization": self.creator2.auth},
+                headers={"authorization": self.tokens[self.creator2]},
                 content_type="application/json",
             )
             # weight is 2 for tagN and there is also a foo tag for i>1
