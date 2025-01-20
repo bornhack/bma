@@ -89,12 +89,15 @@ class AlbumCreateView(CuratorGroupRequiredMixin, CreateView):  # type: ignore[ty
 
     template_name = "album_form.html"
     model = Album
-    fields = ("title", "description")
+    fields = ("title", "description", "files")
 
     def get_form(self, form_class: Any | None = None) -> Form:  # noqa: ANN401
         """Return an instance of the form to be used in this view, only show permitted files in the form."""
         form = super().get_form()
-        form.fields["files"].queryset = BaseFile.bmanager.get_permitted(user=self.request.user)
+        form.fields["files"].choices = [
+            (f[0], f"{f[1]} ({f[0]})")
+            for f in BaseFile.bmanager.get_permitted(user=self.request.user).values_list("pk", "title")
+        ]
         return form  # type: ignore[no-any-return]
 
     def form_valid(self, form: Form) -> HttpResponseRedirect:
@@ -102,6 +105,7 @@ class AlbumCreateView(CuratorGroupRequiredMixin, CreateView):  # type: ignore[ty
         album = form.save(commit=False)  # type: ignore[attr-defined]
         album.owner = self.request.user
         album.save()
+        album.add_initial_permissions()
         form.save_m2m()  # type: ignore[attr-defined]
         messages.success(self.request, f"Album {album.pk} created!")
         return HttpResponseRedirect(album.get_absolute_url())
@@ -142,9 +146,9 @@ class AlbumAddFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
             album = get_object_or_404(Album.bmanager.all(), pk=self.kwargs["album_uuid"])
             if not self.request.user.has_perm("change_album", album):
                 raise PermissionDenied
-            # show the files not in the album in the form
+            # show the files not already in the album in the form
             form.fields["files_to_add"].choices = [
-                (bf.pk, bf.pk)
+                (str(bf.pk), bf)
                 for bf in BaseFile.bmanager.get_permitted(user=self.request.user)
                 if bf not in album.active_files_list
             ]
@@ -163,8 +167,6 @@ class AlbumAddFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
     def form_valid(self, form: Form) -> HttpResponse:
         """Add the files and redirect to the album detail page."""
         album = Album.objects.get(pk=form.cleaned_data["album"])
-        if not self.request.user.has_perm("change_album", album):
-            raise PermissionDenied
         added = album.add_members(*form.cleaned_data["files_to_add"])
         messages.success(
             self.request, f"Added {added} of {len(form.cleaned_data['files_to_add'])} file(s) to album {album.title}"
@@ -192,7 +194,7 @@ class AlbumRemoveFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-a
     form_class = AlbumRemoveFilesForm
     template_name = "files_remove_from_album.html"
 
-    def get_form(self, form_class: AlbumAddFilesForm | None = None) -> AlbumAddFilesForm:  # type: ignore[override]
+    def get_form(self, form_class: AlbumRemoveFilesForm | None = None) -> AlbumRemoveFilesForm:  # type: ignore[override]
         """Return an instance of the form vith appropriate choices."""
         form = super().get_form()
         # do we have an album_uuid or not
@@ -202,16 +204,16 @@ class AlbumRemoveFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-a
             if not self.request.user.has_perm("change_album", album):
                 raise PermissionDenied
             # show the files in the album in the form
-            form.fields["files_to_remove"].choices = [(bf.pk, bf.pk) for bf in album.active_files_list]
+            form.fields["files_to_remove"].choices = [(str(bf.pk), bf) for bf in album.active_files_list]
             form.fields["album"].choices = [(album.pk, album.title)]
             form.initial["album"] = album.pk
         else:
             # we don't have an album_uuid, the form is rendered in FileMultipleActionView and
             # these field choices are only used for validation of the submitted form
-            albums = get_objects_for_user(self.request.user, "change_album", klass=Album)
+            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.bmanager.all())
             form.fields["album"].choices = [(a[0], a[1]) for a in albums.values_list("pk", "title")]
             form.fields["files_to_remove"].choices = [
-                (bf.pk, bf.pk)
+                (str(bf.pk), bf)
                 for bf in BaseFile.objects.filter(
                     memberships__album__in=albums, memberships__period__contains=timezone.now()
                 )
@@ -221,12 +223,10 @@ class AlbumRemoveFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-a
     def form_valid(self, form: Form) -> HttpResponse:
         """Add the files and redirect to the album detail page."""
         album = Album.objects.get(pk=form.cleaned_data["album"])
-        if not self.request.user.has_perm("change_album", album):
-            raise PermissionDenied
         removed = album.remove_members(*form.cleaned_data["files_to_remove"])
         messages.success(
             self.request,
-            f"Removed {removed} of {len(form.cleaned_data['files_to_remove'])} file(s) to album {album.title}",
+            f"Removed {removed} of {len(form.cleaned_data['files_to_remove'])} file(s) from album {album.title}",
         )
         return redirect(album)
 

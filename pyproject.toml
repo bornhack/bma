@@ -1,16 +1,18 @@
-[build-system]
-requires = ["setuptools>=64", "setuptools_scm>=8"]
-build-backend = "setuptools.build_meta"
-
+########## METADATA ##########
 [project]
-authors = [
-  {email = "thomas@gibfest.dk"},
-  {name = "Thomas Steen Rasmussen"}
-]
+authors = [{name = "Thomas Steen Rasmussen", email = "thomas@gibfest.dk"}]
+name = "bma"
+description = "BornHack Media Archive Django project"
+readme = "README.md"
+requires-python = ">=3.11"
+dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+
+
+########## DEPENDENCIES ##########
 dependencies = [
     "demoji==1.1.0",
     "Django==5.1.4",
@@ -34,15 +36,6 @@ dependencies = [
     "psycopg2-binary==2.9.10",
     "shortuuid==1.0.13",
 ]
-name = "bma"
-description = "BornHack Media Archive Django project"
-readme = "README.md"
-requires-python = ">=3.11"
-dynamic = ["version"]
-
-[project.scripts]
-"manage.py" = "bma.manage:main"
-
 [project.optional-dependencies]
 dev = [
     "pre-commit==4.0.1",
@@ -62,6 +55,15 @@ test = [
 [project.urls]
 homepage = "https://github.com/bornhack/bma"
 
+[project.scripts]
+"manage.py" = "bma.manage:main"
+
+
+########## SETUPTOOLS ##########
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -70,6 +72,8 @@ where = ["src"]
 
 [tool.setuptools_scm]
 
+
+########## RUFF ##########
 [tool.ruff]
 target-version = "py311"
 extend-exclude = [
@@ -115,9 +119,10 @@ convention = "google"
     "D" # https://docs.astral.sh/ruff/rules/#pydocstyle-d
 ]
 
+########## PYTEST ##########
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "bma.settings"
-python_files = ["tests.py"]
+python_files = ["tests.py", "test_*.py"]
 log_cli = 1
 log_cli_level = "DEBUG"
 filterwarnings = [
@@ -125,7 +130,10 @@ filterwarnings = [
     # https://github.com/vitalik/django-ninja/issues/1093
     "ignore::DeprecationWarning",
 ]
+addopts = "--cov=. --cov-report=xml --cov-report=html --cov-config=../pyproject.toml"
 
+
+########## MYPY ##########
 [tool.mypy]
 plugins = [
     "mypy_django_plugin.main"
@@ -141,19 +149,28 @@ django_settings_module = "bma.settings"
 [tool.mypy_django_plugin]
 ignore_missing_model_attributes = true
 
+
+########## TOX ##########
 [tool.tox]
-legacy_tox_ini = """
-    [tox]
-    envlist = py311
-    skipsdist = True
+envlist = ["py311", "py312", "py313"]
+skipsdist = true
 
-    [testenv]
-    changedir = src/
+[tool.tox.env_run_base]
+description = "Run tests under {base_python}"
+changedir = "src"
 
-    deps =
-        pytest
-        pytest-cov
-        pytest-randomly
-        -e.[test]
-    commands = pytest --cov=. --cov-report=xml --cov-report=html
-"""
+deps = [
+    "-e.[test]",
+]
+commands = ["pytest"]
+
+
+########## COVERAGE.PY ##########
+[tool.coverage.run]
+omit = [
+    "*/tests.py",
+]
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING",
+]

@@ -24,7 +24,7 @@ class InvalidBreakpointError(KeyError):
     """Exception raised when an invalid breakpoint is used."""
 
     def __init__(self, bp: str, breakpoints: list[str]) -> None:
-        super().__init__(f"Invalid breakpoint '{bp}' - available breakpoints: {breakpoints}")
+        super().__init__(f"Invalid breakpoint '{bp}' - available breakpoints: {','.join(breakpoints)}")
 
 
 def _grid(

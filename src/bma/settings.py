@@ -13,7 +13,7 @@ from .environment_settings import *  # noqa: F403
 # get BMA_VERSION from package registry
 try:
     BMA_VERSION = version("bma")
-except PackageNotFoundError:
+except PackageNotFoundError:  # pragma: no cover
     BMA_VERSION = "0.0.0"
 
 # intialise django_stubs_ext
