@@ -162,7 +162,7 @@ changedir = "src"
 deps = [
     "-e.[test]",
 ]
-commands = ["pytest"]
+commands = [["pytest"]]
 
 
 ########## COVERAGE.PY ##########
