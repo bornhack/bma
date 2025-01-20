@@ -9,7 +9,35 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 
 from albums.models import Album
+from files.models import BaseFile
 from images.models import Image
+
+
+def serialise_basefile(file: BaseFile) -> dict:
+    """Serialise a BaseFile object into a JSON-serialisable dictionary."""
+    json_data = {
+        "uuid": str(file.uuid),
+        "title": file.title,
+        "description": file.description,
+        "links": file.resolve_links(),
+        "filename": file.filename,
+        "filetype": file.filetype,
+        "filetype_icon": file.filetype_icon,
+        "license": file.license,
+        "license_name": file.license_name,
+        "license_url": file.license_url,
+        "attribution": file.attribution,
+    }
+    if file.filetype == "image":
+        json_data.update(
+            {
+                "aspect_ratio": file.aspect_ratio,
+                "exif": file.exif,
+                "width": file.width,
+                "height": file.height,
+            }
+        )
+    return json_data
 
 
 def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> HttpResponse:
@@ -17,47 +45,10 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
     js_files = []
     try:
         album = Album.bmanager.get(pk=uuid)
-        js_files = [
-            {
-                "uuid": str(item.uuid),
-                "title": item.title,
-                "description": item.description,
-                "filename": item.filename,
-                "filetype": item.filetype,
-                "filetype_icon": item.filetype_icon,
-                "aspect_ratio": item.aspect_ratio,
-                "license": item.license,
-                "license_name": item.license_name,
-                "license_url": item.license_url,
-                "attribution": item.attribution,
-                "exif": item.exif,
-                "links": item.resolve_links(),
-                "width": item.width,
-                "height": item.height,
-            }
-            for item in album.active_files_list
-        ]
+        js_files = [serialise_basefile(file) for file in album.active_files_list]
     except Album.DoesNotExist:
-        item = get_object_or_404(Image, uuid=uuid)
-        js_files.append(
-            {
-                "uuid": str(item.uuid),
-                "title": item.title,
-                "description": item.description,
-                "filename": item.filename,
-                "filetype": item.filetype,
-                "filetype_icon": item.filetype_icon,
-                "aspect_ratio": item.aspect_ratio,
-                "license": item.license,
-                "license_name": item.license_name,
-                "license_url": item.license_url,
-                "attribution": item.attribution,
-                "exif": item.exif,
-                "links": item.resolve_links(),
-                "width": item.width,
-                "height": item.height,
-            }
-        )
+        file = get_object_or_404(BaseFile, uuid=uuid)
+        js_files.append(serialise_basefile(file))
 
     return render(
         request,
