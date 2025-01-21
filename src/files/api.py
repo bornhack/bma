@@ -574,7 +574,7 @@ def file_update(
     },
     summary="Soft-delete a file.",
 )
-def file_delete(
+def file_softdelete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Mark a file for deletion."""
@@ -587,6 +587,31 @@ def file_delete(
     # ok go but we don't let users fully delete files for now
     basefile.softdelete()
     return 204, None
+
+
+@router.patch(
+    "/{file_uuid}/unsoftdelete/",
+    response={
+        200: SingleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+    },
+    summary="Un-soft-delete a file.",
+)
+def file_unsoftdelete(
+    request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
+) -> tuple[int, dict[str, str] | None]:
+    """Unmark a file for deletion."""
+    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    if not request.user.has_perm("unsoftdelete_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    # ok go
+    basefile.unsoftdelete()
+    return 200, {"bma_response": basefile, "message": "File undeleted."}
 
 
 ############## TAGS #########################################################

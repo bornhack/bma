@@ -319,8 +319,8 @@ class BaseFile(PolymorphicModel):
         """Soft delete this file."""
         self.update_field(field="deleted", value=True)
 
-    def undelete(self) -> None:
-        """Undelete this file."""
+    def unsoftdelete(self) -> None:
+        """Unsoftdelete this file."""
         self.update_field(field="deleted", value=False)
 
     def add_initial_permissions(self) -> None:

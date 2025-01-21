@@ -85,7 +85,7 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
         """Soft-delete files in queryset."""
         return self.change_bool(field="deleted", value=True)
 
-    def undelete(self) -> int:
+    def unsoftdelete(self) -> int:
         """Undelete files in queryset."""
         return self.change_bool(field="deleted", value=False)
 

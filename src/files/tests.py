@@ -676,6 +676,27 @@ class TestFilesApi(BmaTestBase):
         )
         assert response.status_code == 204
 
+        # undelete file, wrong user
+        response = self.client.patch(
+            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}),
+            headers={"authorization": self.tokens[self.user0]},
+        )
+        assert response.status_code == 403
+
+        # undelete file, check mode
+        response = self.client.patch(
+            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}) + "?check=true",
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 202
+
+        # undelete file
+        response = self.client.patch(
+            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}),
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 200
+
     def test_metadata_get_404(self) -> None:
         """Get file metadata get with wrong uuid returns 404."""
         response = self.client.get(

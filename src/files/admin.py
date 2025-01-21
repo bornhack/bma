@@ -44,7 +44,7 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         "deleted",
     )
     list_filter = ("license", "uploader", "attribution", "approved", "published", "deleted")
-    actions = ("approve", "unapprove", "publish", "unpublish", "softdelete", "undelete")
+    actions = ("approve", "unapprove", "publish", "unpublish", "softdelete", "unsoftdelete")
     exclude = ("tags",)
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[BaseFile]:
@@ -108,7 +108,7 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         return request.user.has_perm("softdelete_basefile", obj)
 
     def has_unsoftdelete_basefile_permission(self, request: HttpRequest, obj: BaseFile | None = None) -> bool:
-        """Called by the admin to check if the user has permission to undelete this type of/this specific object."""
+        """Called by the admin to check if the user has permission to unsoftdelete this type of/this specific object."""
         if obj is None:
             return True
         return request.user.has_perm("unsoftdelete_basefile", obj)
@@ -184,19 +184,19 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         valid = get_objects_for_user(request.user, "files.softdelete_basefile", klass=queryset)
         valids = valid.count()
         updated = valid.softdelete()
-        self.send_message(request, selected=selected, valid=valids, updated=updated, action="deleted")
+        self.send_message(request, selected=selected, valid=valids, updated=updated, action="softdeleted")
 
     @admin.action(
         description="Unsoftdelete selected %(verbose_name_plural)s",
         permissions=["unsoftdelete_basefile"],
     )
-    def undelete(self, request: HttpRequest, queryset: QuerySet[BaseFile]) -> None:
-        """Admin action to undelete files."""
+    def unsoftdelete(self, request: HttpRequest, queryset: QuerySet[BaseFile]) -> None:
+        """Admin action to unsoftdelete files."""
         selected = queryset.count()
         valid = get_objects_for_user(request.user, "files.unsoftdelete_basefile", klass=queryset)
         valids = valid.count()
-        updated = valid.undelete()
-        self.send_message(request, selected=selected, valid=valids, updated=updated, action="undeleted")
+        updated = valid.unsoftdelete()
+        self.send_message(request, selected=selected, valid=valids, updated=updated, action="unsoftdeleted")
 
     def permissions(self, obj: BaseFile) -> str:
         """Return all defined permissions for this object."""
