@@ -122,7 +122,7 @@ convention = "google"
 ########## PYTEST ##########
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "bma.settings"
-python_files = ["tests.py", "test_*.py"]
+python_files = ["tests/test_*.py"]
 log_cli = 1
 log_cli_level = "DEBUG"
 filterwarnings = [
@@ -169,6 +169,7 @@ commands = [["pytest"]]
 [tool.coverage.run]
 omit = [
     "*/tests.py",
+    "*/tests/test_*.py",
 ]
 [tool.coverage.report]
 exclude_also = [
