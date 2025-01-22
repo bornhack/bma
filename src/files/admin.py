@@ -26,6 +26,7 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
         "published",
         "deleted",
         "mimetype",
+        "job",
     )
     list_display = (
         "uuid",
