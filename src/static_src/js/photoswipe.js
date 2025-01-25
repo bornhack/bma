@@ -36,7 +36,7 @@ const captionPlugin = new PhotoSwipeDynamicCaption(lightbox, {
   // Plugins options
   type: 'auto',
   captionContent: (slide) => {
-    return document.querySelector(`.pswp-caption-content[data-bma-file-uuid="${slide.data.element.dataset.bmaFileUuid}"]`).innerHTML
+    return slide.data.element.parentElement.querySelector(`.pswp-caption-content[data-bma-file-uuid="${slide.data.element.dataset.bmaFileUuid}"]`).innerHTML
   },
 });
 
