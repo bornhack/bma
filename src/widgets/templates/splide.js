@@ -67,6 +67,9 @@
       // add thumbnail for this file
       splide_thumb_ul.innerHTML += '<li class="splide-thumbnail"><img src="//' + host + thumburl + '"></li>';
     };
+    //Show message if there are no files to display
+    if (Object.entries(files).length === 0)
+      splide_main_div.innerHTML = "Sorry no files to display";
     // closing divs and ul elements are added automatically,
     // just add the splide to DOM right where the embed was made
     main_loader.remove();

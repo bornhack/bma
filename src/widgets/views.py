@@ -27,6 +27,7 @@ def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | 
         "license_name": file.license_name,
         "license_url": file.license_url,
         "attribution": file.attribution,
+        "source": file.source,
     }
     if file.filetype == "image":
         json_data.update(

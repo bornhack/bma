@@ -217,6 +217,9 @@
       if (metadata)
         photoswipe_main_div.querySelector("div").innerHTML += createThumbnailPswp(metadata);
     };
+    //Show message if there are no files to display
+    if (Object.entries(files).length === 0)
+      photoswipe_main_div.querySelector("div").innerHTML = "Sorry no files to display";
     // closing divs and ul elements are added automatically,
     // just add the photoswipe to DOM right where the embed was made
     main_loader.remove();
