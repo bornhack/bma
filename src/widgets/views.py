@@ -13,7 +13,7 @@ from files.models import BaseFile
 from images.models import Image
 
 
-def serialise_basefile(file: BaseFile) -> dict:
+def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | dict[str, str]]]: 
     """Serialise a BaseFile object into a JSON-serialisable dictionary."""
     json_data = {
         "uuid": str(file.uuid),
@@ -55,6 +55,23 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
         f"{style}.js",
         context={"uuid": uuid, "files": json.dumps(js_files), "count": count, "host": request.get_host()},
         content_type="text/javascript",
+    )
+
+
+def bma_widget_iframe_view(request: HttpRequest, style: str, option: int, uuid: str) -> HttpResponse:
+    """Render a BMA iframe widget rendered with the requested style, counter and UUID."""
+    js_files = []
+    try:
+        album = Album.bmanager.get(pk=uuid)
+        js_files = BaseFile.bmanager.filter(uuid__in=[f.uuid for f in album.active_files_list])
+    except Album.DoesNotExist:
+        file = get_object_or_404(BaseFile, uuid=uuid)
+        js_files.append(file)
+
+    return render(
+        request,
+        f"{style}.html",
+        context={"uuid": uuid, "files": js_files, "option": option, "host": request.get_host()},
     )
 
 

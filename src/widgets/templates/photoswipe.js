@@ -198,9 +198,9 @@
     thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block">
     <span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}">
       <a class="text-truncate text-reset" href="//${host}/${record.links.html}">${record.attribution}</a>
-    </span><class title="${record.license_name}">
+    </span><span title="${record.license_name}">
       <a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a>
-    </class></div>`;
+    </span></div>`;
     thumb += "</span>"
     return thumb;
   }

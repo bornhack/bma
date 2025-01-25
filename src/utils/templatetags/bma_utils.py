@@ -92,6 +92,7 @@ def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "ima
             "width": width,
             "height": t.height,
             "title": title,
+            "file": basefile,
             "alt": alt,
         }
     )

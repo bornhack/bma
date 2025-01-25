@@ -36,7 +36,7 @@ const captionPlugin = new PhotoSwipeDynamicCaption(lightbox, {
   // Plugins options
   type: 'auto',
   captionContent: (slide) => {
-    return slide.data.element.parentElement.querySelector("div.pswp-caption-content").innerHTML
+    return document.querySelector(`.pswp-caption-content[data-bma-file-uuid="${slide.data.element.dataset.bmaFileUuid}"]`).innerHTML
   },
 });
 
@@ -180,3 +180,13 @@ if (location.hash && location.hash.substring(0, 10) == "#lightbox=") {
     let slide = document.querySelector("a.gallerya[data-bma-file-uuid='" + uuid + "']");
     slide.click();
 }
+
+//Disable license link click propagation
+$(".license-link").bind("click", function(e) {
+  e.stopPropagation();
+});
+
+//Disable license link click propagation
+$(".attribution-link").bind("click", function(e) {
+  e.stopPropagation();
+});
