@@ -2,8 +2,8 @@
 
 from django.urls import path
 
-from .views import bma_widget_view
 from .views import bma_widget_iframe_view
+from .views import bma_widget_view
 from .views import picture_embed_view
 
 app_name = "widgets"
