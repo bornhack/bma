@@ -186,7 +186,7 @@ $(".license-link").bind("click", function(e) {
   e.stopPropagation();
 });
 
-//Disable license link click propagation
+//Disable attribution link click propagation
 $(".attribution-link").bind("click", function(e) {
   e.stopPropagation();
 });
