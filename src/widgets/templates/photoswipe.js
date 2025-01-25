@@ -144,6 +144,7 @@
     title="${record.title}"
     >
     <div class="image-hover zoom">
+      <i class="fas fa-2x"></i>
       <img srcset="${PswpSourceSet(record, "thumbnails", "1")}" width="150" height="150" />
     </div>
 </a>${createThumbnailCaption(record)}`;

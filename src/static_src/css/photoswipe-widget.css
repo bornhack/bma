@@ -1,3 +1,35 @@
 .photoswipe-attribution-size {
     max-width: 130px;
 }
+
+/* hover effect on thumbnails start */
+div.image-hover {
+  position: relative;
+}
+div.image-hover i {
+  top: 50%;
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+div.image-hover div {
+  display: none;
+  bottom: 5px;
+  right: 10px;
+  position: absolute;
+}
+div.image-hover:hover div {
+  display: inline-block;
+}
+div.image-hover img:hover {
+  opacity: 0.2;
+  background-color: black;
+}
+div.image-hover.play:hover i::before{
+  content: "\f144";
+}
+div.image-hover.zoom:hover i::before{
+  content: "\f002";
+}
+/* hover effect on thumbnails end */
+
