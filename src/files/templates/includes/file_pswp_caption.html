@@ -1,9 +1,18 @@
 <div class="pswp-caption-content" data-bma-file-uuid="{{ file.uuid }}">
-  <p class="d-inline-block"><i class="{{ file.filetype_icon }}"></i> <a href="{{ file.get_absolute_url }}"><b>{{ file.title }}</b></a></p>
+  <p class="d-inline-block me-3"><i class="{{ file.filetype_icon }}"></i> <a href="{{ file.get_absolute_url }}"><b>{{ file.title }}</b></a></p>
   
+<span class="d-inline-block me-3"><i class="fas fa-user fa-fw"></i> {{ file.attribution }}</span>
+
 {% if file.description %}
   <span class="d-inline-block me-3"><i class="fas fa-newspaper fa-fw"></i> {{ file.description }}</span>
 {% endif %}
+
+<span class="d-inline-block me-3">
+  {% if file.license == "CC_ZERO_1_0" %}<i class="fa-brands fa-creative-commons-zero"></i>{% endif %}
+  {% if file.license == "CC_BY_4_0" %}<i class="fa-brands fa-creative-commons-by"></i>{% endif %}
+  {% if file.license == "CC_BY_SA_4_0" %}<i class="fa-brands fa-creative-commons-sa"></i>{% endif %}
+  {{ file.license_name }}
+</span>
 
 {% if file.filetype == "image" %}
 

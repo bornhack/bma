@@ -1,0 +1,52 @@
+{% load static %}
+{% load django_bootstrap5 %}
+{% load django_htmx %}
+{% load bma_utils %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Untitled page{% endblock %} - BornHack Media Archive</title>
+
+    <!-- Bootstrap CSS -->
+    {% bootstrap_css %}
+
+    <!-- FontAwesome CSS -->
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+
+    <!-- Custom stylesheets -->
+    <link href="{% static "css/bma.css" %}" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="{% static "js/vendor/jquery-3.6.0.min.js" %}"></script>
+
+    <!-- bootstrap JS -->
+    {% bootstrap_javascript %}
+
+    <!-- Custom javascript -->
+    <script src="{% static "js/bma.js" %}" defer></script>
+
+    <!-- BMA version -->
+    {{ bma_version|json_script:"bma-version" }}
+
+    {% block extra_head %}{% endblock %}
+  </head>
+
+  <body class="d-flex flex-column min-vh-100 bma-no-js {% block body-extra-classes %}{% endblock %}">
+    {% block body %}
+      <main class="flex-shrink-0">
+        <div class="container-fluid">
+          {% bootstrap_messages %}
+          <!-- Begin page content -->
+          {% block main_content %}
+            <p class="lead">This is the default content of the block 'body' in the iframe.html template of the BMA widget. Please replace in templates inheriting from iframe.html</p>
+          {% endblock main_content %}
+        </div>
+      </main>
+    {% endblock body %}
+  </body>
+</html>
+

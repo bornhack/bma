@@ -1,29 +1,31 @@
+{% load static %}
+
+const count = "{{ count }}";
+const uuid = "{{ uuid }}";
+
 // https://github.com/dimsemenov/PhotoSwipe
-import PhotoSwipeLightbox from "/static/js/vendor/photoswipe-lightbox-v5.4.4.esm.min.js";
+import PhotoSwipeLightbox from "{% static 'js/vendor/photoswipe-lightbox-v5.4.4.esm.min.js' %}";
 
 // https://github.com/dimsemenov/photoswipe-video-plugin
-import PhotoSwipeVideoPlugin from '/static/js/vendor/photoswipe-video-plugin-v1.0.2.esm.min.js';
+import PhotoSwipeVideoPlugin from '{% static 'js/vendor/photoswipe-video-plugin-v1.0.2.esm.min.js' %}';
 
 // https://github.com/dimsemenov/photoswipe-dynamic-caption-plugin
-import PhotoSwipeDynamicCaption from '/static/js/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.esm.js';
+import PhotoSwipeDynamicCaption from '{% static 'js/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.esm.js' %}';
 
 // https://github.com/junkfix/photoswipe-slideshow
-import PhotoSwipeSlideshow from '/static/js/vendor/photoswipe-slideshow.21b9b68e9ffa5bbd370d57888ebf001dd08e36e2.esm.js';
+import PhotoSwipeSlideshow from '{% static 'js/vendor/photoswipe-slideshow.21b9b68e9ffa5bbd370d57888ebf001dd08e36e2.esm.js' %}';
 
 // https://github.com/arnowelzel/photoswipe-auto-hide-ui
-import PhotoSwipeAutoHideUI from '/static/js/vendor/photoswipe-auto-hide-ui.v1.0.1.esm.js';
+import PhotoSwipeAutoHideUI from '{% static 'js/vendor/photoswipe-auto-hide-ui.v1.0.1.esm.js' %}';
 
 // https://github.com/arnowelzel/photoswipe-fullscreen
-import PhotoSwipeFullscreen from '/static/js/vendor/photoswipe-fullscreen.v1.0.5.esm.js';
+import PhotoSwipeFullscreen from '{% static 'js/vendor/photoswipe-fullscreen.v1.0.5.esm.js' %}';
 
 ///////////////////////////////////////////////////////////////////////////////
-
-// initialize lightbox
-const lightbox = new PhotoSwipeLightbox({
-    gallery: '#gallery',
-    children: 'a.gallerya',
-    bgOpacity: 0.90,
-    pswpModule: () => import('/static/js/vendor/photoswipe-v5.4.4.esm.min.js')
+export const lightbox = new PhotoSwipeLightbox({                                     
+  gallery: `#photoswipe-${count}-${uuid}-main`,
+  children: `a.gallery-${count}-${uuid}`, 
+  pswpModule: () => import('/static/js/vendor/photoswipe-v5.4.4.esm.min.js') 
 });
 
 // enable videoplugin
@@ -36,7 +38,7 @@ const captionPlugin = new PhotoSwipeDynamicCaption(lightbox, {
   // Plugins options
   type: 'auto',
   captionContent: (slide) => {
-    return slide.data.element.parentElement.querySelector(`.pswp-caption-content[data-bma-file-uuid="${slide.data.element.dataset.bmaFileUuid}"]`).innerHTML
+    return slide.data.element.parentElement.querySelector("div.pswp-caption-content").innerHTML
   },
 });
 
@@ -117,24 +119,10 @@ lightbox.on('uiRegister', function() {
   });
 });
 
-///////////////////////////////////////////////////////////////////////////////
-// update url with a hash/anchor with the uuid of the current slide
-lightbox.on('contentActivate', ({ content }) => {
-  if (location.hash.includes("autoplay")) {
-      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid+"&autoplay");
-  } else {
-      history.replaceState(undefined, '', "#lightbox="+content.data.element.dataset.bmaFileUuid);
-  }
-});
-// remove anchor when lightbox closes
-lightbox.on('close', () => {
-  history.replaceState(undefined, '', window.location.pathname + window.location.search);
-});
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // parse data-bma-file-orig-url attribute
-lightbox.addFilter('itemData', (itemData, index) => {
+lightbox.addFilter('itemData', (itemData, _index) => {
   const bmaFileOrigUrl = itemData.element.dataset.bmaFileOrigUrl;
   if (bmaFileOrigUrl) {
     itemData.bmaFileOrigUrl = bmaFileOrigUrl;
@@ -169,24 +157,4 @@ lightbox.on('openingAnimationEnd', () => {
       slideshowPlugin.setSlideshowState();
       autoHideUI.hideUI();
   }
-});
-
-// initialise the lightbox
-lightbox.init();
-
-// open lightbox on page load?
-if (location.hash && location.hash.substring(0, 10) == "#lightbox=") {
-    let uuid = location.hash.substring(10, 46);
-    let slide = document.querySelector("a.gallerya[data-bma-file-uuid='" + uuid + "']");
-    slide.click();
-}
-
-//Disable license link click propagation
-$(".license-link").bind("click", function(e) {
-  e.stopPropagation();
-});
-
-//Disable attribution link click propagation
-$(".attribution-link").bind("click", function(e) {
-  e.stopPropagation();
 });

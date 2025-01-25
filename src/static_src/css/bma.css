@@ -93,6 +93,15 @@ div.image-hover i {
   position: absolute;
   transform: translate(-50%, -50%);
 }
+div.image-hover div {
+  display: none;
+  bottom: 5px;
+  right: 10px;
+  position: absolute;
+}
+div.image-hover:hover div {
+  display: inline-block;
+}
 div.image-hover img:hover {
   opacity: 0.2;
   background-color: black;
