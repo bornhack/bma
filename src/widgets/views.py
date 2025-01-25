@@ -13,7 +13,7 @@ from files.models import BaseFile
 from images.models import Image
 
 
-def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | dict[str, str]]]: 
+def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | dict[str, str]]]:
     """Serialise a BaseFile object into a JSON-serialisable dictionary."""
     json_data = {
         "uuid": str(file.uuid),
@@ -45,10 +45,14 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
     js_files = []
     try:
         album = Album.bmanager.get(pk=uuid)
-        js_files = [serialise_basefile(file) for file in album.active_files_list]
+        js_files = [serialise_basefile(file) for file in album.active_files_list if file.permitted(user=request.user)]
     except Album.DoesNotExist:
-        file = get_object_or_404(BaseFile, uuid=uuid)
-        js_files.append(serialise_basefile(file))
+        try:
+            file = BaseFile.bmanager.get(uuid=uuid)
+            if file.permitted(user=request.user):
+                js_files.append(serialise_basefile(file))
+        except BaseFile.DoesNotExist:
+            pass
 
     return render(
         request,
@@ -63,10 +67,16 @@ def bma_widget_iframe_view(request: HttpRequest, style: str, option: int, uuid: 
     js_files = []
     try:
         album = Album.bmanager.get(pk=uuid)
-        js_files = BaseFile.bmanager.filter(uuid__in=[f.uuid for f in album.active_files_list])
+        js_files = BaseFile.bmanager.filter(
+            uuid__in=[f.uuid for f in album.active_files_list if f.permitted(user=request.user)]
+        )
     except Album.DoesNotExist:
-        file = get_object_or_404(BaseFile, uuid=uuid)
-        js_files.append(file)
+        try:
+            file = BaseFile.bmanager.get(uuid=uuid)
+            if file.permitted(user=request.user):
+                js_files.append(serialise_basefile(file))
+        except BaseFile.DoesNotExist:
+            pass
 
     return render(
         request,
