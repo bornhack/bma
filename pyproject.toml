@@ -42,7 +42,7 @@ dev = [
     "setuptools_scm==8.1.0",
 ]
 test = [
-    "beautifulsoup4==4.12.3",
+    "beautifulsoup4==4.13.1",
     "coverage==7.6.10",
     "django-debug-toolbar==5.0.1",
     "factory-boy==3.3.1",
