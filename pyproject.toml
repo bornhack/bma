@@ -19,7 +19,7 @@ dependencies = [
     "django-allauth[socialaccount]==65.3.1",
     "django-bootstrap5==24.3",
     "django-cleanup==9.0.0",
-    "django-cors-headers==4.6.0",
+    "django-cors-headers==4.7.0",
     "django-decorator-include==3.3",
     "django-filter==24.3",
     "django-guardian==2.4.0",
