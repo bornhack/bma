@@ -12,7 +12,7 @@
 {% block main_content %}
   <div>
     <div class="row mt-5">
-      {% if popular_images.count > 0 %}
+      {% if popular_images %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-hitcount">Popular images</a></h4>
           <hr>
@@ -26,7 +26,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_documents.count > 0 %}
+      {% if popular_documents %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-hitcount">Popular documents</a></h4>
           <hr>
@@ -40,7 +40,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_videos.count > 0 %}
+      {% if popular_videos %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-hitcount">Popular videos</a></h4>
           <hr>
@@ -54,7 +54,7 @@
           </div>
         </div>
       {% endif %}
-      {% if popular_audios.count > 0 %}
+      {% if popular_audios %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-hitcount">Popular audios</a></h4>
           <hr>
@@ -70,12 +70,12 @@
       {% endif %}
     </div>
     <div class="row mt-5">
-      {% if last_images.count > 0 %}
+      {% if latest_images %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=image&sort=-created_at">Latest images</a></h4>
           <hr>
           <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
-            {% for image in last_images %}
+            {% for image in latest_images %}
               <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
                 {% include "includes/file_thumbnail_pswp.html" with record=image width=200 ratio="1/1" %}
                 <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ image.get_absolute_url }}" title="{{ image.title }}">{{ image.title }}</a></p>
@@ -84,12 +84,12 @@
           </div>
         </div>
       {% endif %}
-      {% if last_documents.count > 0 %}
+      {% if latest_documents %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=document&sort=-created_at">Latest documents</a></h4>
           <hr>
           <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
-            {% for document in last_documents %}
+            {% for document in latest_documents %}
               <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
                 {% include "includes/file_thumbnail_pswp.html" with record=document width=200 ratio="1/1" %} 
                 <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ document.get_absolute_url }}" title="{{ document.title }}">{{ document.title }}</a></p>
@@ -98,12 +98,12 @@
           </div>
         </div>
       {% endif %}
-      {% if last_videos.count > 0 %}
+      {% if latest_videos %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=video&sort=-created_at">Latest videos</a></h4>
           <hr>
           <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
-            {% for video in last_videos %}
+            {% for video in latest_videos %}
               <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
                 {% include "includes/file_thumbnail_pswp.html" with record=video width=200 ratio="16/9" %}
                 <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ video.get_absolute_url }}" title="{{ video.title }}">{{ video.title }}</a></p>
@@ -112,12 +112,12 @@
           </div>
         </div>
       {% endif %}
-      {% if last_audios.count > 0 %}
+      {% if latest_audios %}
         <div class="col-md-6 col-lg-3 mb-4 pswp-gallery" id="gallery">
           <h4><a class="text-decoration-none link-opacity-50-hover link-body-emphasis" href="{% url 'files:file_list_grid' %}?file_types=audio&sort=-created_at">Latest audios</a></h4>
           <hr>
           <div class="row row-cols-2 row-cols-md-1 row-cols-xxl-2 row-cols-3xl-3 row-cols-4xl-6 g-3">
-            {% for audio in last_audios %}
+            {% for audio in latest_audios %}
               <div class="{% if forloop.counter >= 7 %}d-none d-4xl-block {% endif %}col"> 
                 {% include "includes/file_thumbnail_pswp.html" with record=audio width=200 ratio="1/1" %}
                 <p class="text-truncate"><a class="text-decoration-none text-body" href="{{ audio.get_absolute_url }}" title="{{ audio.title }}">{{ audio.title }}</a></p>

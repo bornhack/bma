@@ -21,34 +21,58 @@ class BaseFileManager(RelatedPolymorphicManager):
     def get_queryset(self) -> models.QuerySet["BaseFile"]:
         """Prefetch and annotate."""
         return (  # type: ignore[no-any-return]
-            super()
-            .get_queryset()
-            .prefetch_related("user_permissions__user")
-            .prefetch_related("user_permissions__permission")
-            .prefetch_related("group_permissions__group")
-            .prefetch_related("group_permissions__permission")
-            .prefetch_related(
-                models.Prefetch("tags", to_attr="tag_list"),
-            )
-            .prefetch_related("hits")
-            .annotate(hitcount=Count("hits", distinct=True))
-            .annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True)))
-            .annotate(jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False)))
-            .annotate(user_permission_count=Count("user_permissions"))
-            .annotate(group_permission_count=Count("group_permissions"))
-            .prefetch_active_albums_list(recursive=True)
-            .prefetch_related("thumbnails")
-            .prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))
-            .prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))
-            # ordering from BaseFile Meta gets lost :(
-        ).order_by("created_at")
+            super().get_queryset()
+        )
 
 
 class BaseFileQuerySet(RelatedPolymorphicQuerySet):
     """Custom queryset for bmanager file operations."""
 
+    def prefetch_image_version_list(self) -> models.QuerySet["BaseFile"]:
+        """Prefetch image version list."""
+        return self.prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))  # type: ignore[no-any-return]
+
+    def prefetch_thumbnail_list(self) -> models.QuerySet["BaseFile"]:
+        """Prefetch thumbnail list."""
+        return self.prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))  # type: ignore[no-any-return]
+
+    def prefetch_tag_list(self) -> models.QuerySet["BaseFile"]:
+        """Prefetch tag list."""
+        return self.prefetch_related(models.Prefetch("tags", to_attr="tag_list"))  # type: ignore[no-any-return]
+
+    def prefetch_thumbnails(self) -> models.QuerySet["BaseFile"]:
+        """Prefetch thumbnails."""
+        return self.prefetch_related("thumbnails")  # type: ignore[no-any-return]
+
+    def prefetch_permissions(self) -> models.QuerySet["BaseFile"]:
+        """Prefetch user and group permissions for the qs."""
+        return (  # type: ignore[no-any-return]
+            self.prefetch_related("user_permissions__user")
+            .prefetch_related("user_permissions__permission")
+            .prefetch_related("group_permissions__group")
+            .prefetch_related("group_permissions__permission")
+        )
+
+    def annotate_hitcount(self) -> models.QuerySet["BaseFile"]:
+        """Annotate hitcounts for the qs."""
+        return self.annotate(hitcount=Count("hits", distinct=True))  # type: ignore[no-any-return]
+
+    def annotate_job_counts(self) -> models.QuerySet["BaseFile"]:
+        """Annotate jobs_finished and jobs_unfinished on the qs."""
+        return self.annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True))).annotate(  # type: ignore[no-any-return]
+            jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False))
+        )
+
+    def annotate_permissions(self) -> models.QuerySet["BaseFile"]:
+        """Annotate permission counts on the qs."""
+        return self.annotate(user_permission_count=Count("user_permissions")).annotate(  # type: ignore[no-any-return]
+            group_permission_count=Count("group_permissions")
+        )
+
     def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:
         """Return files that are approved, published and not deleted, plus files where the user has view_basefile."""
+        if hasattr(user, "permitted_files"):
+            return user.permitted_files  # type: ignore[no-any-return]
         public_files = self.filter(approved=True, published=True, deleted=False).prefetch_related("uploader")
         perm_files = get_objects_for_user(
             user=user,
@@ -56,8 +80,9 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
             klass=self.all(),
         ).prefetch_related("uploader")
         files = public_files | perm_files
-        # do not return duplicates
-        return files.distinct()  # type: ignore[no-any-return]
+        # do not return duplicates and cache result
+        user.permitted_files = files.distinct()  # type: ignore[attr-defined]
+        return user.permitted_files  # type: ignore[no-any-return,attr-defined]
 
     def change_bool(self, *, field: str, value: bool) -> int:
         """Change a bool field on a queryset of files."""

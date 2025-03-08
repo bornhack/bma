@@ -50,7 +50,7 @@ class BaseFileAdmin(admin.ModelAdmin[BaseFile]):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[BaseFile]:
         """Only return files the user has permission to see and use the bmanager."""
-        return BaseFile.bmanager.get_permitted(user=request.user)  # type: ignore[no-any-return]
+        return BaseFile.bmanager.get_permitted(user=request.user).prefetch_thumbnail_list()  # type: ignore[no-any-return]
 
     def delete_queryset(self, request: HttpRequest, queryset: QuerySet[BaseFile]) -> None:
         """Really delete, use non_polymorphic to make CASCADE work."""

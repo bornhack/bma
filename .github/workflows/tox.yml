@@ -43,7 +43,7 @@ jobs:
         run: "python -m pip install .[test]"
 
       - name: "Install OS dependencies"
-        run: "apt -y install binutils libproj-dev gdal-bin"
+        run: "sudo apt -y install binutils libproj-dev gdal-bin"
 
       - name: "Run Tox"
         run: "tox -e py"

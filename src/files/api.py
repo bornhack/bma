@@ -10,8 +10,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
+from django.http import Http404
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from guardian.shortcuts import get_objects_for_user
 from ninja import Body
@@ -171,7 +171,7 @@ def upload(  # noqa: C901,PLR0913
         logger.debug(f"ThumbnailSource {ts.uuid} created for file {uploaded_file.uuid}")
 
     # get file using the manager so the returned object has annotations
-    uploaded_file = BaseFile.bmanager.get(uuid=uploaded_file.uuid)
+    uploaded_file = BaseFile.bmanager.prefetch_image_version_list().annotate_job_counts().get(uuid=uploaded_file.uuid)
 
     # create jobs
     uploaded_file.create_jobs()
@@ -191,7 +191,7 @@ def upload(  # noqa: C901,PLR0913
 def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResponseType:  # noqa: C901,PLR0912
     """Return a list of metadata for files."""
     # start out with a list of all permitted files and filter from there
-    files = BaseFile.bmanager.get_permitted(user=request.user).all()
+    files = BaseFile.bmanager.get_permitted(user=request.user).annotate_job_counts().all()
 
     if filters.albums:
         files = files.filter(memberships__album__in=filters.albums, memberships__period__contains=timezone.now())
@@ -257,6 +257,8 @@ def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResp
         else:
             # remove _desc and add -
             files = files.order_by(f"-{filters.sorting[:-5]}")
+    else:
+        files = files.order_by("created_at")
 
     if filters.offset:
         files = files[filters.offset :]
@@ -297,7 +299,7 @@ def api_file_action(
     logger.debug(f"{action} {updated} OK")
     db_files = BaseFile.bmanager.filter(
         uuid__in=db_uuids,
-    )
+    ).annotate_job_counts()
     if single:
         db_files = db_files.get()
     return 200, {"bma_response": db_files, "message": f"{action} {len(db_uuids)} files OK"}
@@ -494,7 +496,10 @@ def unpublish_files(
 )
 def file_get(request: HttpRequest, file_uuid: uuid.UUID) -> FileApiResponseType:
     """Return a file object."""
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if basefile.permitted(user=request.user):
         return 200, {"bma_response": basefile}
     return 403, {"message": "Permission denied."}
@@ -532,7 +537,10 @@ def file_update(
     check: bool = False,
 ) -> FileApiResponseType:
     """Update (PATCH) or replace (PUT) a file metadata object."""
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -578,7 +586,10 @@ def file_softdelete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Mark a file for deletion."""
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not request.user.has_perm("softdelete_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -603,7 +614,10 @@ def file_unsoftdelete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Unmark a file for deletion."""
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not request.user.has_perm("unsoftdelete_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -630,7 +644,10 @@ def file_tag(
 ) -> tuple[int, dict[str, models.QuerySet[BmaTag] | str]]:
     """API endpoint for tagging a file."""
     # make sure the tagging user has permissions to see the file
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not basefile.permitted:
         return 403, {"message": "Missing file permissions"}
 
@@ -658,7 +675,10 @@ def file_untag(
 ) -> tuple[int, dict[str, models.QuerySet[BmaTag] | str]]:
     """API endpoint for untagging a file."""
     # make sure the untagging user has permissions to see the file
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not basefile.permitted:
         return 403, {"message": "Missing file permissions"}
 
@@ -695,7 +715,10 @@ def file_thumbnail(  # noqa: PLR0913
 ) -> FileApiResponseType:
     """Endpoint for uploading ThumbnailSource images for thumbnails."""
     # make sure the thumbnailing user has permissions to change the file
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:
@@ -749,7 +772,10 @@ def file_thumbnail_delete(
     request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
 ) -> tuple[int, dict[str, str] | None]:
     """Delete a thumbnail (revert to autocreated thumbnail for this file)."""
-    basefile = get_object_or_404(BaseFile.bmanager.all(), uuid=file_uuid)
+    try:
+        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
     if not request.user.has_perm("change_basefile", basefile):
         return 403, {"message": "Permission denied."}
     if check:

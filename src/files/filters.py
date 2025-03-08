@@ -76,11 +76,8 @@ class FileFilter(django_filters.FilterSet):
 
     @property
     def qs(self) -> models.QuerySet[BaseFile]:
-        """This is called after filtering. Make sure only permitted files are returned."""
-        queryset = super().qs
-        return BaseFile.bmanager.get_permitted(user=self.request.user).filter(  # type: ignore[no-any-return]
-            pk__in=queryset.values_list("pk", flat=True)
-        )
+        """This is called after filtering."""
+        return super().qs  # type: ignore[no-any-return]
 
     ####### FILETYPES ##############
     file_types = django_filters.MultipleChoiceFilter(

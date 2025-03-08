@@ -1,7 +1,7 @@
 """CBV mixins for file based views."""
 
+from django.http import Http404
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
 from django.views.generic.detail import SingleObjectMixin
 
 from .models import BaseFile
@@ -13,10 +13,14 @@ class FileViewMixin(SingleObjectMixin[BaseFile]):
     def setup(self, request: HttpRequest, *args: str, **kwargs: dict[str, str]) -> None:
         """Get file object from url."""
         super().setup(request, *args, **kwargs)  # type: ignore[misc]
-        self.object = self.file = get_object_or_404(
-            BaseFile.bmanager.get_permitted(user=self.request.user),  # type: ignore[attr-defined]
-            uuid=kwargs["file_uuid"],
-        )
+        try:
+            self.object = self.file = (
+                BaseFile.bmanager.get_permitted(user=self.request.user)  # type: ignore[attr-defined]
+                .prefetch_image_version_list()
+                .get(uuid=kwargs["file_uuid"])
+            )
+        except BaseFile.DoesNotExist as e:
+            raise Http404 from e
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add file to context."""

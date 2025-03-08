@@ -28,6 +28,7 @@ from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import TemplateView
 from django_filters.views import FilterView
+from django_tables2.paginators import LazyPaginator
 from django_tables2.views import SingleTableMixin
 from guardian.shortcuts import get_objects_for_user
 
@@ -82,6 +83,7 @@ class FileListView(SingleTableMixin, FilterView):
     template_name = "file_list.html"
     filterset_class = FileFilter
     context_object_name = "files"
+    paginator_class = LazyPaginator
 
     def get_template_names(self) -> list[str]:
         """Template name depends on the type of listview."""
@@ -89,7 +91,14 @@ class FileListView(SingleTableMixin, FilterView):
 
     def get_queryset(self, queryset: models.QuerySet[BaseFile] | None = None) -> models.QuerySet[BaseFile]:
         """Use bmanager to get juicy file objects."""
-        return BaseFile.bmanager.all()  # type: ignore[no-any-return]
+        return (  # type: ignore[no-any-return]
+            BaseFile.bmanager.get_permitted(user=self.request.user)
+            .prefetch_image_version_list()
+            .prefetch_thumbnail_list()
+            .prefetch_active_albums_list(recursive=True)
+            .prefetch_tag_list()
+            .annotate_job_counts()
+        )
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, Form]:
         """Add form to the context."""
@@ -97,6 +106,7 @@ class FileListView(SingleTableMixin, FilterView):
         context["file_action_form"] = FileMultipleActionForm()
         context["grid_url"] = reverse("files:file_list_grid")
         context["table_url"] = reverse("files:file_list_table")
+
         return context  # type: ignore[no-any-return]
 
 
@@ -113,7 +123,10 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
 
     def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
-        basefile = get_object_or_404(BaseFile.bmanager.filter(pk=self.kwargs["file_uuid"]))
+        try:
+            basefile = BaseFile.bmanager.prefetch_image_version_list().get(pk=self.kwargs["file_uuid"])
+        except BaseFile.DoesNotExist as e:
+            raise Http404 from e
         if not basefile.permitted(user=self.request.user):
             # the current user does not have permissions to view this file
             raise PermissionDenied

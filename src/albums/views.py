@@ -72,7 +72,15 @@ class AlbumDetailView(SingleTableMixin, FilterView):
     def get_queryset(self) -> str:
         """Prefer a real bmanager qs over the list of files so each file obj has all needed info."""
         uuids = [f.pk for f in self.get_object().active_files_list]
-        return BaseFile.bmanager.get_permitted(user=self.request.user).filter(pk__in=uuids)  # type: ignore[no-any-return]
+        return (  # type: ignore[no-any-return]
+            BaseFile.bmanager.get_permitted(user=self.request.user)
+            .filter(pk__in=uuids)
+            .prefetch_image_version_list()
+            .prefetch_thumbnail_list()
+            .prefetch_active_albums_list()
+            .prefetch_tag_list()
+            .annotate_job_counts()
+        )
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add album and other data to context."""
