@@ -157,10 +157,10 @@ class BmaTestBase(TestCase):
         description: str = "",
         original_source: str = "https://example.com/something.png",
         tags: list[str] | None = None,
-        thumbnail_url: str = "",
         expect_status_code: int = 201,
         width: int = 800,
         height: int = 600,
+        thumbnail: bool = False,
     ) -> str:
         """The upload method used by many tests."""
         metadata: dict[str, str | int | list[str]] = {
@@ -170,8 +170,6 @@ class BmaTestBase(TestCase):
             "mimetype": mimetype,
             "original_source": original_source,
         }
-        if thumbnail_url:
-            metadata["thumbnail_url"] = thumbnail_url
         if description:
             metadata["description"] = description
         if tags:
@@ -180,17 +178,29 @@ class BmaTestBase(TestCase):
             metadata["width"] = width
             metadata["height"] = height
         with Path(filepath).open("rb") as f:
+            payload = {
+                "file_data": f,
+                "file_metadata": json.dumps(metadata),
+                "client": json.dumps(cls.clientinfo),
+            }
+            if thumbnail:
+                payload["thumbnail_metadata"] = json.dumps(
+                    {
+                        "mimetype": "image/png",
+                        "width": 200,
+                        "height": 200,
+                    }
+                )
+                payload["thumbnail_data"] = f
             response = cls.client.post(
                 reverse("api-v1-json:upload"),
-                {
-                    "file_data": f,
-                    "file_metadata": json.dumps(metadata),
-                    "client": json.dumps(cls.clientinfo),
-                },
+                payload,
                 headers={"authorization": cls.tokens[getattr(cls, uploader)]},
             )
-        assert response.status_code == expect_status_code
-        if expect_status_code == 422:
+        assert (
+            response.status_code == expect_status_code
+        ), f"expected status code {expect_status_code}, got {response.status_code}"
+        if expect_status_code != 201:
             return ""
         data = response.json()["bma_response"]
         assert "uuid" in data

@@ -41,6 +41,15 @@ class TestFilesApi(BmaTestBase):
     def test_file_upload(self) -> None:
         """Test file upload cornercases."""
         self.file_upload(file_license="notalicense", expect_status_code=422)
+        self.file_upload(uploader="moderator4", expect_status_code=403)
+        self.file_upload(mimetype="application/pdf", width=0)
+        self.file_upload(mimetype="video/mp4", width=0)
+        self.file_upload(mimetype="audio/mpeg", width=0)
+        self.file_upload(mimetype="foo/bar", expect_status_code=422)
+        self.file_upload(title="")
+        self.file_upload(file_license="notalicense", expect_status_code=422)
+        self.file_upload(tags=["foo", "bar"])
+        self.file_upload(thumbnail=True)
 
     def test_file_list(self) -> None:  # noqa: PLR0915
         """Test the file_list endpoint."""
@@ -385,6 +394,25 @@ class TestFilesApi(BmaTestBase):
             headers={"authorization": self.tokens[self.creator2]},
         )
         assert len(response.json()["bma_response"]) == 7
+
+        # test published filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+        # publish files
+        self.publish_files_api(files=files[0:10], user=self.creator2)
+
+        # test published filter again
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 10
 
     def test_file_list_permissions(self) -> None:
         """Test various permissions stuff for the file_list endpoint."""
