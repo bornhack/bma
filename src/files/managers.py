@@ -69,9 +69,14 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
             group_permission_count=Count("group_permissions")
         )
 
+    def get_for_api_response(self) -> models.QuerySet["BaseFile"]:
+        """Annotate everything needed for an API response."""
+        return self.annotate_job_counts().prefetch_image_version_list()  # type: ignore[no-any-return,attr-defined]
+
     def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:
         """Return files that are approved, published and not deleted, plus files where the user has view_basefile."""
         if hasattr(user, "permitted_files"):
+            # not the first call in this request, use cached version
             return user.permitted_files  # type: ignore[no-any-return]
         public_files = self.filter(approved=True, published=True, deleted=False).prefetch_related("uploader")
         perm_files = get_objects_for_user(

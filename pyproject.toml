@@ -109,6 +109,7 @@ convention = "google"
     "PT009", # https://docs.astral.sh/ruff/rules/pytest-unittest-assertion/
     "S106", # https://docs.astral.sh/ruff/rules/hardcoded-password-func-arg/
     "PLR0912", # https://docs.astral.sh/ruff/rules/too-many-branches/
+    "PLR0915", # https://docs.astral.sh/ruff/rules/too-many-statements/
     "C901", # https://docs.astral.sh/ruff/rules/complex-structure/
     "D", # https://docs.astral.sh/ruff/rules/#pydocstyle-d
     "ANN201", # https://docs.astral.sh/ruff/rules/missing-return-type-undocumented-public-function/

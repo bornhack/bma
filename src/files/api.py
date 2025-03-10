@@ -171,7 +171,7 @@ def upload(  # noqa: C901,PLR0913
         logger.debug(f"ThumbnailSource {ts.uuid} created for file {uploaded_file.uuid}")
 
     # get file using the manager so the returned object has annotations
-    uploaded_file = BaseFile.bmanager.prefetch_image_version_list().annotate_job_counts().get(uuid=uploaded_file.uuid)
+    uploaded_file = BaseFile.bmanager.get_for_api_response().get(uuid=uploaded_file.uuid)
 
     # create jobs
     uploaded_file.create_jobs()
@@ -191,7 +191,7 @@ def upload(  # noqa: C901,PLR0913
 def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResponseType:  # noqa: C901,PLR0912
     """Return a list of metadata for files."""
     # start out with a list of all permitted files and filter from there
-    files = BaseFile.bmanager.get_permitted(user=request.user).annotate_job_counts().all()
+    files = BaseFile.bmanager.get_permitted(user=request.user).get_for_api_response().all()
 
     if filters.albums:
         files = files.filter(memberships__album__in=filters.albums, memberships__period__contains=timezone.now())
@@ -270,20 +270,16 @@ def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResp
 
 
 ############## GENERIC FILE ACTION ############################################
-def api_file_action(
+def api_file_action(  # noqa: PLR0913
+    *,
     request: HttpRequest,
-    file_uuids: list[uuid.UUID] | uuid.UUID,
+    file_uuids: list[uuid.UUID],
     permission: str,
     action: str,
-    *,
     check: bool,
+    single: bool,
 ) -> FileApiResponseType:
-    """Perform an action on one or more files."""
-    if isinstance(file_uuids, uuid.UUID):
-        single = True
-        file_uuids = [file_uuids]
-    else:
-        single = False
+    """Perform an action on some files. Used for (un)approve, (un)publish and (un)softdelete."""
     file_filter: dict[str, str | list[str]] = {"uuid__in": [str(u) for u in file_uuids]}
     db_files = get_objects_for_user(request.user, permission, klass=BaseFile.bmanager.filter(**file_filter))
     db_uuids = list(db_files.values_list("uuid", flat=True))
@@ -299,38 +295,26 @@ def api_file_action(
     logger.debug(f"{action} {updated} OK")
     db_files = BaseFile.bmanager.filter(
         uuid__in=db_uuids,
-    ).annotate_job_counts()
+    ).get_for_api_response()
     if single:
         db_files = db_files.get()
+    if action == "softdelete":
+        # delete has a different returncode and None body
+        return 204, None
     return 200, {"bma_response": db_files, "message": f"{action} {len(db_uuids)} files OK"}
 
 
 ############## APPROVE ########################################################
-def approve(request: HttpRequest, uuids: list[uuid.UUID] | uuid.UUID, *, check: bool) -> FileApiResponseType:
+def approve(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
     """Approve one or more files."""
     return api_file_action(
-        request,
-        uuids,
-        "approve_basefile",
+        request=request,
+        file_uuids=uuids,
+        permission="approve_basefile",
         action="approve",
         check=check,
+        single=single,
     )
-
-
-@router.patch(
-    "/{file_uuid}/approve/",
-    response={
-        200: SingleFileResponseSchema,
-        202: ApiMessageSchema,
-        403: ApiMessageSchema,
-    },
-    summary="Approve a single file.",
-)
-def approve_file(
-    request: HttpRequest, file_uuid: SingleFileRequestSchema, *, check: bool = False
-) -> FileApiResponseType:
-    """API endpoint to approve a single file."""
-    return approve(request, file_uuid.file_uuid, check=check)
 
 
 @router.patch(
@@ -343,39 +327,40 @@ def approve_file(
     summary="Approve multiple files.",
 )
 def approve_files(
-    request: HttpRequest, payload: MultipleFileRequestSchema, *, check: bool = False
+    request: HttpRequest, *, payload: MultipleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
     """API endpoint to approve multiple files."""
     uuids = payload.dict()["files"]
-    return approve(request, uuids, check=check)
-
-
-############## UNAPPROVE ######################################################
-def unapprove(request: HttpRequest, uuids: list[uuid.UUID] | uuid.UUID, *, check: bool) -> FileApiResponseType:
-    """Unapprove one or more files."""
-    return api_file_action(
-        request,
-        uuids,
-        "unapprove_basefile",
-        action="unapprove",
-        check=check,
-    )
+    return approve(request=request, uuids=uuids, check=check, single=False)
 
 
 @router.patch(
-    "/{file_uuid}/unapprove/",
+    "/{file_uuid}/approve/",
     response={
         200: SingleFileResponseSchema,
         202: ApiMessageSchema,
         403: ApiMessageSchema,
     },
-    summary="Unapprove a single file.",
+    summary="Approve a single file.",
 )
-def unapprove_file(
-    request: HttpRequest, file_uuid: SingleFileRequestSchema, *, check: bool = False
+def approve_file(
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
-    """API endpoint to unapprove a single file."""
-    return unapprove(request, file_uuid.file_uuid, check=check)
+    """API endpoint to approve a single file."""
+    return approve(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
+
+
+############## UNAPPROVE ######################################################
+def unapprove(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
+    """Unapprove one or more files."""
+    return api_file_action(
+        request=request,
+        file_uuids=uuids,
+        permission="unapprove_basefile",
+        action="unapprove",
+        check=check,
+        single=single,
+    )
 
 
 @router.patch(
@@ -388,23 +373,55 @@ def unapprove_file(
     summary="Unapprove multiple files.",
 )
 def unapprove_files(
-    request: HttpRequest, payload: MultipleFileRequestSchema, *, check: bool = False
+    request: HttpRequest, *, payload: MultipleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
     """API endpoint to unapprove multiple files."""
     uuids = payload.dict()["files"]
-    return unapprove(request, uuids, check=check)
+    return unapprove(request=request, uuids=uuids, check=check, single=False)
+
+
+@router.patch(
+    "/{file_uuid}/unapprove/",
+    response={
+        200: SingleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+    },
+    summary="Unapprove a single file.",
+)
+def unapprove_file(
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
+) -> FileApiResponseType:
+    """API endpoint to unapprove a single file."""
+    return unapprove(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
 
 
 ############## PUBLISH ########################################################
-def publish(request: HttpRequest, uuids: list[uuid.UUID] | uuid.UUID, *, check: bool) -> FileApiResponseType:
+def publish(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
     """Publish a list of files."""
     return api_file_action(
-        request,
-        uuids,
-        "publish_basefile",
+        request=request,
+        file_uuids=uuids,
+        permission="publish_basefile",
         action="publish",
         check=check,
+        single=single,
     )
+
+
+@router.patch(
+    "/publish/",
+    response={
+        200: MultipleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+    },
+    summary="Publish multiple files.",
+)
+def publish_files(request: HttpRequest, *, data: MultipleFileRequestSchema, check: bool = False) -> FileApiResponseType:
+    """Publish multiple files."""
+    files = data.dict()["files"]
+    return publish(request=request, uuids=files, check=check, single=False)
 
 
 @router.patch(
@@ -417,53 +434,23 @@ def publish(request: HttpRequest, uuids: list[uuid.UUID] | uuid.UUID, *, check: 
     summary="Publish a single file.",
 )
 def publish_file(
-    request: HttpRequest, file_uuid: SingleFileRequestSchema, *, check: bool = False
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
     """API endpoint to publish a single file."""
-    return publish(request, file_uuid.file_uuid, check=check)
-
-
-@router.patch(
-    "/publish/",
-    response={
-        200: MultipleFileResponseSchema,
-        202: ApiMessageSchema,
-        403: ApiMessageSchema,
-    },
-    summary="Publish multiple files.",
-)
-def publish_files(request: HttpRequest, data: MultipleFileRequestSchema, *, check: bool = False) -> FileApiResponseType:
-    """Publish multiple files."""
-    files = data.dict()["files"]
-    return publish(request, files, check=check)
+    return publish(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
 
 
 ############## UNPUBLISH ########################################################
-def unpublish(request: HttpRequest, uuids: list[uuid.UUID] | uuid.UUID, *, check: bool) -> FileApiResponseType:
+def unpublish(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
     """Unpublish a list of files."""
     return api_file_action(
-        request,
-        uuids,
-        "unpublish_basefile",
+        request=request,
+        file_uuids=uuids,
+        permission="unpublish_basefile",
         action="unpublish",
         check=check,
+        single=single,
     )
-
-
-@router.patch(
-    "/{file_uuid}/unpublish/",
-    response={
-        200: SingleFileResponseSchema,
-        202: ApiMessageSchema,
-        403: ApiMessageSchema,
-    },
-    summary="Unpublish a single file.",
-)
-def unpublish_file(
-    request: HttpRequest, file_uuid: SingleFileRequestSchema, *, check: bool = False
-) -> FileApiResponseType:
-    """API endpoint to unpublish a single file."""
-    return unpublish(request, file_uuid.file_uuid, check=check)
 
 
 @router.patch(
@@ -476,128 +463,58 @@ def unpublish_file(
     summary="Unpublish multiple files.",
 )
 def unpublish_files(
-    request: HttpRequest, data: MultipleFileRequestSchema, *, check: bool = False
+    request: HttpRequest, *, data: MultipleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
     """Unpublish multple files."""
     files = data.dict()["files"]
-    return unpublish(request, files, check=check)
+    return unpublish(request=request, uuids=files, check=check, single=False)
 
 
-############## METADATA #######################################################
-@router.get(
-    "/{file_uuid}/",
-    response={
-        200: SingleFileResponseSchema,
-        403: ApiMessageSchema,
-        404: ApiMessageSchema,
-    },
-    summary="Return the metadata of a file.",
-    auth=[BMAuthBearer(), permit_anonymous_api_use],
-)
-def file_get(request: HttpRequest, file_uuid: uuid.UUID) -> FileApiResponseType:
-    """Return a file object."""
-    try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
-    except BaseFile.DoesNotExist as e:
-        raise Http404 from e
-    if basefile.permitted(user=request.user):
-        return 200, {"bma_response": basefile}
-    return 403, {"message": "Permission denied."}
-
-
-@router.put(
-    "/{file_uuid}/",
-    response={
-        200: SingleFileResponseSchema,
-        202: ApiMessageSchema,
-        403: ApiMessageSchema,
-        404: ApiMessageSchema,
-        422: ApiMessageSchema,
-    },
-    operation_id="files_api_file_update_put",
-    summary="Replace the metadata of a file.",
-)
 @router.patch(
-    "/{file_uuid}/",
+    "/{file_uuid}/unpublish/",
     response={
         200: SingleFileResponseSchema,
         202: ApiMessageSchema,
         403: ApiMessageSchema,
         404: ApiMessageSchema,
-        422: ApiMessageSchema,
     },
-    operation_id="files_api_file_update_patch",
-    summary="Update the metadata of a file.",
+    summary="Unpublish a single file.",
 )
-def file_update(
-    request: HttpRequest,
-    file_uuid: uuid.UUID,
-    metadata: FileUpdateRequestSchema,
-    *,
-    check: bool = False,
+def unpublish_file(
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
 ) -> FileApiResponseType:
-    """Update (PATCH) or replace (PUT) a file metadata object."""
-    try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
-    except BaseFile.DoesNotExist as e:
-        raise Http404 from e
-    if not request.user.has_perm("change_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    if check:
-        # check mode requested, don't change anything
-        return 202, {"message": "OK"}
-    if request.method == "PATCH":
-        try:
-            with transaction.atomic():
-                # we are updating the object, we do not want defaults for absent fields
-                BaseFile.objects.filter(uuid=basefile.uuid).update(
-                    **metadata.dict(exclude_unset=True), updated_at=timezone.now()
-                )
-                basefile.refresh_from_db()
-                basefile.full_clean()
-        except ValidationError:
-            return 422, {"message": "Validation error"}
-    else:
-        try:
-            with transaction.atomic():
-                # we are replacing the object, we do want defaults for absent fields
-                BaseFile.objects.filter(uuid=basefile.uuid).update(
-                    **metadata.dict(exclude_unset=False), updated_at=timezone.now()
-                )
-                basefile.refresh_from_db()
-                basefile.full_clean()
-        except ValidationError:
-            return 422, {"message": "Validation error"}
-    return 200, {"bma_response": basefile, "message": "File updated."}
+    """API endpoint to unpublish a single file."""
+    return unpublish(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
 
 
-############## DELETE #########################################################
-@router.delete(
-    "/{file_uuid}/",
+############## UNSOFTDELETE #########################################################
+def unsoftdelete(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
+    """Softdelete a list of files."""
+    return api_file_action(
+        request=request,
+        file_uuids=uuids,
+        permission="unsoftdelete_basefile",
+        action="unsoftdelete",
+        check=check,
+        single=single,
+    )
+
+
+@router.patch(
+    "/unsoftdelete/",
     response={
-        204: None,
+        200: MultipleFileResponseSchema,
         202: ApiMessageSchema,
         403: ApiMessageSchema,
-        404: ApiMessageSchema,
     },
-    summary="Soft-delete a file.",
+    summary="Un-softdelete multiple files.",
 )
-def file_softdelete(
-    request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
-) -> tuple[int, dict[str, str] | None]:
-    """Mark a file for deletion."""
-    try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
-    except BaseFile.DoesNotExist as e:
-        raise Http404 from e
-    if not request.user.has_perm("softdelete_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    if check:
-        # check mode requested, don't change anything
-        return 202, {"message": "OK"}
-    # ok go but we don't let users fully delete files for now
-    basefile.softdelete()
-    return 204, None
+def unsoftdelete_files(
+    request: HttpRequest, *, data: MultipleFileRequestSchema, check: bool = False
+) -> FileApiResponseType:
+    """Un-softdelete multple files."""
+    files = data.dict()["files"]
+    return unsoftdelete(request=request, uuids=files, check=check, single=False)
 
 
 @router.patch(
@@ -608,24 +525,60 @@ def file_softdelete(
         403: ApiMessageSchema,
         404: ApiMessageSchema,
     },
-    summary="Un-soft-delete a file.",
+    summary="Un-softdelete a file.",
 )
-def file_unsoftdelete(
-    request: HttpRequest, file_uuid: uuid.UUID, *, check: bool = False
-) -> tuple[int, dict[str, str] | None]:
-    """Unmark a file for deletion."""
-    try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
-    except BaseFile.DoesNotExist as e:
-        raise Http404 from e
-    if not request.user.has_perm("unsoftdelete_basefile", basefile):
-        return 403, {"message": "Permission denied."}
-    if check:
-        # check mode requested, don't change anything
-        return 202, {"message": "OK"}
-    # ok go
-    basefile.unsoftdelete()
-    return 200, {"bma_response": basefile, "message": "File undeleted."}
+def unsoftdelete_file(
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
+) -> FileApiResponseType:
+    """API endpoint to unsoftdelete a single file."""
+    return unsoftdelete(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
+
+
+############## SOFTDELETE #########################################################
+def softdelete(*, request: HttpRequest, uuids: list[uuid.UUID], check: bool, single: bool) -> FileApiResponseType:
+    """Softdelete a list of files."""
+    return api_file_action(
+        request=request,
+        file_uuids=uuids,
+        permission="softdelete_basefile",
+        action="softdelete",
+        check=check,
+        single=single,
+    )
+
+
+@router.delete(
+    "/softdelete/",
+    response={
+        202: ApiMessageSchema,
+        204: None,
+        403: ApiMessageSchema,
+    },
+    summary="Softdelete multiple files.",
+)
+def softdelete_files(
+    request: HttpRequest, *, data: MultipleFileRequestSchema, check: bool = False
+) -> FileApiResponseType:
+    """Softdelete multple files."""
+    files = data.dict()["files"]
+    return softdelete(request=request, uuids=files, check=check, single=False)
+
+
+@router.delete(
+    "/{file_uuid}/",
+    response={
+        202: ApiMessageSchema,
+        204: None,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+    },
+    summary="Soft-delete a file.",
+)
+def softdelete_file(
+    request: HttpRequest, *, file_uuid: SingleFileRequestSchema, check: bool = False
+) -> FileApiResponseType:
+    """API endpoint to softdelete a single file."""
+    return softdelete(request=request, uuids=[file_uuid.file_uuid], check=check, single=True)
 
 
 ############## TAGS #########################################################
@@ -645,7 +598,7 @@ def file_tag(
     """API endpoint for tagging a file."""
     # make sure the tagging user has permissions to see the file
     try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
     if not basefile.permitted:
@@ -676,7 +629,7 @@ def file_untag(
     """API endpoint for untagging a file."""
     # make sure the untagging user has permissions to see the file
     try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
     if not basefile.permitted:
@@ -716,7 +669,7 @@ def file_thumbnail(  # noqa: PLR0913
     """Endpoint for uploading ThumbnailSource images for thumbnails."""
     # make sure the thumbnailing user has permissions to change the file
     try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
     if not request.user.has_perm("change_basefile", basefile):
@@ -773,7 +726,7 @@ def file_thumbnail_delete(
 ) -> tuple[int, dict[str, str] | None]:
     """Delete a thumbnail (revert to autocreated thumbnail for this file)."""
     try:
-        basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=file_uuid)
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
     if not request.user.has_perm("change_basefile", basefile):
@@ -790,3 +743,91 @@ def file_thumbnail_delete(
         finished=False,
     )
     return 204, None
+
+
+############## METADATA #######################################################
+@router.get(
+    "/{file_uuid}/",
+    response={
+        200: SingleFileResponseSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+    },
+    summary="Return the metadata of a file.",
+    auth=[BMAuthBearer(), permit_anonymous_api_use],
+)
+def file_get(request: HttpRequest, file_uuid: uuid.UUID) -> FileApiResponseType:
+    """Return a file object."""
+    try:
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
+    if basefile.permitted(user=request.user):
+        return 200, {"bma_response": basefile}
+    return 403, {"message": "Permission denied."}
+
+
+@router.put(
+    "/{file_uuid}/",
+    response={
+        200: SingleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+        422: ApiMessageSchema,
+    },
+    operation_id="files_api_file_update_put",
+    summary="Replace the metadata of a file.",
+)
+@router.patch(
+    "/{file_uuid}/",
+    response={
+        200: SingleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
+        404: ApiMessageSchema,
+        422: ApiMessageSchema,
+    },
+    operation_id="files_api_file_update_patch",
+    summary="Update the metadata of a file.",
+)
+def file_update(
+    request: HttpRequest,
+    file_uuid: uuid.UUID,
+    metadata: FileUpdateRequestSchema,
+    *,
+    check: bool = False,
+) -> FileApiResponseType:
+    """Update (PATCH) or replace (PUT) a file metadata object."""
+    try:
+        basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
+    except BaseFile.DoesNotExist as e:
+        raise Http404 from e
+    if not request.user.has_perm("change_basefile", basefile):
+        return 403, {"message": "Permission denied."}
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
+    if request.method == "PATCH":
+        try:
+            with transaction.atomic():
+                # we are updating the object, we do not want defaults for absent fields
+                BaseFile.objects.filter(uuid=basefile.uuid).update(
+                    **metadata.dict(exclude_unset=True), updated_at=timezone.now()
+                )
+                basefile.refresh_from_db()
+                basefile.full_clean()
+        except ValidationError:
+            return 422, {"message": "Validation error"}
+    else:
+        try:
+            with transaction.atomic():
+                # we are replacing the object, we do want defaults for absent fields
+                BaseFile.objects.filter(uuid=basefile.uuid).update(
+                    **metadata.dict(exclude_unset=False), updated_at=timezone.now()
+                )
+                basefile.refresh_from_db()
+                basefile.full_clean()
+        except ValidationError:
+            return 422, {"message": "Validation error"}
+    return 200, {"bma_response": basefile, "message": "File updated."}

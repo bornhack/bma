@@ -55,7 +55,7 @@ class BmaTestBase(TestCase):
     def setUpTestData(cls) -> None:
         """Test setup."""
         # disable logging
-        logging.disable(logging.CRITICAL)
+        logging.disable(logging.WARNING)
         cls.client = Client(enforce_csrf_checks=False)
 
         # create 2 regular users, 2 creators, 2 moderators, 2 curators, and 1 superuser
@@ -343,6 +343,18 @@ class BmaTestBase(TestCase):
             content_type="application/json",
         )
         assert f"publish {len(files)} files OK" in response.content.decode()
+        assert response.status_code == 200
+
+    @classmethod
+    def delete_files_api(cls, files: list[str], user: User) -> None:
+        """Delete files."""
+        response = cls.client.delete(
+            reverse("api-v1-json:softdelete_files"),
+            {"files": files},
+            headers={"authorization": cls.tokens[user]},
+            content_type="application/json",
+        )
+        assert f"softdelete {len(files)} files OK" in response.content.decode()
         assert response.status_code == 200
 
     @classmethod

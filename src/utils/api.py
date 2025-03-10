@@ -14,7 +14,7 @@ from jobs.models import BaseJob
 from .schema import ApiMessageSchema
 
 # type aliases to make API return types more readable
-FileApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | dict[str, BaseFile | QuerySet[BaseFile] | str]]
+FileApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | dict[str, BaseFile | QuerySet[BaseFile] | str] | None]
 AlbumApiResponseType: TypeAlias = tuple[int, ApiMessageSchema | dict[str, Album | QuerySet[Album] | str]]
 JobApiResponseType: TypeAlias = tuple[int, dict[str, str | QuerySet[BaseJob]]]
 JobSettingsResponseType: TypeAlias = tuple[

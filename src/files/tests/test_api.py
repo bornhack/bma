@@ -51,7 +51,7 @@ class TestFilesApi(BmaTestBase):
         self.file_upload(tags=["foo", "bar"])
         self.file_upload(thumbnail=True)
 
-    def test_file_list(self) -> None:  # noqa: PLR0915
+    def test_file_list(self) -> None:
         """Test the file_list endpoint."""
         files = [self.file_upload(title=f"title{i}") for i in range(15)]
         files = files + [
@@ -532,6 +532,64 @@ class TestFilesApi(BmaTestBase):
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 0
 
+        # delete the file without permission
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.creator3]},
+        )
+        assert response.status_code == 403
+
+        # delete the file, check mode
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_file", kwargs={"file_uuid": files[0]}) + "?check=true",
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 202
+
+        # really delete the file
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 204
+
+        # now list deleted files
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"deleted": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 1
+
+        # undelete the file without permission
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.creator3]},
+        )
+        assert response.status_code == 403
+
+        # undelete the file, check mode
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": files[0]}) + "?check=true",
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 202
+
+        # really undelete the file
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+        )
+        assert response.status_code == 200
+
+        # now list deleted files
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"deleted": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
     def test_file_list_ordering(self) -> None:
         """Make sure files are ordered by date with the oldest file first."""
         # upload 15 files and get them all
@@ -704,21 +762,21 @@ class TestFilesApi(BmaTestBase):
 
         # undelete file, wrong user
         response = self.client.patch(
-            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}),
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": self.file_uuid}),
             headers={"authorization": self.tokens[self.user0]},
         )
         assert response.status_code == 403
 
         # undelete file, check mode
         response = self.client.patch(
-            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}) + "?check=true",
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": self.file_uuid}) + "?check=true",
             headers={"authorization": self.tokens[self.superuser]},
         )
         assert response.status_code == 202
 
         # undelete file
         response = self.client.patch(
-            reverse("api-v1-json:file_unsoftdelete", kwargs={"file_uuid": self.file_uuid}),
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": self.file_uuid}),
             headers={"authorization": self.tokens[self.superuser]},
         )
         assert response.status_code == 200
@@ -770,7 +828,7 @@ class TestFilesApi(BmaTestBase):
         assert response.status_code == 403
 
     def test_approve_files(self) -> None:
-        """Approve multiple files."""
+        """Approve/unapprove single or multiple files."""
         for _ in range(10):
             self.file_upload()
         response = self.client.get(
@@ -795,10 +853,17 @@ class TestFilesApi(BmaTestBase):
         )
         assert response.status_code == 202
 
-        # then with permission
+        # then with permission, first single file
+        response = self.client.patch(
+            reverse("api-v1-json:approve_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # then multiple files
         response = self.client.patch(
             reverse("api-v1-json:approve_files"),
-            {"files": files[0:5]},
+            {"files": files[1:5]},
             headers={"authorization": self.tokens[self.superuser]},
             content_type="application/json",
         )
@@ -811,6 +876,235 @@ class TestFilesApi(BmaTestBase):
             headers={"authorization": self.tokens[self.creator2]},
         )
         assert len(response.json()["bma_response"]) == 5
+
+        # now unapprove,
+        # first try with no permissions
+        response = self.client.patch(
+            reverse("api-v1-json:unapprove_files"),
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.patch(
+            reverse("api-v1-json:unapprove_files") + "?check=true",
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission, first single file
+        response = self.client.patch(
+            reverse("api-v1-json:unapprove_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # then multiple files
+        response = self.client.patch(
+            reverse("api-v1-json:unapprove_files"),
+            {"files": files[1:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # make sure files are now unapproved
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"approved": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+    def test_publish_files(self) -> None:
+        """Publish/unpublish single or multiple files."""
+        for _ in range(10):
+            self.file_upload()
+        response = self.client.get(
+            reverse("api-v1-json:file_list"), headers={"authorization": self.tokens[self.creator2]}
+        )
+        files = [f["uuid"] for f in response.json()["bma_response"]]
+        # first try with no permissions
+        response = self.client.patch(
+            reverse("api-v1-json:publish_files"),
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.creator3]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.patch(
+            reverse("api-v1-json:publish_files") + "?check=true",
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission, first single file
+        response = self.client.patch(
+            reverse("api-v1-json:publish_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # then multiple files
+        response = self.client.patch(
+            reverse("api-v1-json:publish_files"),
+            {"files": files[1:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # make sure files are now publishd
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 5
+
+        # now unpublish,
+        # first try with no permissions
+        response = self.client.patch(
+            reverse("api-v1-json:unpublish_files"),
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.creator3]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.patch(
+            reverse("api-v1-json:unpublish_files") + "?check=true",
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission, first single file
+        response = self.client.patch(
+            reverse("api-v1-json:unpublish_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # then multiple files
+        response = self.client.patch(
+            reverse("api-v1-json:unpublish_files"),
+            {"files": files[1:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # make sure files are now unpublishd
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+    def test_delete_files(self) -> None:
+        """Softdelete/unsoftdelete single or multiple files."""
+        for _ in range(10):
+            self.file_upload()
+        response = self.client.get(
+            reverse("api-v1-json:file_list"), headers={"authorization": self.tokens[self.creator2]}
+        )
+        files = [f["uuid"] for f in response.json()["bma_response"]]
+        # first try with no permissions
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_files"),
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_files") + "?check=true",
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission, first single file
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 204
+        # then multiple files
+        response = self.client.delete(
+            reverse("api-v1-json:softdelete_files"),
+            {"files": files[1:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 204
+
+        # make sure files are now deleted
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"deleted": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 5
+
+        # now undelete,
+        # first try with no permissions
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_files"),
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_files") + "?check=true",
+            {"files": files[0:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then with permission, first single file
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_file", kwargs={"file_uuid": files[0]}),
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # then multiple files
+        response = self.client.patch(
+            reverse("api-v1-json:unsoftdelete_files"),
+            {"files": files[1:5]},
+            headers={"authorization": self.tokens[self.superuser]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # make sure files are now undeleted
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"deleted": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
 
     def test_file_missing_on_disk(self) -> None:
         """Test the case where a file has gone missing from disk for some reason."""

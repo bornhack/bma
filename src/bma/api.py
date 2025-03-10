@@ -44,7 +44,7 @@ def custom_validation_errors(request: HttpRequest, exc: ValidationError) -> Http
         request,
         {
             "bma_request": get_request_metadata_schema(request).dict(),
-            "message": "A validation error was encountered. The django-ninja error message is included in details.",
+            "message": "A validation error was encountered. The django-ninja/pydantic message is in details.",
             "details": exc.errors,
         },
         status=422,
@@ -89,8 +89,8 @@ def custom_404_errors(request: HttpRequest, exc: Http404) -> HttpResponse:
         request,
         {
             "bma_request": get_request_metadata_schema(request).dict(),
-            "message": "Resource not found. More information in details.",
-            "details": str(exc),
+            "message": "Resource not found.",
+            "details": "",
         },
         status=404,
     )
