@@ -1,5 +1,7 @@
 """Tests for the files API."""
 
+import uuid
+
 from django.urls import reverse
 
 from utils.tests import BmaTestBase
@@ -11,6 +13,8 @@ class TestTagsApi(BmaTestBase):
     def test_tag_api(self) -> None:
         """Test the tag api."""
         files = [self.file_upload(title=f"title{i}") for i in range(15)]
+        self.approve_files_api(files=files, user=self.superuser)
+        self.publish_files_api(files=files, user=self.superuser)
 
         # tag a couple of files using the api
         for i in range(5):
@@ -73,3 +77,121 @@ class TestTagsApi(BmaTestBase):
             assert response.status_code == 200
             assert response.json()["bma_response"] == response_tags
             assert response.json()["message"] == "OK, 1 tag(s) removed"
+
+    def test_tagging_permissions(self) -> None:
+        """Tag/untag files."""
+        for _ in range(10):
+            self.file_upload()
+        response = self.client.get(
+            reverse("api-v1-json:file_list"), headers={"authorization": self.tokens[self.creator2]}
+        )
+        files = [f["uuid"] for f in response.json()["bma_response"]]
+        self.approve_files_api(files=files[0:9], user=self.superuser)
+        self.publish_files_api(files=files[0:9], user=self.creator2)
+
+        # first try a file the user has no permission to see
+        response = self.client.post(
+            reverse("api-v1-json:file_tag", kwargs={"file_uuid": files[9]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then try a user with no tagging permissions
+        response = self.client.post(
+            reverse("api-v1-json:file_tag", kwargs={"file_uuid": files[0]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.post(
+            reverse("api-v1-json:file_tag", kwargs={"file_uuid": files[0]}) + "?check=true",
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then without check mode
+        response = self.client.post(
+            reverse("api-v1-json:file_tag", kwargs={"file_uuid": files[0]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+
+        # make sure file is now tagged
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 1
+
+        # now untag,
+        # first try a file the user has no permission to see
+        response = self.client.post(
+            reverse("api-v1-json:file_untag", kwargs={"file_uuid": files[9]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then try a user with no untagging permissions
+        response = self.client.post(
+            reverse("api-v1-json:file_untag", kwargs={"file_uuid": files[0]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.user0]},
+            content_type="application/json",
+        )
+        assert response.status_code == 403
+
+        # then check mode
+        response = self.client.post(
+            reverse("api-v1-json:file_untag", kwargs={"file_uuid": files[0]}) + "?check=true",
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 202
+
+        # then really untag
+        response = self.client.post(
+            reverse("api-v1-json:file_untag", kwargs={"file_uuid": files[0]}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+
+        # make sure files are now untagged
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+        # try tagging a file that doesn't exist
+        response = self.client.post(
+            reverse("api-v1-json:file_tag", kwargs={"file_uuid": uuid.uuid4()}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 404
+
+        # try untagging a file that doesn't exist
+        response = self.client.post(
+            reverse("api-v1-json:file_untag", kwargs={"file_uuid": uuid.uuid4()}),
+            {"tags": ["foo", "bar"]},
+            headers={"authorization": self.tokens[self.creator2]},
+            content_type="application/json",
+        )
+        assert response.status_code == 404

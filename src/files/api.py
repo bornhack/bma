@@ -586,6 +586,7 @@ def softdelete_file(
     "/{file_uuid}/tag/",
     response={
         201: MultipleTagResponseSchema,
+        202: ApiMessageSchema,
         403: ApiMessageSchema,
         404: ApiMessageSchema,
         422: ApiMessageSchema,
@@ -601,12 +602,16 @@ def file_tag(
         basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
-    if not basefile.permitted:
+    if not basefile.permitted(user=request.user):
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
     if not request.user.is_curator:  # type: ignore[union-attr]
         return 403, {"message": "Missing tagging permissions"}
+
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
 
     # add the tag(s) to the file and return
     basefile.tags.add_user_tags(*data.tags, user=request.user)
@@ -617,6 +622,7 @@ def file_tag(
     "/{file_uuid}/untag/",
     response={
         200: MultipleTagResponseSchema,
+        202: ApiMessageSchema,
         403: ApiMessageSchema,
         404: ApiMessageSchema,
         422: ApiMessageSchema,
@@ -632,12 +638,16 @@ def file_untag(
         basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
-    if not basefile.permitted:
+    if not basefile.permitted(user=request.user):
         return 403, {"message": "Missing file permissions"}
 
     # make sure the tagging user is in the curators group
     if not request.user.is_curator:  # type: ignore[union-attr]
         return 403, {"message": "Missing untagging permissions"}
+
+    if check:
+        # check mode requested, don't change anything
+        return 202, {"message": "OK"}
 
     # remove the tagging(s) from the file (if present) and return
     deleted, _ = TaggedFile.objects.filter(

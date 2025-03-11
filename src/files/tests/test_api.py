@@ -236,7 +236,45 @@ class TestFilesApi(BmaTestBase):
         )
         assert len(response.json()["bma_response"]) == 0
 
-        # tag a couple of files using the api
+        # test published filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+        # publish files
+        self.publish_files_api(files=files[0:10], user=self.creator2)
+
+        # test published filter again
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"published": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 10
+
+        # test approved filter
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"approved": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 0
+
+        # approve files
+        self.approve_files_api(files=files[0:10], user=self.superuser)
+
+        # test approved filter again
+        response = self.client.get(
+            reverse("api-v1-json:file_list"),
+            data={"approved": True},
+            headers={"authorization": self.tokens[self.creator2]},
+        )
+        assert len(response.json()["bma_response"]) == 10
+
+        # files are approved and published, tag a couple of files using the api
         for i in range(5):
             tags = ["foo", f"tag{i}"]
             response = self.client.post(
@@ -394,25 +432,6 @@ class TestFilesApi(BmaTestBase):
             headers={"authorization": self.tokens[self.creator2]},
         )
         assert len(response.json()["bma_response"]) == 7
-
-        # test published filter
-        response = self.client.get(
-            reverse("api-v1-json:file_list"),
-            data={"published": True},
-            headers={"authorization": self.tokens[self.creator2]},
-        )
-        assert len(response.json()["bma_response"]) == 0
-
-        # publish files
-        self.publish_files_api(files=files[0:10], user=self.creator2)
-
-        # test published filter again
-        response = self.client.get(
-            reverse("api-v1-json:file_list"),
-            data={"published": True},
-            headers={"authorization": self.tokens[self.creator2]},
-        )
-        assert len(response.json()["bma_response"]) == 10
 
     def test_file_list_permissions(self) -> None:
         """Test various permissions stuff for the file_list endpoint."""
