@@ -39,7 +39,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pre-commit==4.1.0",
-    "setuptools_scm==8.2.0",
+    "setuptools_scm==8.2.1",
 ]
 test = [
     "beautifulsoup4==4.13.3",
