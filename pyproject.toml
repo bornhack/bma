@@ -15,7 +15,7 @@ classifiers = [
 ########## DEPENDENCIES ##########
 dependencies = [
     "demoji==1.1.0",
-    "Django==5.1.7",
+    "Django==5.1.8",
     "django-allauth[socialaccount]==65.4.1",
     "django-bootstrap5==25.1",
     "django-cleanup==9.0.0",
