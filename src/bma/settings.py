@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "django_bootstrap5",
     "fontawesomefree",
     "polymorphic",
@@ -177,6 +178,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SESSION_COOKIE_NAME = "bma_sessionid"
 SITE_ID = 1
 LOGIN_REDIRECT_URL = "/"
+ACCOUNT_SIGNUP_REDIRECT_URL = "/settings/"
 AUTH_USER_MODEL = "users.User"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_USER_MODEL_EMAIL_FIELD = None
@@ -186,6 +188,24 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
 SOCIALACCOUNT_ONLY = True
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": "bornhack",
+                "name": "BornHack",
+                "client_id": BORNHACK_OIDC_CLIENT_ID,  # noqa: F405
+                "secret": BORNHACK_OIDC_CLIENT_SECRET,  # noqa: F405
+                "settings": {
+                    "server_url": BORNHACK_OIDC_SERVER_URL,  # noqa: F405
+                    "scope": ["openid", "profile"],
+                    "oauth_pkce_enabled": True,
+                },
+            },
+        ]
+    }
+}
+
 
 # taggit
 TAGGIT_CASE_INSENSITIVE = True

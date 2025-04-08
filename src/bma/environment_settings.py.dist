@@ -29,11 +29,13 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# allauth oidc settings
+BORNHACK_OIDC_CLIENT_ID = env.str("BORNHACK_OIDC_CLIENT_ID")
+BORNHACK_OIDC_CLIENT_SECRET = env.str("BORNHACK_OIDC_CLIENT_SECRET")
+BORNHACK_OIDC_SERVER_URL = env.str("BORNHACK_OIDC_CLIENT_SECRET", default="https://bornhack.dk/o/.well-known/openid-configuration")
+
 # uploaded or generated files are placed below MEDIA_ROOT
 MEDIA_ROOT = Path(env.str("DJANGO_MEDIA_ROOT", default="{{ django_media_root }}"))
-
-# auth server
-OAUTH_SERVER_BASEURL=env.str("DJANGO_OAUTH_SERVER_BASEURL", default="https://bornhack.dk")
 
 LICENSES=[
     ("cc-zero-1.0", "Creative Commons CC0 1.0 Universal"),

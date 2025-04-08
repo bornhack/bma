@@ -42,7 +42,7 @@
             {% endif %}
 
             <li><a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-fw fa-user d-inline-block"></i> Show Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> User Settings</a></li>
+            <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> Settings</a></li>
             <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-fw fa-sign-out d-inline-block"></i> Logout</a></li>
           </ul>
         </div>

@@ -1,42 +1,33 @@
 """This module contains the BornHackProvider class and BornHackAccount classes."""
 
-from allauth.socialaccount.providers.base import ProviderAccount
-from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
-
-from .adapters import BornHackSocialAccountAdapter
+from allauth.socialaccount.providers.openid_connect.provider import OpenIDConnectProvider
 
 
-class BornHackAccount(ProviderAccount):
-    """The BornHackAccount class only defines the to_str() method to find the username."""
+class BornHackProvider(OpenIDConnectProvider):
+    """The BornHackProvider for using bornhack.dk oidc.
 
-    def to_str(self) -> str:
-        """Get the username from extra_data."""
-        return str(self.account.extra_data["user"]["username"])
-
-
-class BornHackProvider(OAuth2Provider):
-    """The BornHackProvider."""
+    This class defines overrides for OpenIDConnectProvider to make everything work:
+      - Extract user id
+      - Extract data from userinfo claims
+      - Set default scopes
+    """
 
     id = "bornhack"
     name = "BornHack"
-    account_class = BornHackAccount
-    oauth2_adapter_class = BornHackSocialAccountAdapter
 
     def extract_uid(self, data: dict[str, dict[str, str]]) -> str:
-        """Get user_id from the user object."""
-        return str(data["user"]["user_id"])
+        """Get BornHack username from the OIDC standard claim 'sub'."""
+        return str(data["sub"])
 
     def extract_common_fields(self, data: dict[str, dict[str, str]]) -> dict[str, str]:
-        """Override extract_common_fields to get the data to be used by populate_user()."""
+        """Map OIDC claims to the data dict used in BornHackSocialAccountAdapter.populate_user()."""
         return {
-            "username": data["user"]["username"],
-            "public_credit_name": data["profile"]["public_credit_name"],
-            "description": data["profile"]["description"],
+            # standard OIDC user claims
+            "username": str(data["sub"]),
+            "public_credit_name": str(data["nickname"]),
+            # custom BornHack user claims
+            "description": str(data.get("bornhack:v2:description", "")),
         }
-
-    def get_default_scope(self) -> list[str]:
-        """The only scope we need is profile:read."""
-        return ["profile:read"]
 
 
 provider_classes = [BornHackProvider]

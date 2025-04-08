@@ -5,54 +5,106 @@
 {% block title %}BMA Settings{% endblock title %}
 
 {% block main_content %}
-  <div class="row">
-    <table class="table">
-      <tbody>
-        <tr>
-          <th>BornHack Username</th>
-          <td>{{ user.username }}</td>
-        </tr>
-        <tr>
-          <th>BMA UUID</th>
-          <td>{{ user.pk }}</td>
-        </tr>
-        <tr>
-          <th>BMA Handle</th>
-          <td>{{ user.handle }}</td>
-        </tr>
-        <tr>
-          <th>BMA Member Since</th>
-          <td>{{ user.created_at }}</td>
-        </tr>
-        <tr>
-          <th>Description</th>
-          <td>
-            {{ user.description|default:"N/A" }}
-          </td>
-        </tr>
-        <tr>
-          <th>API Clients</th>
-          <td>
-            <table class="table table-sm table-borderless">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Access Tokens</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for client in request.user.oauth2_provider_application.all %}
-                <tr>
-                  <td>{{ client.name }}</td>
-                  <td>{{ client.accesstoken_set.count }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <a href="{% url 'user_settings_update' %}" class="btn btn-primary"><i class="fas fa-edit"></i> Update</a>
-  </div>
+    <div class="card mb-4">
+      <h5 class="card-header">BMA Profile</h5>
+      <div class="card-body">
+        <p>Your profile contains the public setting for your BMA account. You can edit some of the values in it here. </p>
+        <table class="table  table-hover">
+          <tbody>
+            <tr>
+              <td class="align-middle">Handle</td>
+              <td class="align-middle"><strong>{{ user.handle }}</strong></td>
+              <td class="align-middle"><a href="{% url 'user_settings_update' %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i>&nbsp;Update</a></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>Your handle is a unique identifier for your BMA account. You can change it to anything you want, as long as the handle you want isn't already taken by another user. NOTE: Changing the handle will break URLs using it. The handle can only contain letters, numbers, hyphens (-) and underscores (_).</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">Display Name</td>
+              <td class="align-middle"><strong>{{ user.display_name }}</strong></td>
+              <td class="align-middle"><a href="{% url 'user_settings_update' %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i>&nbsp;Update</a></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The display name is shown instead of the handle whenever your user is mentioned somewhere on the site. It can be changed to any string up to 100 characters including unicode, emojis <i class="fas fa-circle-check text-info"></i> <i class="fas fa-fire text-warning"></i> and so on. Display names do not have to be unique, so the same display name can be used by multiple users.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">Description</td>
+              <td class="align-middle"><strong>{{ user.description|default:"N/A" }}</strong></td>
+              <td class="align-middle"><a href="{% url 'user_settings_update' %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i>&nbsp;Update</a></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>A description of yourself which is shown on your profile page. Optional. Supports markdown. Sortof.</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <h5 class="card-header">Other Settings</h5>
+      <div class="card-body">
+        <p class="lead">This section contains non-profile related settings.</p>
+        <table class="table">
+          <tbody>
+            <tr>
+              <th>API Clients</th>
+              <td>
+                <table class="table table-sm table-borderless">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Access Tokens</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for client in request.user.oauth2_provider_application.all %}
+                    <tr>
+                      <td>{{ client.name }}</td>
+                      <td>{{ client.accesstoken_set.count }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h5 class="card-header">Metadata</h5>
+      <div class="card-body">
+        <p>This section contains metadata about your BMA account.</p>
+        <table class="table">
+          <tbody>
+            <tr>
+              <td class="align-middle">BornHack UserName</td>
+              <td class="align-middle"><strong>{{ user.username }}</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The username of the linked BornHack account used to log in to BMA.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">BMA User UUID</td>
+              <td class="align-middle"><strong>{{ user.pk }}</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The user UUID is a permanent and unique identifier for a BMA account. The user UUID can not be changed. URLs using the uuid will keep working even if the handle changes.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">BMA Member Since</td>
+              <td class="align-middle"><strong>{{ user.created_at }} (BMA account created {{ user.created_at|timesince }} ago)</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The age of this BMA account.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">Files Uploaded</td>
+              <td class="align-middle"><strong>{{ user.files.count }}</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The number of files uploaded by you.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">Albums Created</td>
+              <td class="align-middle"><strong>{{ user.albums.count }}</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The number of albums created by you.</em></td>
+            </tr>
+            <tr>
+              <td class="align-middle">Taggings</td>
+              <td class="align-middle"><strong>{{ user.taggings.count }}</strong></td>
+              <td class="align-middle"><i class="fas fa-circle-info"></i> <em>The number of taggings made by you.</em></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
 {% endblock main_content %}
