@@ -32,7 +32,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # allauth oidc settings
 BORNHACK_OIDC_CLIENT_ID = env.str("BORNHACK_OIDC_CLIENT_ID", default="{{ django_bornhack_oidc_client_id }}")
 BORNHACK_OIDC_CLIENT_SECRET = env.str("BORNHACK_OIDC_CLIENT_SECRET", default="{{ django_bornhack_oidc_client_secret }}")
-BORNHACK_OIDC_SERVER_URL = env.str("BORNHACK_OIDC_SERVER_URL", default="{{ django_bornhack_oidc_server_url|default('https://bornhack.dk/o/.well-known/openid-configuration')")
+BORNHACK_OIDC_SERVER_URL = env.str("BORNHACK_OIDC_SERVER_URL", default="{{ django_bornhack_oidc_server_url|default('https://bornhack.dk/o/.well-known/openid-configuration') }}")
 
 # uploaded or generated files are placed below MEDIA_ROOT
 MEDIA_ROOT = Path(env.str("DJANGO_MEDIA_ROOT", default="{{ django_media_root }}"))
