@@ -109,7 +109,7 @@ BMA_CREATOR_GROUP_NAME = env.str("BMA_CREATOR_GROUP_NAME", default="{{ django_bm
 BMA_MODERATOR_GROUP_NAME = env.str("BMA_MODERATOR_GROUP_NAME", default="{{ django_bma_moderator_group_name|default('moderators') }}")
 BMA_CURATOR_GROUP_NAME = env.str("BMA_CURATOR_GROUP_NAME", default="{{ django_bma_curator_group_name|default('curators') }}")
 BMA_WORKER_GROUP_NAME = env.str("BMA_WORKER_GROUP_NAME", default="{{ django_bma_worker_group_name|default('workers') }}")
-BMA_INITIAL_GROUPS=env.list("BMA_INITIAL_GROUPS", default="{{ django_bma_initial_groups|join(',')|default([BMA_CREATOR_GROUP_NAME,BMA_CURATOR_GROUP_NAME]) }}") # new users are always added to these groups on first login
+BMA_INITIAL_GROUPS=env.list("BMA_INITIAL_GROUPS", default="{{ django_bma_initial_groups }}") # new users are always added to these groups on first login
 
 # how long to wait before registering another hit
 HITCOUNT_KEEP_HIT_ACTIVE = { 'days': 1 }
