@@ -198,7 +198,7 @@ SOCIALACCOUNT_PROVIDERS = {
                 "secret": BORNHACK_OIDC_CLIENT_SECRET,  # noqa: F405
                 "settings": {
                     "server_url": BORNHACK_OIDC_SERVER_URL,  # noqa: F405
-                    "scope": ["openid", "profile"],
+                    "scope": ["openid", "profile"],  # BMA only needs the profile scope for now
                     "oauth_pkce_enabled": True,
                 },
             },

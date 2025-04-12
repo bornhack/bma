@@ -18,6 +18,7 @@ The BornHack Media Archive is a site for sharing pictures and video from BornHac
     * client type `public`
     * grant type `authorization code`
     * redirect uri's `BMA_BASEURL/accounts/oidc/bornhack/login/callback/` eg. `http://127.0.0.1:8001/accounts/oidc/bornhack/login/callback/`.
+    * Algorithm `RSA with SHA-2 256`
 
 * Then copy `bma/environment_settings.py.dist` to `bma/environment_settings.py` and either edit it directly, or use .env file or environment variables to configure.
 * Run `manage.py migrate`
