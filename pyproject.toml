@@ -46,7 +46,7 @@ test = [
     "coverage==7.8.0",
     "django-debug-toolbar==5.1.0",
     "factory-boy==3.3.3",
-    "pytest-django==4.10.0",
+    "pytest-django==4.11.1",
     "pytest-cov==6.1.1",
     "pytest-randomly==3.16.0",
     "tox==4.25.0",
