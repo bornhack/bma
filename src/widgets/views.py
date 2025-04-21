@@ -58,7 +58,12 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
     return render(
         request,
         f"{style}.js",
-        context={"uuid": uuid, "files": json.dumps(js_files), "count": count, "host": f"{request.sceme}://{request.get_host()}",
+        context={
+            "uuid": uuid,
+            "files": json.dumps(js_files),
+            "count": count,
+            "host": f"{request.scheme}://{request.get_host()}",
+        },
         content_type="text/javascript",
     )
 
@@ -82,7 +87,7 @@ def bma_widget_iframe_view(request: HttpRequest, style: str, option: int, uuid: 
     return render(
         request,
         f"{style}.html",
-        context={"uuid": uuid, "files": js_files, "option": option, "host": f"{request.sceme}://{request.get_host()}"},
+        context={"uuid": uuid, "files": js_files, "option": option, "host": f"{request.scheme}://{request.get_host()}"},
     )
 
 
