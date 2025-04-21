@@ -34,7 +34,7 @@ bma_script.parentElement.insertBefore(main_loader, bma_script);
 
 
 async function getFileMetadata(file_uuid) {
-  const response = fetch("//" + host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'})
+  const response = fetch(host + "/api/v1/json/files/" + file_uuid + "/", {mode: 'cors'})
     .then((x) => {
       if (!x.ok) {
         // handle non-2xx x code
@@ -56,7 +56,7 @@ async function getFileMetadata(file_uuid) {
 }
 
 async function getAlbumMetadata(album_uuid) {
-  const response = fetch("//" + host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'})
+  const response = fetch(host + "/api/v1/json/albums/" + album_uuid + "/", {mode: 'cors'})
     .then((response) => {
       if (!response.ok) {
         // handle non-2xx response code
