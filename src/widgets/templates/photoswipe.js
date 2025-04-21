@@ -11,11 +11,11 @@
    */
   async function loadPhotoswipe() {
     // load photoswipe JS
-    const {lightbox} = await import(`${window.location.protocol}//${host}/widgets/photoswipe-module/${count}/${uuid}/`);
+    const {lightbox} = await import(`${host}/widgets/photoswipe-module/${count}/${uuid}/`);
 
     // load photoswipe CSS
     let photoswipe_css = document.createElement( "link" );
-    photoswipe_css.href = "//" + host + "{% static 'css/vendor/photoswipe-v5.4.4.css' %}";
+    photoswipe_css.href = host + "{% static 'css/vendor/photoswipe-v5.4.4.css' %}";
     photoswipe_css.type = "text/css";
     photoswipe_css.rel = "stylesheet";
     photoswipe_css.media = "screen,print";
@@ -23,7 +23,7 @@
 
     // load photoswipe widget CSS
     let photoswipe_widget_css = document.createElement( "link" );
-    photoswipe_widget_css.href = "//" + host + "{% static 'css/photoswipe-widget.css' %}";
+    photoswipe_widget_css.href = host + "{% static 'css/photoswipe-widget.css' %}";
     photoswipe_widget_css.type = "text/css";
     photoswipe_widget_css.rel = "stylesheet";
     photoswipe_widget_css.media = "screen,print";
@@ -31,7 +31,7 @@
 
     // load custom css
     let custom_css = document.createElement( "link" );
-    custom_css.href = "//" + host + "{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}";
+    custom_css.href = host + "{% static 'css/vendor/photoswipe-dynamic-caption-plugin-v1.2.7.css' %}";
     custom_css.type = "text/css";
     custom_css.rel = "stylesheet";
     custom_css.media = "screen,print";
@@ -57,7 +57,7 @@
     let srcset = "";
     for (const [size, url] of Object.entries(urls)) {
       const sizes = size.split("*");
-      srcset = srcset + "//" + host + url + " " + sizes[0] + "w, ";
+      srcset = srcset + host + url + " " + sizes[0] + "w, ";
     }
     return srcset;
   }
@@ -69,7 +69,7 @@
    */
   function createThumbnailCaption(file) {
     let caption = `<div class="pswp-caption-content" data-bma-file-uuid="${file.uuid}">
-  <span class="d-inline-block me-3"><i class="${file.filetype_icon}"></i> <a href="//${host}/${file.links.html}"><b>${file.title}</b></a></span>`;
+  <span class="d-inline-block me-3"><i class="${file.filetype_icon}"></i> <a href="${host}/${file.links.html}"><b>${file.title}</b></a></span>`;
 
     caption += `<span class="d-inline-block me-3"><i class="fas fa-user fa-fw"></i> ${file.attribution}</span>`;
     caption += `<span class="d-inline-block me-3">${createLicenseIcon(file.license)} ${file.license_name}</span>`;
@@ -134,9 +134,9 @@
   function createThumbnailPswp(record) {
     let thumb = `<span class="d-inline-block m-1">`;
     if (record.filetype === "image") {
-      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
-    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-bma-file-orig-url="${host}/${record.links.downloads.original}"
     data-pswp-type="image"
     data-pswp-width="${record.width}"
     data-pswp-height="${record.height}"
@@ -149,9 +149,9 @@
 </a>${createThumbnailCaption(record)}`;
     }
     else if (record.filetype === "video") {
-      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
-    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-bma-file-orig-url="${host}/${record.links.downloads.original}"
     data-pswp-type="video"
     data-pswp-width="1280"
     data-pswp-height="1024"
@@ -164,9 +164,9 @@
 </a>${createThumbnailCaption(record)}`;
     }
     else if (record.filetype === "audio") {
-      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
-    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-bma-file-orig-url="${host}/${record.links.downloads.original}"
     data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480"
@@ -179,9 +179,9 @@
 </a>${createThumbnailCaption(record)}`;
     }
     else if (record.filetype === "document") {
-      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="//${host}/${record.links.downloads.original}"
+      thumb += `<a class="gallery-${count}-${uuid} text-decoration-none" href="${host}/${record.links.downloads.original}"
     data-bma-file-uuid="${record.uuid}"
-    data-bma-file-orig-url="//${host}/${record.links.downloads.original}"
+    data-bma-file-orig-url="${host}/${record.links.downloads.original}"
     data-pswp-type="document"
     data-pswp-width="1920"
     data-pswp-height="1080"
@@ -197,7 +197,7 @@
     }
     thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block">
     <span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}">
-      <a class="text-truncate text-reset" href="//${host}/${record.links.html}">${record.attribution}</a>
+      <a class="text-truncate text-reset" href="${host}/${record.links.html}">${record.attribution}</a>
     </span><span title="${record.license_name}">
       <a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a>
     </span></div>`;
