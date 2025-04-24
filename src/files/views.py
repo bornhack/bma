@@ -124,7 +124,11 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
     def get_object(self, queryset: models.QuerySet[BaseFile] | None = None) -> BaseFile:
         """Check permissions before returning the file."""
         try:
-            basefile = BaseFile.bmanager.prefetch_image_version_list().get(pk=self.kwargs["file_uuid"])
+            basefile = (
+                BaseFile.bmanager.prefetch_image_version_list()
+                .prefetch_thumbnail_list()
+                .get(pk=self.kwargs["file_uuid"])
+            )
         except BaseFile.DoesNotExist as e:
             raise Http404 from e
         if not basefile.permitted(user=self.request.user):
@@ -136,6 +140,13 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
 
         # all good
         return basefile  # type: ignore[no-any-return]
+
+    def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, Form]:
+        """Add sizes and ratios context."""
+        context = super().get_context_data(**kwargs)
+        context["sizes"] = [50, 100, 150, 200]
+        context["ratios"] = ["1/1", "4/3", "16/9", "2/3"]
+        return context
 
 
 @support_authbearer_user

@@ -75,6 +75,9 @@
 
                     <small class="d-block">Jobs</small>
                     <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_jobs' file_uuid=file.uuid %}">Show {{ file.jobs.count }} jobs</a></div>
+
+                    <small class="d-block">Embed</small>
+                    <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_embed' file_uuid=file.uuid %}">Embed {{ file.filetype|capfirst }}</a></div>
                   </dl>
                 </div>
               </div>
@@ -82,7 +85,6 @@
           </div>
         </div>
       </div>
-
       <!-- thumbnails -->
       <div class="row">
         <div class="col mb-3">

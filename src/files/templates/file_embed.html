@@ -1,0 +1,68 @@
+{% extends "file_detail.html" %}
+{% block file_detail %}
+<h1>Embedding {{ file.filetype|capfirst }} {{ file.title }}</h1>
+
+<h2>Fancy Options</h2>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Works Without JS</th>
+    <th>Multiple Image Sizes</th>
+    <th>Example</th>
+    <th>Embed HTML</th>
+    <th>&#123;% bma %&#125; Template Tag</th>
+  </tr>
+
+  <tr>
+    <td><code>photoswipe</code></td>
+    <td>
+      <ul>
+        <li> Uses <a href="https://photoswipe.com/" target="_blank">Photoswipe</a> for lightbox and zoom.
+        <li> Uses a 150x150px thumbnail plus 24px footer
+        <li> Includes basic EXIF metadata for images in lightbox
+      </ul>
+    </td>
+    <td><i class="fas fa-times text-danger"></i> No</td>
+    <td><i class="fas fa-times text-success"></i> Yes</td>
+    <td><script src="/widgets/photoswipe/0/{{ file.pk }}/"></script></td>
+    <td><code>&lt;script src="{{ request.scheme }}://{{ request.get_host }}/widgets/photoswipe/0/{{ file.pk }}/"&gt;&lt;/script&gt;</code></td>
+    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" %&#125;</code></td>
+  </tr>
+</table>
+
+<h2>Plain HTML Options</h2>
+<div>
+  <ul>
+    <li> Uses a plain &lt;img&gt; element which is a link to the file detail page on BMA
+    <li> Thumbnails are 50, 100, 150, or 200px wide. Each size has a double density 2x source included as well.
+    <li> Thumbnail has aspect ratio <code>1/1</code>, <code>4/3</code>, <code>16/9</code>, or <code>2/3</code>
+    <li> Thumbnail element includes file attribution and basic EXIF metadata in title as well as alt text
+    <li> Thumbnail links back to the file on BMA
+  </ul>
+</div>
+
+<table class="table">
+  <tr>
+    <th>Width</th>
+    <th>Aspect Ratio</th>
+    <th>Example</th>
+    <th>Embed Code</th>
+  </tr>
+
+  {% for size in sizes %}
+  {% for ratio in ratios %}
+  <tr>
+    {% thumbnail basefile=file width=size ratio=ratio noscript=True prefix=request.scheme|add:"://"|add:request.get_host as thumb %}
+    {% with '<a href="'|add:request.scheme|add:"://"|add:request.get_host|add:file.get_absolute_url|add:'">'|add:thumb|add:'</a>' as link %}
+    <td>{{ size }}px</td>
+    <td>{{ ratio }}</td>
+    <td>{{ link|safe }}</td>
+    <td><code>{{ link }}</code></td>
+    {% endwith %}
+  </tr>
+  {% endfor %}
+  {% endfor %}
+
+</table>
+{% endblock file_detail %}

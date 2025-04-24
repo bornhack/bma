@@ -38,7 +38,15 @@ def get_group_icons(user: "User") -> str:
 
 
 @register.simple_tag()
-def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "image/webp") -> str:
+def thumbnail(  # noqa: PLR0913
+    basefile: "BaseFile",
+    width: int,
+    ratio: str,
+    mimetype: str = "image/webp",
+    *,
+    noscript: bool = False,
+    prefix: str = "",
+) -> str:
     """BMA thumbnail tag. Depends on the hardcoded 50,100,150,200px (and 2x)."""
     from files.models import ThumbnailSource
 
@@ -54,7 +62,7 @@ def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "ima
             f"only {ThumbnailSource.source.field.aspect_ratios} are supported -->"  # type: ignore[attr-defined]
         )
     t = None
-    t2 = None
+    url2x = ""
     for thumbnail in basefile.thumbnail_list:
         if thumbnail.mimetype != mimetype:
             continue
@@ -64,36 +72,31 @@ def thumbnail(basefile: "BaseFile", width: int, ratio: str, mimetype: str = "ima
             t = thumbnail
             continue
         if thumbnail.width == width * 2:
-            t2 = thumbnail
+            url2x = f", {prefix}{thumbnail.imagefile.url} 2x"
             continue
 
     if not t:
         # request size not available
         return mark_safe(  # noqa: S308
             '<img class="img-fluid img-thumbnail" '
-            f'src="{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
+            f'src="{prefix}{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
         )
-    url = t.imagefile.url
-    if t2:
-        url2x = t2.imagefile.url
-        url2x = f", {url2x} 2x"
-    else:
-        url2x = ""
 
-    title = basefile.original_filename
-    alt = basefile.description or basefile.original_filename
+    title = f"""{basefile.title}
+{basefile.attribution}
+{basefile.license}"""
     hoverclass = "zoom" if basefile.filetype in ["image", "document"] else "play"
-    tmpl = loader.get_template("thumbnail.html")
+    tmpl = loader.get_template("thumbnail.html" if not noscript else "thumbnail_noscript.html")
     output = tmpl.render(
         {
-            "url": url,
+            "url": f"{prefix}{t.imagefile.url}",
             "url2x": url2x,
             "hoverclass": hoverclass,
             "width": width,
             "height": t.height,
             "title": title,
             "file": basefile,
-            "alt": alt,
+            "alt": title,
         }
     )
     return mark_safe(output)  # noqa: S308
@@ -104,6 +107,7 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
     """Render a file."""
     if not hasattr(field_file.instance, "filetype"):
         output = "<!-- No filetype -->"
+
     elif field_file.instance.filetype == "image":
         output = picture(field_file=field_file, **kwargs)  # type: ignore[arg-type] # wtf?
 
@@ -114,6 +118,7 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
                 "url": field_file.url,
             }
         )
+
     elif field_file.instance.filetype == "video":
         tmpl = loader.get_template("includes/render_video.html")
         output = tmpl.render(
@@ -121,6 +126,7 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
                 "url": field_file.url,
             }
         )
+
     elif field_file.instance.filetype == "document":
         tmpl = loader.get_template("includes/render_document.html")
         output = tmpl.render(
@@ -129,6 +135,7 @@ def render_file(field_file: "PictureFieldFile | FieldFile", **kwargs: str) -> st
                 **kwargs,
             }
         )
+
     else:
         output = "<!-- Unknown filetype -->"
     return mark_safe(output)  # noqa: S308

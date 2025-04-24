@@ -2,11 +2,11 @@
   <i class="fas fa-2x"></i>
   <img srcset="{{ url }}{{ url2x }}" src="{{ url }}" height="{{ height }}" width="{{ width }}" title="{{ title }}" alt="{{ alt }}" class="img-fluid img-thumbnail">
   <div>
-    <object><a class="attribution-link" href="{{ file.get_absolute_url }}"><span title="{{ file.title }} ({{ file.attribution }})" class="fa-regular fa-arrow-up-right-from-square"></span></a></object>
-    <object><a class="text-decoration-none license-link" href="{{ file.license_url }}">
+    <a class="attribution-link" href="{{ file.get_absolute_url }}"><span title="{{ file.title }} ({{ file.attribution }})" class="fa-regular fa-arrow-up-right-from-square"></span></a>
+    <a class="text-decoration-none license-link" href="{{ file.license_url }}">
       {% if file.license == "CC_ZERO_1_0" %}<span title="{{ file.license_name}}" class="fa-brands fa-creative-commons-zero"></span>{% endif %}
       {% if file.license == "CC_BY_4_0" %}<span title="{{ file.license_name}}" class="fa-brands fa-creative-commons-by"></span>{% endif %}
       {% if file.license == "CC_BY_SA_4_0" %}<span title="{{ file.license_name}}" class="fa-brands fa-creative-commons-sa"></span>{% endif %}
-    </a></object>
+    </a>
   </div>
 </div>

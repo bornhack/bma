@@ -32,6 +32,7 @@ urlpatterns = [
             [
                 path("", FileDetailView.as_view(), name="file_show"),
                 path("thumbnails/", FileDetailView.as_view(), name="file_thumbnails"),
+                path("embed/", FileDetailView.as_view(), name="file_embed"),
                 path("jobs/", FileJobsView.as_view(), name="file_jobs"),
                 path("permissions/", FilePermissionsView.as_view(), name="file_permissions"),
                 path("albums/", FileAlbumsView.as_view(), name="file_albums"),
