@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from django import template
 from django.conf import settings
 from django.template import loader
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from pictures.templatetags.pictures import picture
@@ -158,3 +159,27 @@ def render_source_set(*, image: "Image", mimetype: str, aspect_ratio: Fraction |
         output += f"{version.imagefile.url} {version.width}w, "
     # remove trailing ", "
     return output[:-2]
+
+
+@register.simple_tag()
+def noscript_embed(
+    basefile: "BaseFile",
+    width: int,
+    ratio: str,
+    prefix: str = "",
+    *,
+    noscript: bool = True,
+) -> str:
+    """Return a plain html thumbnail wrapped in an a href to the BMA detail page for the file."""
+    thumb = thumbnail(basefile=basefile, width=width, ratio=ratio, prefix=prefix, noscript=True)
+    link = f'<a href="{prefix}{basefile.get_absolute_url()}">{thumb}</a>'
+    if noscript:
+        return f"<noscript>{link}</noscript>"
+    return link
+
+
+@register.simple_tag()
+def photoswipe_embed(uuid: str, counter: int, prefix: str = "") -> str:
+    """Return a script tag for the photoswipe embed."""
+    url = reverse("widgets:bma_widget_view", kwargs={"style": "photoswipe", "count": counter, "uuid": uuid})
+    return f'<script src="{prefix}{url}"></script>'

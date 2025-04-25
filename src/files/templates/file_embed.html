@@ -5,7 +5,7 @@
 <h2>Fancy Options</h2>
 <table class="table">
   <tr>
-    <th>Name</th>
+    <th>BMA Widget Name</th>
     <th>Description</th>
     <th>Works Without JS</th>
     <th>Multiple Image Sizes</th>
@@ -23,10 +23,12 @@
         <li> Includes basic EXIF metadata for images in lightbox
       </ul>
     </td>
-    <td><i class="fas fa-times text-danger"></i> No</td>
-    <td><i class="fas fa-times text-success"></i> Yes</td>
-    <td><script src="/widgets/photoswipe/0/{{ file.pk }}/"></script></td>
-    <td><code>&lt;script src="{{ request.scheme }}://{{ request.get_host }}/widgets/photoswipe/0/{{ file.pk }}/"&gt;&lt;/script&gt;</code></td>
+    <td><i class="fas fa-check text-success"></i> Yes</td>
+    <td><i class="fas fa-check text-success"></i> Yes</td>
+    {% noscript_embed basefile=file width=150 ratio="1/1" noscript=True prefix=prefix as embed %}
+    {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix as photoswipe %}
+    <td>{{ embed|safe }}{{ photoswipe|safe }}</td>
+    <td><code>{{ embed }}<br>{{ photoswipe }}</code></td>
     <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" %&#125;</code></td>
   </tr>
 </table>
@@ -53,13 +55,11 @@
   {% for size in sizes %}
   {% for ratio in ratios %}
   <tr>
-    {% thumbnail basefile=file width=size ratio=ratio noscript=True prefix=request.scheme|add:"://"|add:request.get_host as thumb %}
-    {% with '<a href="'|add:request.scheme|add:"://"|add:request.get_host|add:file.get_absolute_url|add:'">'|add:thumb|add:'</a>' as link %}
+    {% noscript_embed basefile=file width=size ratio=ratio noscript=False prefix=prefix as embed %}
     <td>{{ size }}px</td>
     <td>{{ ratio }}</td>
-    <td>{{ link|safe }}</td>
-    <td><code>{{ link }}</code></td>
-    {% endwith %}
+    <td>{{ embed|safe }}</td>
+    <td><code>{{ embed }}</code></td>
   </tr>
   {% endfor %}
   {% endfor %}
