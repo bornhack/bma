@@ -51,7 +51,7 @@ def thumbnail(  # noqa: PLR0913
     """BMA thumbnail tag. Depends on the hardcoded 50,100,150,200px (and 2x)."""
     from files.models import ThumbnailSource
 
-    if width not in [50, 100, 150, 200]:
+    if width not in [50, 100, 150, 200, 300, 400]:
         return mark_safe(  # noqa: S308
             f"<!-- Error creating thumbnail markup, width {width} is not supported, "
             "only 50,100,150,200 is supported -->"

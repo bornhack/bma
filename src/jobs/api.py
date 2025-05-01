@@ -220,7 +220,7 @@ def upload_result(  # noqa: PLR0913
 
     # refresh basefile to get updated jobcount,
     # use bmanager to get annotated file object
-    basefile = BaseFile.bmanager.get(uuid=basefile.uuid)
+    basefile = BaseFile.bmanager.annotate_job_counts().get(uuid=basefile.uuid)
     return 200, {"bma_response": basefile}
 
 

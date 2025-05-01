@@ -28,7 +28,7 @@
     {% noscript_embed basefile=file width=150 ratio="1/1" noscript=True prefix=prefix as embed %}
     {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix as photoswipe %}
     <td>{{ embed|safe }}{{ photoswipe|safe }}</td>
-    <td><code>{{ embed }}<br>{{ photoswipe }}</code></td>
+    <td><code>{{ embed }}{{ photoswipe }}</code></td>
     <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" %&#125;</code></td>
   </tr>
 </table>
@@ -37,7 +37,7 @@
 <div>
   <ul>
     <li> Uses a plain &lt;img&gt; element which is a link to the file detail page on BMA
-    <li> Thumbnails are 50, 100, 150, or 200px wide. Each size has a double density 2x source included as well.
+    <li> Thumbnails are 50, 100, 150, 200, 300, or 400px wide. Sizes up to and including 200px has a double density 2x source included as well.
     <li> Thumbnail has aspect ratio <code>1/1</code>, <code>4/3</code>, <code>16/9</code>, or <code>2/3</code>
     <li> Thumbnail element includes file attribution and basic EXIF metadata in title as well as alt text
     <li> Thumbnail links back to the file on BMA
@@ -52,8 +52,9 @@
     <th>Embed Code</th>
   </tr>
 
+  {% for ratio, formats in file.get_thumbnails.items %}
+  {% for format, sizes in formats.items %}
   {% for size in sizes %}
-  {% for ratio in ratios %}
   <tr>
     {% noscript_embed basefile=file width=size ratio=ratio noscript=False prefix=prefix as embed %}
     <td>{{ size }}px</td>
@@ -61,6 +62,7 @@
     <td>{{ embed|safe }}</td>
     <td><code>{{ embed }}</code></td>
   </tr>
+  {% endfor %}
   {% endfor %}
   {% endfor %}
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from collections import defaultdict
 from fractions import Fraction
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -59,7 +60,7 @@ class SimplePicture:
         """Get the path under MEDIA_ROOT for this version of the image."""
         path = Path(self.parent_name).with_suffix("")
         if self.custom_aspect_ratio:
-            path /= str(self.aspect_ratio).replace("/", "_")
+            path /= self.aspect_ratio_str.replace("/", "_")
         return str(path / f"{self.width}w.{self.file_type.lower()}")
 
     @property
@@ -68,6 +69,14 @@ class SimplePicture:
 
     def delete(self) -> None:
         self.storage.delete(self.name)
+
+    @property
+    def aspect_ratio_str(self) -> str:
+        """Return the AR as a X/Y string."""
+        ar = str(self.aspect_ratio)
+        if "/" not in ar:
+            ar = f"{ar}/{ar}"
+        return ar
 
 
 class PictureFieldFile(ImageFieldFile):
@@ -83,7 +92,7 @@ class PictureFieldFile(ImageFieldFile):
         img_height: int,
         storage: Storage,
         exclude_oversized: bool = True,
-    ) -> dict[Fraction | None, dict[str, dict[int, SimplePicture]]]:
+    ) -> dict[str, dict[str, dict[int, SimplePicture]]]:
         """Return a dict of ratio: filetype: width: SimplePicture nested dicts.
 
         Args:
@@ -95,35 +104,36 @@ class PictureFieldFile(ImageFieldFile):
 
         Returns: A dict of ratio: filetype: width: SimplePicture nested dicts.
         """
-        img_ratio = Fraction(img_width, img_height)
-        return {
-            ratio: {
-                file_type: {
-                    width: SimplePicture(
+        img_ratio = str(Fraction(img_width, img_height))
+        if img_ratio == "1":
+            img_ratio = "1/1"
+        result: dict[str, dict[str, dict[int, SimplePicture]]] = defaultdict(lambda: defaultdict(dict))
+        ratio: str
+        for ratio, custom in [
+            (str(ratio), True) if ratio else (img_ratio, False)
+            for ratio in self.field.aspect_ratios  # type: ignore[attr-defined]
+        ]:
+            for width in utils.get_widths(
+                original_size=(img_width, img_height),
+                ratio=ratio,
+                max_width=self.field.container_width,  # type: ignore[arg-type]
+                columns=self.field.grid_columns,  # type: ignore[arg-type]
+                pixel_densities=self.field.pixel_densities,  # type: ignore[arg-type]
+                exclude_oversized=exclude_oversized,
+            ):
+                for file_type in self.field.file_types:  # type: ignore[attr-defined]
+                    result[ratio][file_type][width] = SimplePicture(
                         parent_name=file_name,
                         file_type=file_type,
                         aspect_ratio=ratio,
                         custom_aspect_ratio=custom,
                         storage=storage,
                         width=width,
-                        height=math.floor(width / Fraction(ratio)) if ratio else math.floor(width / img_ratio),
+                        height=math.floor(width / Fraction(ratio))
+                        if ratio
+                        else math.floor(width / Fraction(img_ratio)),
                     )
-                    for width in utils.get_widths(
-                        original_size=(img_width, img_height),
-                        ratio=ratio,
-                        max_width=self.field.container_width,  # type: ignore[arg-type]
-                        columns=self.field.grid_columns,  # type: ignore[arg-type]
-                        pixel_densities=self.field.pixel_densities,  # type: ignore[arg-type]
-                        exclude_oversized=exclude_oversized,
-                    )
-                }
-                for file_type in self.field.file_types  # type: ignore[attr-defined]
-            }
-            for ratio, custom in [
-                (Fraction(ratio), True) if ratio else (img_ratio, False)
-                for ratio in self.field.aspect_ratios  # type: ignore[attr-defined]
-            ]
-        }
+        return result
 
     @property
     def width(self) -> int:
@@ -135,9 +145,7 @@ class PictureFieldFile(ImageFieldFile):
         """Get height from the model field."""
         return self.instance.height  # type: ignore[no-any-return,attr-defined]
 
-    def aspect_ratios(
-        self, *, exclude_oversized: bool = True
-    ) -> dict[Fraction | None, dict[str, dict[int, SimplePicture]]]:
+    def aspect_ratios(self, *, exclude_oversized: bool = True) -> dict[str, dict[str, dict[int, SimplePicture]]]:
         """Return a dict with ratio: filetype: width: SimplePicture nested dicts."""
         return self.get_picture_files(
             file_name=self.name,  # type: ignore[arg-type]

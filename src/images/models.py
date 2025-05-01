@@ -23,6 +23,7 @@ from utils.storage import BmaFileSystemStorage
 from utils.upload import get_image_version_path
 from utils.upload import get_mimetype_from_extension
 from utils.upload import get_upload_path
+from utils.validators import validate_ratio
 
 if TYPE_CHECKING:
     from users.models import User
@@ -58,7 +59,9 @@ class Image(BaseFile):
     )
 
     aspect_ratio = models.CharField(
-        max_length=20, help_text="The aspect ratio (width/height) of the image expressed as a string like '16/9'."
+        max_length=20,
+        help_text="The aspect ratio (width/height) of the image expressed as a string like '16/9'.",
+        validators=[validate_ratio],
     )
 
     pixels = models.GeneratedField(

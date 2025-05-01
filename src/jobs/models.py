@@ -14,6 +14,7 @@ from polymorphic.models import PolymorphicModel
 
 from utils.models import NP_CASCADE
 from utils.polymorphic_related import RelatedPolymorphicManager
+from utils.validators import validate_ratio
 
 from .managers import JobManager
 
@@ -136,6 +137,7 @@ class ImageJob(BaseJob):
         "client to decide on resize method (crop or maintain ratio) and by the "
         "server to create the ImageVersion/Thumbnail object correctly when the "
         "result is uploaded.",
+        validators=[validate_ratio],
     )
 
     class Meta:

@@ -38,6 +38,7 @@ from utils.models import BaseModel
 from utils.storage import BmaFileSystemStorage
 from utils.upload import get_thumbnail_path
 from utils.upload import get_thumbnail_source_path
+from utils.validators import validate_ratio
 
 from .managers import BaseFileManager
 from .managers import BaseFileQuerySet
@@ -390,7 +391,7 @@ class BaseFile(PolymorphicModel):
                 basefile=self,
                 width=version.width,
                 height=version.height,
-                custom_aspect_ratio=version.aspect_ratio,
+                custom_aspect_ratio=version.aspect_ratio_str,
                 filetype=version.file_type,
                 source_url=source.url,
                 finished=False,
@@ -412,8 +413,8 @@ class BaseFile(PolymorphicModel):
 class ImageModel(models.Model):
     """Model mixin with shared fields used by all non-polymorphic models representing images.
 
-    The polymorphic Image model and BaseFile model share some of the same fields between them but
-    polymorphic models cannot inherit from non-polymorphic models. Don't waste time trying
+    The polymorphic Image model and ImageModel model share some of the same fields between them,
+    but polymorphic models cannot inherit from non-polymorphic models. Don't waste time trying
     to make this more DRY, find something else to do /tyk
     https://github.com/jazzband/django-polymorphic/issues/534
     """
@@ -437,6 +438,7 @@ class ImageModel(models.Model):
 
     aspect_ratio = models.CharField(
         max_length=20,
+        validators=[validate_ratio],
         help_text=(
             "The intended (and advertised) aspect ratio of this image, expressed as a string "
             "like '16/9'. The actual image AR (width/height) can vary slightly "

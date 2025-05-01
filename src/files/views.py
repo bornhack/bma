@@ -144,7 +144,7 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, Form]:
         """Add sizes and ratios context."""
         context = super().get_context_data(**kwargs)
-        context["sizes"] = [50, 100, 150, 200]
+        context["sizes"] = [50, 100, 150, 200, 300, 400]
         context["ratios"] = ["1/1", "4/3", "16/9", "2/3"]
         context["prefix"] = f"{self.request.scheme}://{self.request.get_host()}"
         return context
