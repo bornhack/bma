@@ -29,7 +29,7 @@
     {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix as photoswipe %}
     <td>{{ embed|safe }}{{ photoswipe|safe }}</td>
     <td><code>{{ embed }}{{ photoswipe }}</code></td>
-    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" %&#125;</code></td>
+    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" 150 "1/1" %&#125;</code></td>
   </tr>
 </table>
 
