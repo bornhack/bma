@@ -24,7 +24,7 @@ class BornHackProvider(OpenIDConnectProvider):
         return {
             # standard OIDC user claims
             "username": str(data["sub"]),
-            "public_credit_name": str(data["nickname"]),
+            "public_credit_name": str(data["bornhack:v2:public_credit_name"]),
             # custom BornHack user claims
             "description": str(data.get("bornhack:v2:description", "")),
         }
