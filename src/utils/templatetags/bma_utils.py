@@ -67,7 +67,7 @@ def thumbnail(  # noqa: PLR0913
     for thumbnail in basefile.thumbnail_list:
         if thumbnail.mimetype != mimetype:
             continue
-        if thumbnail.aspect_ratio != str(Fraction(ratio)):
+        if thumbnail.aspect_ratio != ratio:
             continue
         if thumbnail.width == width:
             t = thumbnail
