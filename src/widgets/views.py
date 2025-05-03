@@ -63,9 +63,9 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
             "files": json.dumps(js_files),
             "count": count,
             "host": f"{request.scheme}://{request.get_host()}",
-            "width": int(request.GET.get("width")) or 150,
+            "width": int(request.GET.get("width") or 150),
             "ratio": request.GET.get("ratio") or "1/1",
-            "height": get_height(int(request.GET.get("width")) or 150, request.GET.get("ratio") or "1/1")
+            "height": get_height(int(request.GET.get("width") or 150), request.GET.get("ratio") or "1/1")
         },
         content_type="text/javascript",
     )
