@@ -193,16 +193,16 @@ def get_widths(  # noqa: PLR0913
 
 def get_height(
         width: int,
-        ratio: str | Fraction | None,
+        ratio: str | Fraction,
         ) -> int:
     """Return height based on width+ratio
     Args:
         width (int): Width
-        ratio (str|Fraction|None): Aspect ratio
+        ratio (str|Fraction): Aspect ratio
 
     Returns: integer height
     """
 
     ratio = Fraction(ratio)
 
-    return width * ratio
+    return math.floor(width / ratio)
