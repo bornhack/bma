@@ -48,6 +48,7 @@
   <tr>
     <th>Width</th>
     <th>Aspect Ratio</th>
+    <th>File Type</th>
     <th>Example</th>
     <th>Embed Code</th>
   </tr>
@@ -59,6 +60,7 @@
     {% noscript_embed basefile=file width=size ratio=ratio noscript=False prefix=prefix as embed %}
     <td>{{ size }}px</td>
     <td>{{ ratio }}</td>
+    <td>{{ format }}</td>
     <td>{{ embed|safe }}</td>
     <td><code>{{ embed }}</code></td>
   </tr>
