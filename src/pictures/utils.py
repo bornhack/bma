@@ -190,3 +190,19 @@ def get_widths(  # noqa: PLR0913
     if exclude_oversized:
         return {math.floor(w) for w in widths if w <= img_width and w / ratio <= img_height}
     return {math.floor(w) for w in widths}
+
+def get_height(
+        width: int,
+        ratio: str | Fraction | None,
+        ) -> int:
+    """Return height based on width+ratio
+    Args:
+        width (int): Width
+        ratio (str|Fraction|None): Aspect ratio
+
+    Returns: integer height
+    """
+
+    ratio = Fraction(ratio)
+
+    return width * ratio

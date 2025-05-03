@@ -11,7 +11,7 @@
    */
   async function loadPhotoswipe() {
     // load photoswipe JS
-    const {lightbox} = await import(`${host}/widgets/photoswipe-module/${count}/${uuid}/`);
+    const {lightbox} = await import(`${host}/widgets/photoswipe-module/${count}/${uuid}/?width={{ width|urlencode }}&ratio={{ ratio|urlencode }}`);
 
     // load photoswipe CSS
     let photoswipe_css = document.createElement( "link" );
@@ -144,7 +144,7 @@
     title="${record.title}"
     >
     <div class="image-hover zoom">
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" width="150" height="150" />
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" width="${width}" height="${height}" />
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -159,7 +159,7 @@
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "16/9")}" height="150" />
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" />
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -174,7 +174,7 @@
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" height="150" width="150"/>
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" width="${width}"/>
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -189,7 +189,7 @@
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" height="150" width="150"/>
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" width="${width}"/>
     </div>
 </a>${createThumbnailCaption(record)}`;
     } else {

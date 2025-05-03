@@ -2,6 +2,9 @@
 const uuid = "{{ uuid }}";
 const host = "{{ host }}";
 const count = "{{ count }}";
+const width = {{ width }};
+const ratio = "{{ ratio }}";
+const height = {{ height }};
 
 const templateFiles = "{{ files|escapejs }}";
 
