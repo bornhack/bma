@@ -83,9 +83,7 @@ def thumbnail(  # noqa: PLR0913
             f'src="{prefix}{settings.DEFAULT_THUMBNAIL_URLS[basefile.filetype]}" width="{width}">'
         )
 
-    title = f"""{basefile.title}
-{basefile.attribution}
-{basefile.license}"""
+    title = f"{basefile.title} | Attribution: {basefile.attribution} | License: {basefile.license}"
     hoverclass = "zoom" if basefile.filetype in ["image", "document"] else "play"
     tmpl = loader.get_template("thumbnail.html" if not noscript else "thumbnail_noscript.html")
     output = tmpl.render(
@@ -179,7 +177,8 @@ def noscript_embed(
 
 
 @register.simple_tag()
-def photoswipe_embed(uuid: str, counter: int, prefix: str = "") -> str:
+def photoswipe_embed(uuid: str, counter: int, prefix: str = "", width: int = 150, ratio: str = "1/1") -> str:
     """Return a script tag for the photoswipe embed."""
     url = reverse("widgets:bma_widget_view", kwargs={"style": "photoswipe", "count": counter, "uuid": uuid})
-    return f'<script src="{prefix}{url}"></script>'
+    query = f"?width={width}&ratio={ratio}"
+    return f'<script src="{prefix}{url}{query}"></script>'
