@@ -14,23 +14,29 @@
     <th>&#123;% bma %&#125; Template Tag</th>
   </tr>
 
+  {% for ratio, formats in file.get_thumbnails.items %}
+  {% for format, sizes in formats.items %}
+  {% for size in sizes %}
   <tr>
     <td><code>photoswipe</code></td>
     <td>
       <ul>
         <li> Uses <a href="https://photoswipe.com/" target="_blank">Photoswipe</a> for lightbox and zoom.
-        <li> Uses a 150x150px thumbnail plus 24px footer
+        <li> Uses a {{ size }}px thumbnail
         <li> Includes basic EXIF metadata for images in lightbox
       </ul>
     </td>
     <td><i class="fas fa-check text-success"></i> Yes</td>
     <td><i class="fas fa-check text-success"></i> Yes</td>
-    {% noscript_embed basefile=file width=150 ratio="1/1" noscript=True prefix=prefix as embed %}
+    {% noscript_embed basefile=file width=size ratio=ratio noscript=True prefix=prefix as embed %}
     {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix as photoswipe %}
     <td>{{ embed|safe }}{{ photoswipe|safe }}</td>
     <td><code>{{ embed }}{{ photoswipe }}</code></td>
-    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" %&#125;</code></td>
+    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" {{ size}} "{{ ratio }}" %&#125;</code></td>
   </tr>
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
 </table>
 
 <h2>Plain HTML Options</h2>

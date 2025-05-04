@@ -11,7 +11,7 @@
    */
   async function loadPhotoswipe() {
     // load photoswipe JS
-    const {lightbox} = await import(`${host}/widgets/photoswipe-module/${count}/${uuid}/`);
+    const {lightbox} = await import(`${host}/widgets/photoswipe-module/${count}/${uuid}/?width={{ width|urlencode }}&ratio={{ ratio|urlencode }}`);
 
     // load photoswipe CSS
     let photoswipe_css = document.createElement( "link" );
@@ -141,10 +141,11 @@
     data-pswp-width="${record.width}"
     data-pswp-height="${record.height}"
     data-pswp-srcset="${PswpSourceSet(record, "downloads", record["aspect_ratio"])}"
-    title="${record.title}"
+    title="${record.title} ${record.attribution} ${record.license_name}"
+    alt="${record.title} ${record.attribution} ${record.license_name}"
     >
     <div class="image-hover zoom">
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" width="150" height="150" />
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" width="${width}" height="${height}" />
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -155,11 +156,12 @@
     data-pswp-type="video"
     data-pswp-width="1280"
     data-pswp-height="1024"
-    title="${record.title}"
+    title="${record.title} ${record.attribution} ${record.license_name}"
+    alt="${record.title} ${record.attribution} ${record.license_name}"
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "16/9")}" height="150" />
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" />
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -170,11 +172,12 @@
     data-pswp-type="video"
     data-pswp-width="640"
     data-pswp-height="480"
-    title="${record.title}"
+    title="${record.title} ${record.attribution} ${record.license_name}"
+    alt="${record.title} ${record.attribution} ${record.license_name}"
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" height="150" width="150"/>
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" width="${width}"/>
     </div>
 </a>${createThumbnailCaption(record)}`;
     }
@@ -185,22 +188,17 @@
     data-pswp-type="document"
     data-pswp-width="1920"
     data-pswp-height="1080"
-    title="${record.title}"
+    title="${record.title} ${record.attribution} ${record.license_name}"
+    alt="${record.title} ${record.attribution} ${record.license_name}"
     >
     <div class="image-hover zoom">
       <i class="fas fa-2x"></i>
-      <img srcset="${PswpSourceSet(record, "thumbnails", "1/1")}" height="150" width="150"/>
+      <img srcset="${PswpSourceSet(record, "thumbnails", ratio)}" height="${height}" width="${width}"/>
     </div>
 </a>${createThumbnailCaption(record)}`;
     } else {
       console.log("Filetype not found", record)
     }
-    thumb += `<div class="d-flex gray-100 shadow bg-gradient justify-content-between fw-lighter ps-1 d-inline-block">
-    <span class="d-inline-block text-truncate photoswipe-attribution-size" title="${record.attribution}">
-      <a class="text-truncate text-reset" href="${host}/${record.links.html}">${record.attribution}</a>
-    </span><span title="${record.license_name}">
-      <a class="text-reset" href="${record.license_url}">${createLicenseIcon(record.license)}</a>
-    </span></div>`;
     thumb += "</span>"
     return thumb;
   }
