@@ -51,6 +51,10 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
         """Return the URL for the users public profile."""
         return reverse("users:user_profile", kwargs={"user_handle": self.handle})
 
+    def __str__(self) -> str:
+        """A string representation of a User."""
+        return self.handle
+
     @property
     def shortuuid(self) -> str:
         """Return a shortuuid encoded version of the pk."""
