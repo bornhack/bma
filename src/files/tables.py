@@ -46,7 +46,7 @@ class FileTable(tables.Table):
     hitcount = BPColumn(bp="5xl", verbose_name="Hits")
 
     # only show on 6xl and up
-    jobs = BPColumn(bp="6xl", verbose_name="Jobs")
+    jobs = BPColumn(bp="6xl", verbose_name="Jobs", order_by="jobs_finished")
     approved = BPBooleanColumn(bp="6xl")
     published = BPBooleanColumn(bp="6xl")
     deleted = BPBooleanColumn(bp="6xl")
