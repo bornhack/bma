@@ -127,6 +127,7 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
             basefile = (
                 BaseFile.bmanager.prefetch_image_version_list()
                 .prefetch_thumbnail_list()
+                .prefetch_active_albums_list()
                 .get(pk=self.kwargs["file_uuid"])
             )
         except BaseFile.DoesNotExist as e:
@@ -363,7 +364,7 @@ class FileAlbumsView(FileViewMixin, SingleTableMixin, FilterView):
 
     def get_table_data(self) -> models.QuerySet[Album]:
         """Get albums."""
-        return Album.bmanager.filter(uuid__in=self.get_object().albums.all().values_list("uuid", flat=True))
+        return Album.bmanager.filter(uuid__in=self.object.albums.all().values_list("uuid", flat=True))
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add total_albums to context."""
