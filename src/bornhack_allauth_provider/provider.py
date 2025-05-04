@@ -15,18 +15,19 @@ class BornHackProvider(OpenIDConnectProvider):
     id = "bornhack"
     name = "BornHack"
 
-    def extract_uid(self, data: dict[str, dict[str, str]]) -> str:
+    def extract_uid(self, data: dict[str, str]) -> str:
         """Get BornHack username from the OIDC standard claim 'sub'."""
         return str(data["sub"])
 
-    def extract_common_fields(self, data: dict[str, dict[str, str]]) -> dict[str, str]:
-        """Map OIDC claims to the data dict used in BornHackSocialAccountAdapter.populate_user()."""
+    def extract_common_fields(self, data: dict[str, str]) -> dict[str, str]:
+        """Map OIDC user claims to the data dict used in BornHackSocialAccountAdapter.populate_user()."""
         return {
             # standard OIDC user claims
-            "username": str(data.get("preferred_username", str(data["sub"]))),
-            "public_credit_name": str(data["bornhack:v2:public_credit_name"]),
+            "username": str(data["sub"]),
+            "handle": str(data.get("preferred_username", data["sub"])),
             # custom BornHack user claims
             "description": str(data.get("bornhack:v2:description", "")),
+            "public_credit_name": str(data.get("bornhack:v2:public_credit_name", "BMA user")),
         }
 
 

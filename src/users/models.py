@@ -26,7 +26,7 @@ class User(AbstractUser):  # type: ignore[django-manager-missing]
     display_name = models.CharField(
         max_length=100,
         default="Unnamed user",
-        help_text="The display name for this user. Defaults to the BornHack users public_credit_name field.",
+        help_text="The display name for this user.",
     )
 
     description = models.TextField(
