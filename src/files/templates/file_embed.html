@@ -1,45 +1,45 @@
 {% extends "file_detail.html" %}
+{% load humanize %}
 {% block file_detail %}
 <h1>Embedding {{ file.filetype|capfirst }} {{ file.title }}</h1>
+<p class="lead">This page contains information on embedding this file.</p>
 
 <h2>Fancy Options</h2>
-<table class="table">
-  <tr>
-    <th>BMA Widget Name</th>
-    <th>Description</th>
-    <th>Works Without JS</th>
-    <th>Multiple Image Sizes</th>
-    <th>Example</th>
-    <th>Embed HTML</th>
-    <th>&#123;% bma %&#125; Template Tag</th>
-  </tr>
+<p class="lead">The fancy options all load lots of markup and javascript. They require a modern browser to get the full effect. Fallbacks for noscript users are provided when possible.</p>
 
-  {% for ratio, formats in file.get_thumbnails.items %}
-  {% for format, sizes in formats.items %}
-  {% for size in sizes %}
-  <tr>
-    <td><code>photoswipe</code></td>
-    <td>
-      <ul>
-        <li> Uses <a href="https://photoswipe.com/" target="_blank">Photoswipe</a> for lightbox and zoom.
-        <li> Uses a {{ size }}px thumbnail
-        <li> Includes basic EXIF metadata for images in lightbox
-      </ul>
-    </td>
-    <td><i class="fas fa-check text-success"></i> Yes</td>
-    <td><i class="fas fa-check text-success"></i> Yes</td>
-    {% noscript_embed basefile=file width=size ratio=ratio noscript=True prefix=prefix as embed %}
-    {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix as photoswipe %}
-    <td>{{ embed|safe }}{{ photoswipe|safe }}</td>
-    <td><code>{{ embed }}{{ photoswipe }}</code></td>
-    <td><code>&#123;% bma "{{ file.pk }}" "photoswipe" {{ size}} "{{ ratio }}" %&#125;</code></td>
-  </tr>
+<h3>Photoswipe</h3>
+<p>The <code>photoswipe</code> widget is full-featured with responsive image sizes, lightbox, large picture zooming and scrolling, slideshow, fullscreen, video and audio player, and file attribution and metadata. It also includes a fallback to a simple &lt;img&gt; tag for noscript users.</p>
+
+<table class="table table-hover">
+  <thead><tr>
+    <th>Aspect Ratio</th>
+    <th>File Type</th>
+    <th>400px Wide</th>
+    <th>300px Wide</th>
+    <th>200px Wide</th>
+    <th>150px Wide</th>
+    <th>100px Wide</th>
+    <th>50px Wide</th>
+  </tr></thead>
+  <tbody>
+  {% for ratio, filetypes in file.get_thumbnails.items %}
+    {% for filetype, sizes in filetypes.items %}
+    <tr>
+      <td>{{ ratio|default:"Original" }}</td>
+      <td>{{ filetype }}</td>
+      {% for width, thumbnail in sizes.items %}
+        {% noscript_embed basefile=file width=width ratio=ratio noscript=True prefix=prefix as embed %}
+        {% photoswipe_embed uuid=file.pk counter=0 prefix=prefix width=width ratio=ratio as photoswipe %}
+        <td class="align-top overflow-auto">{{ embed|safe }}{{ photoswipe|safe }}<br><code>{{ embed }}{{ photoswipe }}</code></td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
   {% endfor %}
-  {% endfor %}
-  {% endfor %}
+  </tbody>
 </table>
 
 <h2>Plain HTML Options</h2>
+<p class="lead">The plain HTML options all load minimal markup, work without javascript, are accessible and should work with old browsers.</p>
 <div>
   <ul>
     <li> Uses a plain &lt;img&gt; element which is a link to the file detail page on BMA
@@ -51,28 +51,30 @@
 </div>
 
 <table class="table">
-  <tr>
-    <th>Width</th>
+  <thead><tr>
     <th>Aspect Ratio</th>
     <th>File Type</th>
-    <th>Example</th>
-    <th>Embed Code</th>
-  </tr>
+    <th>400px Wide</th>
+    <th>300px Wide</th>
+    <th>200px Wide</th>
+    <th>150px Wide</th>
+    <th>100px Wide</th>
+    <th>50px Wide</th>
+  </tr></thead>
+  <tbody>
+  {% for ratio, filetypes in file.get_thumbnails.items %}
+    {% for filetype, sizes in filetypes.items %}
+    <tr>
+      <td>{{ ratio|default:"Original" }}</td>
+      <td>{{ filetype }}</td>
+      {% for size in sizes %}
 
-  {% for ratio, formats in file.get_thumbnails.items %}
-  {% for format, sizes in formats.items %}
-  {% for size in sizes %}
-  <tr>
-    {% noscript_embed basefile=file width=size ratio=ratio noscript=False prefix=prefix as embed %}
-    <td>{{ size }}px</td>
-    <td>{{ ratio }}</td>
-    <td>{{ format }}</td>
-    <td>{{ embed|safe }}</td>
-    <td><code>{{ embed }}</code></td>
-  </tr>
+      {% noscript_embed basefile=file width=size ratio=ratio noscript=False prefix=prefix as embed %}
+      <td>{{ embed|safe }}<br><code>{{ embed }}</code></td>
+      {% endfor %}
+    </tr>
   {% endfor %}
   {% endfor %}
-  {% endfor %}
-
+  </tbody>
 </table>
 {% endblock file_detail %}
