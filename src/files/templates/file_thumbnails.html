@@ -14,37 +14,35 @@
 
 {% block file_detail %}
 <h1>{{ file.filetype|capfirst }} {{ file.title }} Thumbnails</h1>
-<div class="table-responsive">
-  <table class="table table-hover">
-    <thead><tr>
-      <th>Aspect Ratio</th>
-      <th>File Type</th>
-      <th>400</th>
-      <th>300</th>
-      <th>200</th>
-      <th>150</th>
-      <th>100</th>
-      <th>50</th>
-    </tr></thead>
-    <tbody>
-    {% for ratio, filetypes in file.get_thumbnails.items %}
-      {% for filetype, sizes in filetypes.items %}
-      <tr>
-        <td>{{ ratio|default:"Original" }}</td>
-        <td>{{ filetype }}</td>
-        {% for width, thumbnail in sizes.items %}
-        <td class="align-middle">
-          <figure class="figure">
-            <a href="{{ thumbnail.imagefile.url }}"><img src="{{ thumbnail.imagefile.url }}" title="{{ thumbnail.width }}*{{ thumbnail.height }} {{ thumbnail.file_size|intcomma }} bytes" class="border" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}"></a>
-            <figcaption class="figure-caption">{{ thumbnail.width }}*{{ thumbnail.height }} ({{ thumbnail.file_size|intcomma }} bytes)</figcaption>
-          </figure>
-        </td>
-        {% endfor %}
-      </tr>
+<table class="table table-hover">
+  <thead><tr>
+    <th>Aspect Ratio</th>
+    <th>File Type</th>
+    <th>400px Wide</th>
+    <th>300px Wide</th>
+    <th>200px Wide</th>
+    <th>150px Wide</th>
+    <th>100px Wide</th>
+    <th>50px Wide</th>
+  </tr></thead>
+  <tbody>
+  {% for ratio, filetypes in file.get_thumbnails.items %}
+    {% for filetype, sizes in filetypes.items %}
+    <tr>
+      <td>{{ ratio|default:"Original" }}</td>
+      <td>{{ filetype }}</td>
+      {% for width, thumbnail in sizes.items %}
+      <td class="align-middle">
+        <figure class="figure">
+          <a href="{{ thumbnail.imagefile.url }}"><img src="{{ thumbnail.imagefile.url }}" title="{{ thumbnail.width }}*{{ thumbnail.height }} {{ thumbnail.file_size|intcomma }} bytes" class="border" width="{{ thumbnail.width }}" height="{{ thumbnail.height }}"></a>
+          <figcaption class="figure-caption">{{ thumbnail.width }}*{{ thumbnail.height }} ({{ thumbnail.file_size|intcomma }} bytes)</figcaption>
+        </figure>
+      </td>
       {% endfor %}
+    </tr>
     {% endfor %}
-    </tbody>
-  </table>
-</div>
+  {% endfor %}
+  </tbody>
+</table>
 <script type="module" src="{% static 'js/photoswipe.js' %}"></script>
 {% endblock file_detail %}
