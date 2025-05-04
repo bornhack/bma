@@ -7,6 +7,7 @@ from fractions import Fraction
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db import transaction
 from ninja.files import UploadedFile
@@ -138,6 +139,20 @@ class ImageJob(BaseJob):
         "server to create the ImageVersion/Thumbnail object correctly when the "
         "result is uploaded.",
         validators=[validate_ratio],
+    )
+
+    crop_center_x = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the X axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
+    )
+
+    crop_center_y = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the Y axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
     )
 
     class Meta:

@@ -64,6 +64,8 @@ class ImageConversionJobResponseSchema(JobResponseSchema):
     width: int
     height: int
     custom_aspect_ratio: str
+    crop_center_x: int
+    crop_center_y: int
 
 
 class ExifExtractionJobResponseSchema(JobResponseSchema):

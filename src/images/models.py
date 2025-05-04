@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import MaxValueValidator
 from django.db import models
 
 from files.models import BaseFile
@@ -69,6 +70,20 @@ class Image(BaseFile):
         output_field=models.PositiveBigIntegerField(),
         db_persist=True,
         help_text="The total number of pixels in this image. Useful for ordering by image size.",
+    )
+
+    crop_center_x = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the X axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
+    )
+
+    crop_center_y = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the Y axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
     )
 
     def get_fullsize_version(self, mimetype: str) -> "ImageVersion | None":

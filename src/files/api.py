@@ -146,9 +146,12 @@ def upload(  # noqa: C901,PLR0913
     # was a thumbnailsource included?
     if thumbnail_data is not None and thumbnail_metadata is not None:
         tdata = thumbnail_metadata.dict()
+        ratio = str(Fraction(tdata["width"], tdata["height"]))
+        if ratio == "1":
+            ratio = "1/1"
         ts = ThumbnailSource(
             basefile=uploaded_file,
-            aspect_ratio=str(Fraction(tdata["width"], tdata["height"])),
+            aspect_ratio=ratio,
             source=thumbnail_data,
             file_size=thumbnail_data.size,  # type: ignore[misc]
             **tdata,

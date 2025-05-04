@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import Group
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.http import HttpRequest
 from django.urls import reverse
@@ -368,10 +369,14 @@ class BaseFile(PolymorphicModel):
         if hasattr(self, "thumbnailsource"):
             # this file has a thumbnailsource, use that
             source = self.thumbnailsource.source
+            crop_x = self.thumbnailsource.crop_center_x
+            crop_y = self.thumbnailsource.crop_center_y
         elif self.filetype == "image":
             # create temporary thumbnailsource for job creation to get the
             # conversion rules from the thumbnail field
             source = PictureFieldFile(instance=self, field=ThumbnailSource.source.field, name=self.original.name)
+            crop_x = self.crop_center_x
+            crop_y = self.crop_center_y
         else:
             # no thumbnailsource to work with yet,
             # make sure there is a ThumbnailSourceJob
@@ -392,6 +397,8 @@ class BaseFile(PolymorphicModel):
                 width=version.width,
                 height=version.height,
                 custom_aspect_ratio=version.aspect_ratio_str,
+                crop_center_x=crop_x,
+                crop_center_y=crop_y,
                 filetype=version.file_type,
                 source_url=source.url,
                 finished=False,
@@ -490,6 +497,20 @@ class ThumbnailSource(ImageModel, BaseModel):
         grid_columns=4,
         pixel_densities=[1, 2],
         help_text="The source image from which all the thumbnails are created.",
+    )
+
+    crop_center_x = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the X axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
+    )
+
+    crop_center_y = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MaxValueValidator(limit_value=100)],
+        help_text="The crop center point on the Y axis expressed as an integer between 0 and 100, "
+        "where 0 is at the left edge of the image, and 100 is on the right edge. Default: 50",
     )
 
     def __str__(self) -> str:
