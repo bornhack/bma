@@ -5,7 +5,7 @@
  * Copyright 2018-present Chen Fengyuan
  * Released under the MIT license
  *
- * Date: 2023-02-28T14:09:41.732Z
+ * Date: 2025-05-06T09:56:51.397Z
  */
 
 (function (global, factory) {
@@ -14,90 +14,71 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Compressor = factory());
 })(this, (function () { 'use strict';
 
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      enumerableOnly && (symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      })), keys.push.apply(keys, symbols);
-    }
-    return keys;
+  function _classCallCheck(a, n) {
+    if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
   }
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = null != arguments[i] ? arguments[i] : {};
-      i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-    return target;
-  }
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
+  function _defineProperties(e, r) {
+    for (var t = 0; t < r.length; t++) {
+      var o = r[t];
+      o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
     }
   }
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor);
-    }
+  function _createClass(e, r, t) {
+    return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
+      writable: !1
+    }), e;
   }
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    Object.defineProperty(Constructor, "prototype", {
-      writable: false
-    });
-    return Constructor;
-  }
-  function _defineProperty(obj, key, value) {
-    key = _toPropertyKey(key);
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-    return obj;
+  function _defineProperty(e, r, t) {
+    return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+      value: t,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }) : e[r] = t, e;
   }
   function _extends() {
-    _extends = Object.assign ? Object.assign.bind() : function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
+    return _extends = Object.assign ? Object.assign.bind() : function (n) {
+      for (var e = 1; e < arguments.length; e++) {
+        var t = arguments[e];
+        for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
       }
-      return target;
-    };
-    return _extends.apply(this, arguments);
+      return n;
+    }, _extends.apply(null, arguments);
   }
-  function _toPrimitive(input, hint) {
-    if (typeof input !== "object" || input === null) return input;
-    var prim = input[Symbol.toPrimitive];
-    if (prim !== undefined) {
-      var res = prim.call(input, hint || "default");
-      if (typeof res !== "object") return res;
+  function ownKeys(e, r) {
+    var t = Object.keys(e);
+    if (Object.getOwnPropertySymbols) {
+      var o = Object.getOwnPropertySymbols(e);
+      r && (o = o.filter(function (r) {
+        return Object.getOwnPropertyDescriptor(e, r).enumerable;
+      })), t.push.apply(t, o);
+    }
+    return t;
+  }
+  function _objectSpread2(e) {
+    for (var r = 1; r < arguments.length; r++) {
+      var t = null != arguments[r] ? arguments[r] : {};
+      r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+        _defineProperty(e, r, t[r]);
+      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+        Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+      });
+    }
+    return e;
+  }
+  function _toPrimitive(t, r) {
+    if ("object" != typeof t || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != typeof i) return i;
       throw new TypeError("@@toPrimitive must return a primitive value.");
     }
-    return (hint === "string" ? String : Number)(input);
+    return ("string" === r ? String : Number)(t);
   }
-  function _toPropertyKey(arg) {
-    var key = _toPrimitive(arg, "string");
-    return typeof key === "symbol" ? key : String(key);
+  function _toPropertyKey(t) {
+    var i = _toPrimitive(t, "string");
+    return "symbol" == typeof i ? i : i + "";
   }
 
   var canvasToBlob = {exports: {}};
@@ -278,6 +259,18 @@
      * @type {string}
      */
     resize: 'none',
+    /**
+     * Resize center x %
+     * specifies the % of dictance from the middle of the crop where 50% is the middle
+     * @type {number}
+     */
+    resizeCenterX: 50,
+    /**
+     * Resize center y %
+     * specifies the % of dictance from the middle of the crop where 50% is the middle
+     * @type {number}
+     */
+    resizeCenterY: 50,
     /**
      * The quality of the output image.
      * It must be a number between `0` and `1`,
@@ -581,7 +574,7 @@
     var isValidHeight = isPositiveNumber(height);
     if (isValidWidth && isValidHeight) {
       var adjustedWidth = height * aspectRatio;
-      if ((type === 'contain' || type === 'none') && adjustedWidth > width || type === 'cover' && adjustedWidth < width) {
+      if ((type === 'contain' || type === 'none') && adjustedWidth > width || (type === 'cover' || type === 'crop') && adjustedWidth < width) {
         height = width / aspectRatio;
       } else {
         width = height * aspectRatio;
@@ -677,7 +670,7 @@
       this.result = null;
       this.init();
     }
-    _createClass(Compressor, [{
+    return _createClass(Compressor, [{
       key: "init",
       value: function init() {
         var _this = this;
@@ -802,7 +795,7 @@
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
         var is90DegreesRotated = Math.abs(rotate) % 180 === 90;
-        var resizable = (options.resize === 'contain' || options.resize === 'cover') && isPositiveNumber(options.width) && isPositiveNumber(options.height);
+        var resizable = (options.resize === 'contain' || options.resize === 'cover' || options.resize === 'crop') && isPositiveNumber(options.width) && isPositiveNumber(options.height);
         var maxWidth = Math.max(options.maxWidth, 0) || Infinity;
         var maxHeight = Math.max(options.maxHeight, 0) || Infinity;
         var minWidth = Math.max(options.minWidth, 0) || 0;
@@ -875,12 +868,33 @@
             height: naturalHeight
           }, {
             contain: 'cover',
-            cover: 'contain'
+            cover: 'contain',
+            crop: 'cover'
           }[options.resize]);
           srcWidth = _getAdjustedSizes5.width;
           srcHeight = _getAdjustedSizes5.height;
-          srcX = (naturalWidth - srcWidth) / 2;
-          srcY = (naturalHeight - srcHeight) / 2;
+          if (options.resize === 'crop') {
+            var aspectRatioTarget = destWidth / destHeight;
+            var aspectRatioImage = naturalWidth / naturalHeight;
+            if (aspectRatioImage > aspectRatioTarget) {
+              // Image is wider than the target, crop from the sides
+              srcWidth = naturalHeight * aspectRatioTarget;
+              srcHeight = naturalHeight;
+              srcX = (naturalWidth - srcWidth) * (options.resizeCenterX / 100);
+              srcY = 0;
+            } else {
+              // Image is taller than the target, crop from the top/bottom
+              srcWidth = naturalWidth;
+              srcHeight = naturalWidth / aspectRatioTarget;
+              srcX = 0;
+              srcY = (naturalHeight - srcHeight) * (options.resizeCenterY / 100);
+            }
+            destX = 0;
+            destY = 0;
+          } else {
+            srcX = (naturalWidth - srcWidth) / 2;
+            srcY = (naturalHeight - srcHeight) / 2;
+          }
           params.push(srcX, srcY, srcWidth, srcHeight);
         }
         params.push(destX, destY, destWidth, destHeight);
@@ -915,7 +929,7 @@
           return;
         }
         context.save();
-        context.translate(width / 2, height / 2);
+        if (options.resize !== "crop") context.translate(width / 2, height / 2);
         context.rotate(rotate * Math.PI / 180);
         context.scale(scaleX, scaleY);
         context.drawImage.apply(context, [image].concat(params));
@@ -1055,7 +1069,6 @@
         _extends(DEFAULTS, options);
       }
     }]);
-    return Compressor;
   }();
 
   return Compressor;

@@ -16,6 +16,7 @@ from files.views import FileTagDeleteView
 from files.views import FileTagDetailView
 from files.views import FileTagListView
 from files.views import FileUploadView
+from files.views import FileCropCenterView
 
 app_name = "files"
 
@@ -32,6 +33,7 @@ urlpatterns = [
             [
                 path("", FileDetailView.as_view(), name="file_show"),
                 path("thumbnails/", FileDetailView.as_view(), name="file_thumbnails"),
+                path("crop_center/", FileCropCenterView.as_view(), name="file_crop_center"),
                 path("embed/", FileDetailView.as_view(), name="file_embed"),
                 path("jobs/", FileJobsView.as_view(), name="file_jobs"),
                 path("permissions/", FilePermissionsView.as_view(), name="file_permissions"),

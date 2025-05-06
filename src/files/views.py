@@ -56,6 +56,7 @@ from utils.mixins import CuratorGroupRequiredMixin
 from .filters import FileFilter
 from .forms import FileMultipleActionForm
 from .forms import UploadForm
+from .forms import CropCenterForm
 from .mixins import FileViewMixin
 from .models import BaseFile
 from .models import Thumbnail
@@ -450,3 +451,49 @@ class FilePermissionsView(FileViewMixin, SingleTableMixin, TemplateView):
     def get_table_data(self) -> "list[UserObjectPermission| GroupObjectPermission]":
         """Get the data for the table."""
         return list(self.file.user_permissions.all()) + list(self.file.group_permissions.all())
+
+
+######### File Center Crop views ######################################################
+
+
+class FileCropCenterView(FileViewMixin, FormView):
+    """View to pick the center of a ThumbnailSource or Image"""
+
+    form_class = CropCenterForm
+    template_name = "file_crop_center.html"
+
+    def get_initial(self):
+        """Lookup the data for the form"""
+        initial = super().get_initial()
+
+        if hasattr(self.file, 'thumbnailsource'):
+            initial['center_x'] = self.file.thumbnailsource.crop_center_x 
+            initial['center_y'] = self.file.thumbnailsource.crop_center_y
+        elif self.file.filetype == "image":
+            initial['center_x'] = self.file.crop_center_x 
+            initial['center_y'] = self.file.crop_center_y
+        else:
+            raise Http404("ThumbnailSource does not exist")
+
+        return initial
+
+    def form_valid(self, form: CropCenterForm) -> HttpResponse:
+        """Apply the crop center"""
+
+        if hasattr(self.file, 'thumbnailsource'):
+            self.file.thumbnailsource.crop_center_x = form.cleaned_data["center_x"]
+            self.file.thumbnailsource.crop_center_y = form.cleaned_data["center_y"]
+            self.file.thumbnailsource.save()
+            self.file.create_thumbnail_jobs()
+            messages.success(self.request, "Thumbnail Source crop center saved.")
+        elif self.file.filetype == "image":
+            self.file.crop_center_x = form.cleaned_data["center_x"]
+            self.file.crop_center_y = form.cleaned_data["center_y"]
+            self.file.save()
+            self.file.create_thumbnail_jobs()
+            messages.success(self.request, "Image crop center saved.")
+        else:
+            messages.info(self.request, "No changes made")
+
+        return redirect(self.file)
+

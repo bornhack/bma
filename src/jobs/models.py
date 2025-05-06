@@ -277,15 +277,17 @@ class ThumbnailJob(ImageJob):
         )
 
         # validate
-        thumb.full_clean()
+        # do not delete existing Thumb unless the new one passes validation
+        with transaction.atomic():
+            # delete existing thumbnail of this size and type
+            Thumbnail.objects.filter(
+                basefile=self.basefile, width=data["width"], height=data["height"], mimetype=data["mimetype"]
+            ).delete()
 
-        # delete existing thumbnail of this size and type
-        Thumbnail.objects.filter(
-            basefile=self.basefile, width=data["width"], height=data["height"], mimetype=data["mimetype"]
-        ).delete()
+            thumb.full_clean()
 
-        # save thumbnail
-        thumb.save()
+            # save thumbnail
+            thumb.save()
 
         # and log message
         logger.debug(
