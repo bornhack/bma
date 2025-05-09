@@ -59,6 +59,7 @@ from .filters import FileFilter
 from .forms import CropCenterForm
 from .forms import FileMultipleActionForm
 from .forms import UploadForm
+from .mixins import FileChangeViewMixin
 from .mixins import FileViewMixin
 from .models import BaseFile
 from .models import Thumbnail
@@ -458,7 +459,7 @@ class FilePermissionsView(FileViewMixin, SingleTableMixin, TemplateView):
 ######### File Center Crop views ######################################################
 
 
-class FileCropCenterView(FileViewMixin, FormView[CropCenterForm]):
+class FileCropCenterView(FileChangeViewMixin, FormView[CropCenterForm]):
     """View to pick the center of a ThumbnailSource or Image."""
 
     form_class = CropCenterForm
