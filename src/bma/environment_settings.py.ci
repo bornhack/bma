@@ -40,6 +40,12 @@ MEDIA_ROOT = BASE_DIR / "django_media_root"
 
 OAUTH_SERVER_BASEURL="http://127.0.0.1:8000"
 
+LICENSES=[
+    ("cc-zero-1.0", "Creative Commons CC0 1.0 Universal"),
+    ("cc-by-4.0", "Creative Commons Attribution 4.0 International"),
+    ("cc-by-sa-4.0", "Creative Commons Attribution-ShareAlike 4.0 International"),
+]
+
 NGINX_PROXY=False
 
 ALLOWED_IMAGE_TYPES={
