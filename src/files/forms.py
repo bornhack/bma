@@ -62,9 +62,9 @@ class FileMultipleActionForm(forms.Form):
 
     fromurl = forms.CharField(help_text="The URL to return to after a failed form validation.")
 
+
 class CropCenterForm(forms.Form):
-    """Form for selecting the crop center of a ThumbnailSource/Image"""
+    """Form for selecting the crop center of a ThumbnailSource/Image."""
 
     center_x = forms.IntegerField(label="Percentage X", max_value=100, min_value=0, initial=50)
     center_y = forms.IntegerField(label="Percentage Y", max_value=100, min_value=0, initial=50)
-
