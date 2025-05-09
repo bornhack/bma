@@ -26,6 +26,7 @@ from .environment_settings import BORNHACK_OIDC_CLIENT_ID
 from .environment_settings import BORNHACK_OIDC_CLIENT_SECRET
 from .environment_settings import BORNHACK_OIDC_SERVER_URL
 from .environment_settings import CORS_ALLOW_ALL_ORIGINS
+from .environment_settings import CORS_ALLOWED_ORIGINS
 from .environment_settings import CSRF_COOKIE_SECURE
 from .environment_settings import DATABASES
 from .environment_settings import DEBUG
