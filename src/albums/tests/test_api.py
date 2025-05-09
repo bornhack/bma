@@ -110,9 +110,9 @@ class TestAlbumsApi(BmaTestBase):
             headers={"authorization": self.tokens[self.creator2]},
         )
         assert response.status_code == 200
-        assert (
-            len(response.json()["bma_response"]) == 1
-        ), "Did not get 1 albums when checking with files in two different albums"
+        assert len(response.json()["bma_response"]) == 1, (
+            "Did not get 1 albums when checking with files in two different albums"
+        )
 
         # test with files in the same album
         response = self.client.get(
@@ -121,9 +121,9 @@ class TestAlbumsApi(BmaTestBase):
             headers={"authorization": self.tokens[self.creator2]},
         )
         assert response.status_code == 200
-        assert (
-            len(response.json()["bma_response"]) == 2
-        ), "Did not get 2 albums when testing with files in the same album"
+        assert len(response.json()["bma_response"]) == 2, (
+            "Did not get 2 albums when testing with files in the same album"
+        )
 
         # test search
         response = self.client.get(

@@ -14,7 +14,7 @@ from typing import TypeAlias
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-__all__ = ["sizes", "get_widths"]
+__all__ = ["get_widths", "sizes"]
 
 IntBreakpoints: TypeAlias = dict[str, int]
 FloatBreakpoints: TypeAlias = dict[str, float]

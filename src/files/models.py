@@ -234,7 +234,7 @@ class BaseFile(PolymorphicModel):
     @property
     def source(self) -> str:
         """Consider the BMA canonical URL the source if no other source has been specified."""
-        return self.original_source if self.original_source else self.get_absolute_url()  # type: ignore[no-any-return]
+        return self.original_source if self.original_source else self.get_absolute_url()
 
     def get_absolute_url(self) -> str:
         """The detail url for the file."""
