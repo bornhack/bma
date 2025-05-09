@@ -6,6 +6,7 @@ from django.views.generic import RedirectView
 
 from files.views import FileAlbumsView
 from files.views import FileBrowserView
+from files.views import FileCropCenterView
 from files.views import FileDetailView
 from files.views import FileJobsView
 from files.views import FileListView
@@ -16,7 +17,6 @@ from files.views import FileTagDeleteView
 from files.views import FileTagDetailView
 from files.views import FileTagListView
 from files.views import FileUploadView
-from files.views import FileCropCenterView
 
 app_name = "files"
 
