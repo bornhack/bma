@@ -13,6 +13,7 @@ from files.models import BaseFile
 from images.models import Image
 from pictures.utils import get_height
 
+
 def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | dict[str, str]]]:
     """Serialise a BaseFile object into a JSON-serialisable dictionary."""
     json_data = {
@@ -65,7 +66,7 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
             "host": f"{request.scheme}://{request.get_host()}",
             "width": int(request.GET.get("width") or 150),
             "ratio": request.GET.get("ratio") or "1/1",
-            "height": get_height(int(request.GET.get("width") or 150), request.GET.get("ratio") or "1/1")
+            "height": get_height(int(request.GET.get("width") or 150), request.GET.get("ratio") or "1/1"),
         },
         content_type="text/javascript",
     )

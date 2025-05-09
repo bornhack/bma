@@ -1,4 +1,6 @@
 """Django settings for bma project."""
+# ruff: noqa: F401
+# mypy: disable-error-code = attr-defined
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
@@ -8,7 +10,41 @@ import django_stubs_ext
 
 from utils.ninjafix import monkeypatch_ninja_uuid_converter
 
-from .environment_settings import *  # noqa: F403
+from .environment_settings import ADMIN_PREFIX
+from .environment_settings import ALLOWED_AUDIO_TYPES
+from .environment_settings import ALLOWED_DOCUMENT_TYPES
+from .environment_settings import ALLOWED_HOSTS
+from .environment_settings import ALLOWED_IMAGE_TYPES
+from .environment_settings import ALLOWED_VIDEO_TYPES
+from .environment_settings import BMA_CREATOR_GROUP_NAME
+from .environment_settings import BMA_CURATOR_GROUP_NAME
+from .environment_settings import BMA_INITIAL_GROUPS
+from .environment_settings import BMA_LOG_LEVEL
+from .environment_settings import BMA_MODERATOR_GROUP_NAME
+from .environment_settings import BMA_WORKER_GROUP_NAME
+from .environment_settings import BORNHACK_OIDC_CLIENT_ID
+from .environment_settings import BORNHACK_OIDC_CLIENT_SECRET
+from .environment_settings import BORNHACK_OIDC_SERVER_URL
+from .environment_settings import CORS_ALLOW_ALL_ORIGINS
+from .environment_settings import CSRF_COOKIE_SECURE
+from .environment_settings import DATABASES
+from .environment_settings import DEBUG
+from .environment_settings import DEBUG_TOOLBAR
+from .environment_settings import DEFAULT_THUMBNAIL_URLS
+from .environment_settings import DJANGO_LOG_LEVEL
+from .environment_settings import FILETYPE_ICONS
+from .environment_settings import HITCOUNT_EXCLUDE_USER_GROUP
+from .environment_settings import HITCOUNT_HITS_PER_IP_LIMIT
+from .environment_settings import HITCOUNT_KEEP_HIT_ACTIVE
+from .environment_settings import HITCOUNT_KEEP_HIT_IN_DATABASE
+from .environment_settings import IMAGE_ENCODING
+from .environment_settings import LICENSES
+from .environment_settings import MEDIA_ROOT
+from .environment_settings import NGINX_PROXY
+from .environment_settings import OAUTH_SERVER_BASEURL
+from .environment_settings import SECRET_KEY
+from .environment_settings import SECURE_PROXY_SSL_HEADER
+from .environment_settings import SESSION_COOKIE_SECURE
 
 # get BMA_VERSION from package registry
 try:
@@ -194,10 +230,10 @@ SOCIALACCOUNT_PROVIDERS = {
             {
                 "provider_id": "bornhack",
                 "name": "BornHack",
-                "client_id": BORNHACK_OIDC_CLIENT_ID,  # noqa: F405
-                "secret": BORNHACK_OIDC_CLIENT_SECRET,  # noqa: F405
+                "client_id": BORNHACK_OIDC_CLIENT_ID,
+                "secret": BORNHACK_OIDC_CLIENT_SECRET,
                 "settings": {
-                    "server_url": BORNHACK_OIDC_SERVER_URL,  # noqa: F405
+                    "server_url": BORNHACK_OIDC_SERVER_URL,
                     "scope": ["openid", "profile"],  # BMA only needs the profile scope for now
                     "oauth_pkce_enabled": True,
                 },
@@ -236,12 +272,12 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": DJANGO_LOG_LEVEL,  # noqa: F405
+            "level": DJANGO_LOG_LEVEL,
             "propagate": False,
         },
         "bma": {
             "handlers": ["console"],
-            "level": BMA_LOG_LEVEL,  # noqa: F405
+            "level": BMA_LOG_LEVEL,
             "propagate": False,
         },
     },
@@ -251,10 +287,8 @@ GUARDIAN_GET_CONTENT_TYPE = "polymorphic.contrib.guardian.get_polymorphic_base_c
 
 # save csrf tokens in session instead of using double cookie to ease api scripting
 CSRF_USE_SESSIONS = True
-CSRF_COOKIE_SECURE = not DEBUG  # noqa: F405
-SESSION_COOKIE_SECURE = not DEBUG  # noqa: F405
 
-if DEBUG_TOOLBAR:  # noqa: F405
+if DEBUG_TOOLBAR:
     INSTALLED_APPS.append("debug_toolbar")
     MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", *MIDDLEWARE]
     INTERNAL_IPS = [
