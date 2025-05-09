@@ -1,6 +1,7 @@
 [![Run Tox CI](https://github.com/bornhack/bma/actions/workflows/tox.yml/badge.svg?branch=develop)](https://github.com/bornhack/bma/actions/workflows/tox.yml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![codecov](https://codecov.io/gh/bornhack/bma/graph/badge.svg?token=AN3NmaCDAr)](https://codecov.io/gh/bornhack/bma)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/bornhack/bma/develop.svg)](https://results.pre-commit.ci/latest/github/bornhack/bma/develop)
 
 # bma
 BornHack Media Archive
