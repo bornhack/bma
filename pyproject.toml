@@ -164,7 +164,11 @@ deps = [
     "-e.[test]",
 ]
 commands = [["pytest"]]
-
+passenv =[
+    "DJANGO_SECRET_KEY",
+    "DJANGO_ALLOWED_HOSTS",
+    "DJANGO_DATABASE_URL",
+]
 
 ########## COVERAGE.PY ##########
 [tool.coverage.run]
