@@ -176,6 +176,7 @@ passenv =[
 omit = [
     "*/tests.py",
     "*/tests/test_*.py",
+    "*/migrations/*.py",
 ]
 [tool.coverage.report]
 exclude_also = [
