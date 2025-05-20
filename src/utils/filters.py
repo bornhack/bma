@@ -13,25 +13,38 @@ if TYPE_CHECKING:
 
 
 class SortingChoices(models.TextChoices):
-    """The sorting options for files and albums."""
+    """Reusable sorting options."""
 
-    title_asc = ("title_asc", "Title (ascending)")
-    title_desc = ("title_desc", "Title (descending)")
-    description_asc = ("description_asc", "Description (ascending)")
-    description_desc = ("description_desc", "Description (descending)")
     created_at_asc = ("created_at_asc", "Created (ascending)")
     created_at_desc = ("created_at_desc", "Created (descending)")
     updated_at_asc = ("updated_at_asc", "Updated (ascending)")
     updated_at_desc = ("updated_at_desc", "Updated (descending)")
 
 
+class FileAlbumSortingChoices(models.TextChoices):
+    """The sorting options for files and albums.
+
+    Note: Subclassing models.TextChoices to extend choices is not allowed,
+    which means created/updated choices are repeated here.
+    """
+
+    created_at_asc = ("created_at_asc", "Created (ascending)")
+    created_at_desc = ("created_at_desc", "Created (descending)")
+    updated_at_asc = ("updated_at_asc", "Updated (ascending)")
+    updated_at_desc = ("updated_at_desc", "Updated (descending)")
+
+    title_asc = ("title_asc", "Title (ascending)")
+    title_desc = ("title_desc", "Title (descending)")
+    description_asc = ("description_asc", "Description (ascending)")
+    description_desc = ("description_desc", "Description (descending)")
+
+
 class ListFilters(FilterSchema):
-    """Filters shared between the file_list, album_list, job_list, and user_list API endpoints."""
+    """Filters shared between the file_list, album_list, and job_list API endpoints."""
 
     limit: int = 100
     offset: int | None = None
     search: str | None = None
-    sorting: SortingChoices | None = None
 
 
 def filter_button(text: str, request: "HttpRequest", **kwargs: str) -> str:

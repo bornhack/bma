@@ -11,6 +11,7 @@ from jobs.models import BaseJob
 from users.models import User
 from utils.api import CommaStrToUuidList
 from utils.filters import ListFilters
+from utils.filters import SortingChoices
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
@@ -26,6 +27,7 @@ class JobFilters(ListFilters):
     client_version: str | None = None
     finished: bool | None = None
     skip_jobs: CommaStrToUuidList | None = None
+    sorting: SortingChoices | None = None
 
 
 def get_user_widget_data(request: "HttpRequest") -> "QuerySet[User]":
