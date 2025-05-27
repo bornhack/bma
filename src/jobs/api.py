@@ -164,6 +164,8 @@ def assign_file_jobs(
     "/{job_uuid}/result/",
     response={
         200: SingleFileResponseSchema,
+        202: ApiMessageSchema,
+        403: ApiMessageSchema,
         404: ApiMessageSchema,
         422: ApiMessageSchema,
         500: ApiMessageSchema,
