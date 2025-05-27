@@ -42,7 +42,6 @@ from .environment_settings import IMAGE_ENCODING
 from .environment_settings import LICENSES
 from .environment_settings import MEDIA_ROOT
 from .environment_settings import NGINX_PROXY
-from .environment_settings import OAUTH_SERVER_BASEURL
 from .environment_settings import SECRET_KEY
 from .environment_settings import SECURE_PROXY_SSL_HEADER
 from .environment_settings import SESSION_COOKIE_SECURE
