@@ -90,7 +90,7 @@ class BmaCliConfigDownloadView(LoginRequiredMixin, View):
             "path": "/tmp/bma",  # noqa: S108
             "bma_url": f"{self.request.scheme}://{self.request.get_host()}",
             "client_uuid": str(rt.token_family),
-            "license": "CC_BY_SA_40",
+            "license": "CC_BY_SA_4_0",
         }
         return HttpResponse(
             json.dumps(config),
