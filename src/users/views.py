@@ -95,5 +95,5 @@ class BmaCliConfigDownloadView(LoginRequiredMixin, View):
         return HttpResponse(
             json.dumps(config),
             content_type="application/json",
-            headers={"content-disposition": "attachment; filename=bma-cli-config.json"},
+            headers={"content-disposition": "attachment; filename=bma_cli_config.json"},
         )
