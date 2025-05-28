@@ -86,6 +86,8 @@ lint.ignore = [
     "G004", # https://docs.astral.sh/ruff/rules/logging-f-string/
     "ANN101", # https://docs.astral.sh/ruff/rules/missing-type-self/
     "ANN102", # https://docs.astral.sh/ruff/rules/missing-type-cls/
+    "ANN002", # *args annotations
+    "ANN003", # **kwargs annotations
     "EM101", # https://docs.astral.sh/ruff/rules/raw-string-in-exception/
     "EM102", # https://docs.astral.sh/ruff/rules/f-string-in-exception/
     "COM812", # missing-trailing-comma (https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules)

@@ -20,7 +20,7 @@ class LocalTimeColumn(tables.Column):
 class BPLocalTimeColumn(tables.Column):
     """A bp table column which applies the active timezone."""
 
-    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Add breakpoint classes to attrs."""
         if "attrs" not in kwargs:
             kwargs["attrs"] = {}
@@ -40,7 +40,7 @@ class BPLocalTimeColumn(tables.Column):
 class BPColumn(tables.Column):
     """A column type that can be shown only on some breakpoints and up."""
 
-    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Add breakpoint classes to attrs."""
         if "attrs" not in kwargs:
             kwargs["attrs"] = {}
@@ -56,7 +56,7 @@ class BPColumn(tables.Column):
 class BPBooleanColumn(tables.BooleanColumn):
     """A BooleanColumn type that can be shown only on some breakpoints and up."""
 
-    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Add breakpoint classes to attrs."""
         if "attrs" not in kwargs:
             kwargs["attrs"] = {}
@@ -72,7 +72,7 @@ class BPBooleanColumn(tables.BooleanColumn):
 class OverflowColumn(tables.Column):
     """A column type that permits text to break in any place."""
 
-    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Add text-break class to <td>."""
         if "attrs" not in kwargs:
             kwargs["attrs"] = {}
@@ -87,7 +87,7 @@ class OverflowColumn(tables.Column):
 class BPOverflowColumn(tables.Column):
     """A breakpoint column type that permits text to break in any place."""
 
-    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]  # noqa: ANN002,ANN003
+    def __init__(self, *args, bp: str, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Add classes."""
         if "attrs" not in kwargs:
             kwargs["attrs"] = {}

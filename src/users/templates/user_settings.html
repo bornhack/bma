@@ -8,7 +8,7 @@
     <div class="card mb-4">
       <h5 class="card-header">BMA Profile</h5>
       <div class="card-body">
-        <p>Your profile contains the public setting for your BMA account. You can edit some of the values in it here. </p>
+          <p>Your profile contains the public data for your BMA account: <code>Handle</code>, <code>Display Name</code> and <code>Description</code>. You can edit the values here.</p>
         <table class="table  table-hover">
           <tbody>
             <tr>
@@ -35,34 +35,28 @@
     </div>
 
     <div class="card mb-4">
-      <h5 class="card-header">Other Settings</h5>
+      <h5 class="card-header">Settings</h5>
       <div class="card-body">
         <p class="lead">This section contains non-profile related settings.</p>
-        <table class="table">
-          <tbody>
+        <h5>API Clients</h5>
+        <table class="table table-sm table-borderless">
+          <thead>
             <tr>
-              <th>API Clients</th>
-              <td>
-                <table class="table table-sm table-borderless">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Access Tokens</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for client in request.user.oauth2_provider_application.all %}
-                    <tr>
-                      <td>{{ client.name }}</td>
-                      <td>{{ client.accesstoken_set.count }}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </td>
+              <th>API Client Name</th>
+              <th>Access Tokens</th>
             </tr>
+          </thead>
+          <tbody>
+            {% for client in request.user.oauth2_provider_application.all %}
+            <tr>
+              <td>{{ client.name }}</td>
+              <td>{{ client.accesstoken_set.count }}</td>
+            </tr>
+            {% endfor %}
           </tbody>
         </table>
+        <h5>BMA CLI Config</h5>
+        <p>You can <a class="btn btn-primary btn-sm" href="{% url 'bma_cli_config_download' %}">download</a> a <code>bma-cli-config.json</code> file to use with <a href="https://pypi.org/project/bma-cli/">bma-cli</a>. Put the file in <code>~/.config/bma-cli/bma_cli_config.json</code></p>
       </div>
     </div>
 
