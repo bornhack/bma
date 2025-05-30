@@ -79,7 +79,7 @@
                     <small class="d-block">Embed</small>
                     <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_embed' file_uuid=file.uuid %}">Embed {{ file.filetype|capfirst }}</a></div>
                     <small class="d-block">Set Crop Center</small>
-                    <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_crop_center' file_uuid=file.uuid %}">Crop center</a></div>
+                    <div class="ms-2 mb-1 fw-bolder"><a class="btn btn-secondary btn-sm" href="{% url 'files:file_crop_center' file_uuid=file.uuid %}">Set Crop Center</a></div>
                   </dl>
                 </div>
               </div>
