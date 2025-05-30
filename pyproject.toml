@@ -30,7 +30,7 @@ dependencies = [
     "django-stubs-ext==5.2.0",
     "django-tables2==2.7.5",
     "django-taggit==6.1.0",
-    "environs[django]==14.1.1",
+    "environs[django]==14.2.0",
     "fontawesomefree==6.6.0",
     "orjson==3.10.18",
     "psycopg2-binary==2.9.10",
