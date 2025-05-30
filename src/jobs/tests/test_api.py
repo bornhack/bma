@@ -246,14 +246,17 @@ class TestJobsApi(BmaTestBase):
                 assert response.status_code == 422
 
                 # Test normal ThumbnailJob result upload
+                metadata={}
+                if "width" in job:
+                    metadata.update(width=job["width"])
+                if "height" in job:
+                    metadata.update(height=job["height"])
+                if "mimetype" in job:
+                    metadata.update(mimetype=job["mimetype"])
                 response = self.upload_result(
                     job=job,
                     data=None,
-                    metadata=json.dumps({
-                        "width": job["width"],
-                        "height": job["height"],
-                        "mimetype": job["mimetype"],
-                    }),
+                    metadata=json.dumps(metadata),
                 )
                 assert response.status_code == 200
                 thumbnail_job_tested = True
