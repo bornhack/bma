@@ -240,19 +240,19 @@ class TestJobsApi(BmaTestBase):
         assert response.json()["message"] == "No worker permission."
 
         for job in jobs:
+            metadata={}
+            if "width" in job:
+                metadata.update(width=job["width"])
+            if "height" in job:
+                metadata.update(height=job["height"])
+            if "mimetype" in job:
+                metadata.update(mimetype=job["mimetype"])
             if job["job_type"] == "ThumbnailJob" and not thumbnail_job_tested:
                 # Test no metadata error
                 response = self.upload_result(job, None, None)
                 assert response.status_code == 422
 
                 # Test normal ThumbnailJob result upload
-                metadata={}
-                if "width" in job:
-                    metadata.update(width=job["width"])
-                if "height" in job:
-                    metadata.update(height=job["height"])
-                if "mimetype" in job:
-                    metadata.update(mimetype=job["mimetype"])
                 response = self.upload_result(
                     job=job,
                     data=None,
@@ -269,11 +269,7 @@ class TestJobsApi(BmaTestBase):
                 response = self.upload_result(
                     job=job,
                     data=None,
-                    metadata=json.dumps({
-                        "width": job["width"],
-                        "height": job["height"],
-                        "mimetype": job["mimetype"],
-                    }),
+                    metadata=json.dumps(metadata),
                 )
                 assert response.status_code == 200
                 image_conversion_job_tested = True
@@ -281,11 +277,7 @@ class TestJobsApi(BmaTestBase):
                 response = self.upload_result(
                     job=job,
                     data=None,
-                    metadata=json.dumps({
-                        "width": job["width"],
-                        "height": job["height"],
-                        "mimetype": job["mimetype"],
-                    }),
+                    metadata=json.dumps(metadata),
                 )
                 assert response.status_code == 200
                 thumbnail_source_job_tested = True
