@@ -86,6 +86,8 @@ lint.ignore = [
     "G004", # https://docs.astral.sh/ruff/rules/logging-f-string/
     "ANN101", # https://docs.astral.sh/ruff/rules/missing-type-self/
     "ANN102", # https://docs.astral.sh/ruff/rules/missing-type-cls/
+    "ANN002", # *args annotations
+    "ANN003", # **kwargs annotations
     "EM101", # https://docs.astral.sh/ruff/rules/raw-string-in-exception/
     "EM102", # https://docs.astral.sh/ruff/rules/f-string-in-exception/
     "COM812", # missing-trailing-comma (https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules)
@@ -164,13 +166,18 @@ deps = [
     "-e.[test]",
 ]
 commands = [["pytest"]]
-
+passenv =[
+    "DJANGO_SECRET_KEY",
+    "DJANGO_ALLOWED_HOSTS",
+    "DJANGO_DATABASE_URL",
+]
 
 ########## COVERAGE.PY ##########
 [tool.coverage.run]
 omit = [
     "*/tests.py",
     "*/tests/test_*.py",
+    "*/migrations/*.py",
 ]
 [tool.coverage.report]
 exclude_also = [

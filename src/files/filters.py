@@ -11,6 +11,7 @@ from albums.models import Album
 from files.models import LicenseChoices
 from tags.models import BmaTag
 from users.models import User
+from utils.filters import FileAlbumSortingChoices
 from utils.filters import ListFilters
 
 from .models import BaseFile
@@ -33,6 +34,7 @@ class FileFilters(ListFilters):
     attribution: str | None = None
     tags: list[str] | None = None
     taggers: list[uuid.UUID] | None = None
+    sorting: FileAlbumSortingChoices | None = None
 
 
 def get_uploader_widget_data() -> list[tuple[str, str]]:

@@ -14,7 +14,7 @@ from typing import TypeAlias
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-__all__ = ["sizes", "get_widths"]
+__all__ = ["get_widths", "sizes"]
 
 IntBreakpoints: TypeAlias = dict[str, int]
 FloatBreakpoints: TypeAlias = dict[str, float]
@@ -196,7 +196,8 @@ def get_height(
     width: int,
     ratio: str | Fraction,
 ) -> int:
-    """Return height based on width+ratio
+    """Return height based on width+ratio.
+
     Args:
         width (int): Width
         ratio (str|Fraction): Aspect ratio

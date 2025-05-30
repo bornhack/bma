@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from django.template import RequestContext
-from django.template.defaulttags import querystring  # type: ignore[attr-defined]
+from django.template.defaulttags import querystring
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -12,4 +12,4 @@ if TYPE_CHECKING:
 def querystring_from_request(request: "HttpRequest", **kwargs: str) -> str:
     """Convenience function to use the querystring templatetag from python."""
     context = RequestContext(request)
-    return str(querystring(context, **kwargs))
+    return str(querystring(context, **kwargs))  # type: ignore[arg-type]

@@ -197,9 +197,9 @@ class BmaTestBase(TestCase):
                 payload,
                 headers={"authorization": cls.tokens[getattr(cls, uploader)]},
             )
-        assert (
-            response.status_code == expect_status_code
-        ), f"expected status code {expect_status_code}, got {response.status_code}"
+        assert response.status_code == expect_status_code, (
+            f"expected status code {expect_status_code}, got {response.status_code}"
+        )
         if expect_status_code != 201:
             return ""
         data = response.json()["bma_response"]
@@ -261,7 +261,7 @@ class BmaTestBase(TestCase):
         )
         assert response.status_code == 200
         assert " created!" in response.content.decode()
-        return response.context_data["album"].uuid  # type: ignore[no-any-return, attr-defined]
+        return response.context_data["album"].uuid  # type: ignore[no-any-return]
 
     @classmethod
     def admin_files_action(cls, *file_uuids: str, username: str, action: str) -> None:

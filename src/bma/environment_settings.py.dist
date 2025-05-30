@@ -12,7 +12,7 @@ env.read_env()
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="{{ django_secret_key }}")
 
 # debug settings - remember to set allowed_hosts if debug is disabled
-DEBUG = env.bool("DJANGO_DEBUG", default="{{ django_debug }}")
+DEBUG = env.bool("DJANGO_DEBUG", default={{ django_debug }})
 DEBUG_TOOLBAR = False
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default={{ django_allowed_hostnames|default(['127.0.0.1,localhost']) }})
 
@@ -103,6 +103,7 @@ DEFAULT_THUMBNAIL_URLS = {
 
 # allow embeds from these origins
 CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS", default={{ django_cors_allowed_origins|default(["http://127.0.0.1:8000","http://localhost:8000"]) }})
+CORS_ALLOW_ALL_ORIGINS = False
 
 # make group names configurable
 BMA_CREATOR_GROUP_NAME = env.str("BMA_CREATOR_GROUP_NAME", default="{{ django_bma_creator_group_name|default('creators') }}")

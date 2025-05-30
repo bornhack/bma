@@ -302,7 +302,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
             choices = [(album.pk, f"{album.title} ({len(album.active_files_list)})") for album in form_albums]
             album_add_form.fields["album"].choices = choices  # type: ignore[attr-defined]
             if len(choices) == 1:
-                album_add_form.initial["album"] = choices[0]  # type: ignore[index]
+                album_add_form.initial["album"] = choices[0]
             album_add_form.fields["files_to_add"].choices = [(x, x) for x in form.cleaned_data["selection"]]  # type: ignore[attr-defined]
             return render(self.request, "files_add_to_album.html", context={"form": album_add_form})
 
@@ -424,7 +424,7 @@ class FileTagDetailView(TagViewMixin, SingleTableMixin, ListView):  # type: igno
         return self.file.taggings.filter(tag=self.tag)  # type: ignore[no-any-return]
 
 
-class FileTagDeleteView(TagViewMixin, DeleteView):  # type: ignore[type-arg,misc]
+class FileTagDeleteView(TagViewMixin, DeleteView):  # type: ignore[type-arg]
     """File untagging view. Removes a users tagging of a tag from a file."""
 
     model = TaggedFile

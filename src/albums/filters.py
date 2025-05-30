@@ -8,6 +8,7 @@ import django_filters
 from django.utils import timezone
 
 from files.models import BaseFile
+from utils.filters import FileAlbumSortingChoices
 from utils.filters import ListFilters
 
 from .models import Album
@@ -21,6 +22,7 @@ class AlbumFilters(ListFilters):
     """The filters used for the album_list django-ninja API endpoint."""
 
     files: list[uuid.UUID] | None = None
+    sorting: FileAlbumSortingChoices | None = None
 
 
 def get_permitted_files(request: "HttpRequest") -> "QuerySet[BaseFile]":

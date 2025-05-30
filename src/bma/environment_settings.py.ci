@@ -40,35 +40,41 @@ MEDIA_ROOT = BASE_DIR / "django_media_root"
 
 OAUTH_SERVER_BASEURL="http://127.0.0.1:8000"
 
+LICENSES=[
+    ("cc-zero-1.0", "Creative Commons CC0 1.0 Universal"),
+    ("cc-by-4.0", "Creative Commons Attribution 4.0 International"),
+    ("cc-by-sa-4.0", "Creative Commons Attribution-ShareAlike 4.0 International"),
+]
+
 NGINX_PROXY=False
 
 ALLOWED_IMAGE_TYPES={
-    "image/jpeg": ["jpg", "jpe", "jpeg"],
-    "image/bmp": ["bmp"],
-    "image/svg+xml": ["svg"],
-    "image/tiff": ["tif", "tiff"],
-    "image/png": ["png"],
+    "image/jpeg": "jpg",
+    "image/bmp": "bmp",
+    "image/svg+xml": "svg",
+    "image/tiff": "tif",
+    "image/png": "png",
 }
 
 ALLOWED_VIDEO_TYPES={
-    "video/mpeg": ["mp2", "mpa", "mpe", "mpeg", "mpg", "mpv2"],
-    "video/mp4": ["mp4"],
-    "video/quicktime": ["mov", "qt"],
-    "video/x-ms-asf": ["asf", "asr", "asx"],
+    "video/mpeg": "mp2",
+    "video/mp4": "mp4",
+    "video/quicktime": "mov",
+    "video/x-ms-asf": "asf",
 }
 
 ALLOWED_AUDIO_TYPES={
-    "audio/basic": ["snd", "au"],
-    "audio/mid": ["mid", "rmi"],
-    "audio/mpeg": ["mp3"],
-    "audio/x-aiff": ["aif", "aifc", "aiff"],
-    "audio/x-pn-realaudio": ["ra", "ram"],
-    "audio/x-wav": ["wav"],
+    "audio/basic": "snd",
+    "audio/mid": "mid",
+    "audio/mpeg": "mp3",
+    "audio/x-aiff": "aif",
+    "audio/x-pn-realaudio": "ra",
+    "audio/x-wav": "wav",
 }
 
 ALLOWED_DOCUMENT_TYPES={
-    "text/plain": ["txt"],
-    "application/pdf": ["pdf"],
+    "text/plain": "txt",
+    "application/pdf": "pdf",
 }
 
 # filetype icons
@@ -89,6 +95,19 @@ DEFAULT_THUMBNAIL_URLS = {
     "document": "/static/images/file-alt-solid.png",
 }
 
+HITCOUNT_KEEP_HIT_ACTIVE = { 'days': 1 }
+HITCOUNT_HITS_PER_IP_LIMIT = 0
+HITCOUNT_EXCLUDE_USER_GROUP = ()
+HITCOUNT_KEEP_HIT_IN_DATABASE = { 'days': 365 }
+
+IMAGE_ENCODING = {
+    "image/webp": {
+        "lossless": False,
+        "quality": 90,
+    },
+}
+
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
 ]
