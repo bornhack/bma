@@ -1,11 +1,4 @@
 $(document).ready(function(){
-  // remove the .noscript class from <body>
-  // this allows us to add the class .hide-for-nojs-users to any element as needed
-  $('body,html').removeClass("no-js");
-
-  // enable all js tooltips on the page
-  $('[data-bs-toggle="tooltip"]').tooltip();
-
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   var xhr = new XMLHttpRequest();
