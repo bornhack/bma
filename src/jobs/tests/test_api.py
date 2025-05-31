@@ -5,8 +5,8 @@ from io import BytesIO
 from pathlib import Path
 
 from django.conf import settings
-from django_stubs.test.client import _MonkeyPatchedWSGIResponse
 from django.urls import reverse
+from django_stubs.test.client import _MonkeyPatchedWSGIResponse
 
 from jobs.models import BaseJob
 from utils.tests import BmaTestBase
