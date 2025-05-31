@@ -5,8 +5,10 @@ from io import BytesIO
 from pathlib import Path
 
 from django.conf import settings
+from django.test.client import _MonkeyPatchedWSGIResponse
 from django.urls import reverse
 
+from jobs.models import BaseJob
 from utils.tests import BmaTestBase
 
 
@@ -14,7 +16,7 @@ class TestJobsApi(BmaTestBase):
     """Test for methods in the jobs API."""
 
     files: list[str]
-    jobs: list
+    jobs: list[BaseJob]
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -56,7 +58,6 @@ class TestJobsApi(BmaTestBase):
             reverse("api-v1-json:job_settings"), headers={"authorization": self.tokens[self.creator2]}
         )
         assert response.status_code == 200
-
 
     def test_job_list(self) -> None:
         """Test the job_list endpoint."""
@@ -133,7 +134,7 @@ class TestJobsApi(BmaTestBase):
         )
         assert len(response.json()["bma_response"]) == 28
 
-        #Test No worker permission
+        # Test No worker permission
         response = self.client.post(
             path=reverse("api-v1-json:assign_file_jobs"),
             data={"client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "client_version": "test-1.2.3"},
@@ -155,9 +156,12 @@ class TestJobsApi(BmaTestBase):
         jobs = response.json()["bma_response"]
 
         response = self.client.post(
-            path=reverse("api-v1-json:unassign_job", kwargs={
-                "job_uuid": jobs[0]["job_uuid"],
-            }),
+            path=reverse(
+                "api-v1-json:unassign_job",
+                kwargs={
+                    "job_uuid": jobs[0]["job_uuid"],
+                },
+            ),
             query_params={"check": True},
             headers={"authorization": self.tokens[self.creator2]},
             content_type="application/json",
@@ -165,33 +169,40 @@ class TestJobsApi(BmaTestBase):
         assert response.json()["message"] == "OK"
 
         response = self.client.post(
-            path=reverse("api-v1-json:unassign_job", kwargs={
-                "job_uuid": jobs[0]["job_uuid"],
-            }),
+            path=reverse(
+                "api-v1-json:unassign_job",
+                kwargs={
+                    "job_uuid": jobs[0]["job_uuid"],
+                },
+            ),
             headers={"authorization": self.tokens[self.creator2]},
             content_type="application/json",
         )
         assert response.json()["message"] == "OK, job unassigned"
 
-        #Test No worker permission
+        # Test No worker permission
         response = self.client.post(
-            path=reverse("api-v1-json:unassign_job", kwargs={
-                "job_uuid": jobs[0]["job_uuid"],
-            }),
+            path=reverse(
+                "api-v1-json:unassign_job",
+                kwargs={
+                    "job_uuid": jobs[0]["job_uuid"],
+                },
+            ),
             headers={"authorization": self.tokens[self.user0]},
             content_type="application/json",
         )
         assert response.json()["message"] == "No worker permission."
 
-    def upload_result(self, job: dict, data: BytesIO | None, metadata: str):
+    def upload_result(
+        self, job: BaseJob, data: tuple[str, BytesIO] | BytesIO | None, metadata: str | None
+    ) -> _MonkeyPatchedWSGIResponse:
         filepath: str | Path = settings.BASE_DIR / "static_src/images/file-video-solid.png"
         with Path(filepath).open("rb") as f:
             payload = {
                 "data": data if data else f,
-                "client": json.dumps({
-                    "client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    "client_version": "test-1.2.3"
-                }),
+                "client": json.dumps(
+                    {"client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "client_version": "test-1.2.3"}
+                ),
             }
             if metadata:
                 payload.update(metadata=metadata)
@@ -208,10 +219,7 @@ class TestJobsApi(BmaTestBase):
         # Assign jobs
         response = self.client.post(
             path=reverse("api-v1-json:assign_file_jobs"),
-            data={
-                "client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                "client_version": "test-1.2.3"
-            },
+            data={"client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "client_version": "test-1.2.3"},
             query_params={"limit": 1},
             headers={"authorization": self.tokens[self.creator2]},
             content_type="application/json",
@@ -221,18 +229,23 @@ class TestJobsApi(BmaTestBase):
         image_conversion_job_tested: bool = False
         thumbnail_source_job_tested: bool = False
 
-        #Test No worker permission
+        # Test No worker permission
         with Path(filepath).open("rb") as f:
             response = self.client.post(
-                reverse("api-v1-json:upload_result", kwargs={
-                    "job_uuid": "b7cd49a1-0822-4459-b51c-d90d3f08d12a",
-                }),
+                reverse(
+                    "api-v1-json:upload_result",
+                    kwargs={
+                        "job_uuid": "b7cd49a1-0822-4459-b51c-d90d3f08d12a",
+                    },
+                ),
                 {
                     "data": f,
-                    "client": json.dumps({
-                        "client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                        "client_version": "test-1.2.3",
-                    })
+                    "client": json.dumps(
+                        {
+                            "client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "client_version": "test-1.2.3",
+                        }
+                    ),
                 },
                 headers={"authorization": self.tokens[self.user0]},
             )
@@ -240,7 +253,7 @@ class TestJobsApi(BmaTestBase):
         assert response.json()["message"] == "No worker permission."
 
         for job in jobs:
-            metadata={}
+            metadata: dict[str, str | int] = {}
             if "width" in job:
                 metadata.update(width=job["width"])
             if "height" in job:
@@ -283,18 +296,22 @@ class TestJobsApi(BmaTestBase):
                 thumbnail_source_job_tested = True
             if job["job_type"] == "ImageExifExtractionJob":
                 with BytesIO() as buf:
-                    buf.write(json.dumps({
-                        "EXIF": {
-                            "Flash": "Flash did not fire, compulsory flash mode",
-                            "FNumber": "7/4",
-                            "SceneType": "0",
-                            "ColorSpace": "sRGB",
-                        },
-                        "Image": {
-                            "Make": "OneTest",
-                            "Model": "TestOne",
-                        },
-                    }).encode())
+                    buf.write(
+                        json.dumps(
+                            {
+                                "EXIF": {
+                                    "Flash": "Flash did not fire, compulsory flash mode",
+                                    "FNumber": "7/4",
+                                    "SceneType": "0",
+                                    "ColorSpace": "sRGB",
+                                },
+                                "Image": {
+                                    "Make": "OneTest",
+                                    "Model": "TestOne",
+                                },
+                            }
+                        ).encode()
+                    )
                     buf.seek(0)
                     response = self.upload_result(
                         job=job,

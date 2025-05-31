@@ -61,7 +61,7 @@ def job_settings(request: HttpRequest) -> JobSettingsResponseType:
             "images": settings.IMAGE_ENCODING,
         },
     }
-    return 200, {"bma_response": response}
+    return 200, {"bma_response": response}  # type: ignore[dict-item]
 
 
 def filter_jobs(jobs: QuerySet[BaseJob], filters: JobFilters) -> QuerySet[BaseJob]:

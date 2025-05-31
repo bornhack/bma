@@ -214,7 +214,7 @@ class BaseFile(PolymorphicModel):
     @property
     def filetype_icon(self) -> str:
         """The filetype icon."""
-        return settings.FILETYPE_ICONS[self.filetype]
+        return settings.FILETYPE_ICONS[self.filetype]  # type: ignore[no-any-return]
 
     @property
     def filename(self) -> str:
