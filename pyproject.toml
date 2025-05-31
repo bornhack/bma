@@ -16,7 +16,7 @@ classifiers = [
 dependencies = [
     "demoji==1.1.0",
     "Django==5.1.8",
-    "django-allauth[socialaccount]==65.7.0",
+    "django-allauth[socialaccount]==65.8.1",
     "django-bootstrap5==25.1",
     "django-cleanup==9.0.0",
     "django-cors-headers==4.7.0",
@@ -24,13 +24,13 @@ dependencies = [
     "django-filter==25.1",
     "django-guardian==2.4.0",
     "django-htmx==1.23.0",
-    "django-ninja==1.4.1",
+    "django-ninja==1.4.2",
     "django-oauth-toolkit==3.0.1",
-    "django-polymorphic==3.1.0",
+    "django-polymorphic==4.1.0",
     "django-stubs-ext==5.2.0",
     "django-tables2==2.7.5",
     "django-taggit==6.1.0",
-    "environs[django]==14.1.1",
+    "environs[django]==14.2.0",
     "fontawesomefree==6.6.0",
     "orjson==3.10.18",
     "psycopg2-binary==2.9.10",
@@ -43,13 +43,13 @@ dev = [
 ]
 test = [
     "beautifulsoup4==4.13.4",
-    "coverage==7.8.0",
+    "coverage==7.8.2",
     "django-debug-toolbar==5.2.0",
     "factory-boy==3.3.3",
     "pytest-django==4.11.1",
     "pytest-cov==6.1.1",
     "pytest-randomly==3.16.0",
-    "tox==4.25.0",
+    "tox==4.26.0",
 ]
 
 [project.urls]
@@ -86,6 +86,8 @@ lint.ignore = [
     "G004", # https://docs.astral.sh/ruff/rules/logging-f-string/
     "ANN101", # https://docs.astral.sh/ruff/rules/missing-type-self/
     "ANN102", # https://docs.astral.sh/ruff/rules/missing-type-cls/
+    "ANN002", # *args annotations
+    "ANN003", # **kwargs annotations
     "EM101", # https://docs.astral.sh/ruff/rules/raw-string-in-exception/
     "EM102", # https://docs.astral.sh/ruff/rules/f-string-in-exception/
     "COM812", # missing-trailing-comma (https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules)

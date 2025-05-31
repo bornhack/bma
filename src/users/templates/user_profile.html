@@ -5,11 +5,10 @@
 {% block title %}{{ user.handle }} Public Profile{% endblock title %}
 
 {% block main_content %}
-  <div class="row">
     <div class="card">
       <h5 class="card-header">{{ user.handle }} Public Profile</h5>
       <div class="card-body">
-        <table class="table">
+        <table class="table table-hover">
           <tbody>
             <tr>
               <th>UUID</th>
@@ -36,12 +35,11 @@
               <td><a href="{% url 'albums:album_list' %}?owner={{ user.handle }}">{{ user.albums.count }}</a></td>
             </tr>
             <tr>
-              <th>Files Tagged</th>
+              <th>Taggings</th>
               <td>{{ user.taggings.count }}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-  </div>
 {% endblock main_content %}

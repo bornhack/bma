@@ -42,7 +42,6 @@ from .environment_settings import IMAGE_ENCODING
 from .environment_settings import LICENSES
 from .environment_settings import MEDIA_ROOT
 from .environment_settings import NGINX_PROXY
-from .environment_settings import OAUTH_SERVER_BASEURL
 from .environment_settings import SECRET_KEY
 from .environment_settings import SECURE_PROXY_SSL_HEADER
 from .environment_settings import SESSION_COOKIE_SECURE
@@ -219,10 +218,9 @@ ACCOUNT_SIGNUP_REDIRECT_URL = "/settings/"
 AUTH_USER_MODEL = "users.User"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_USER_MODEL_EMAIL_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_ADAPTER = "users.adapter.NoNewUsersAccountAdapter"
+ACCOUNT_SIGNUP_FIELDS = ["email", "username*", "password1*", "password2*"]
 SOCIALACCOUNT_ADAPTER = "bornhack_allauth_provider.adapters.BornHackSocialAccountAdapter"
 SOCIALACCOUNT_ONLY = True
 SOCIALACCOUNT_PROVIDERS = {

@@ -1,0 +1,31 @@
+{% extends "file_detail.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block extra_head %}
+  {{ file.original.url|json_script:"file" }}
+  <script src="{% static 'js/vendor/base64.min.js' %}"></script>
+  <script src="{% static 'js/vendor/compressor.js' %}"></script>
+  <script src="{% static 'js/file_crop_center.js' %}"></script>
+{% endblock extra_head %}
+
+{% block title %}Set crop center{% endblock title %}
+
+{% block file_detail %}
+  <h1>Set the crop center for {{ file.title }}</h1>
+  <form method="post" id="crop-form">{% csrf_token %}
+    {% bootstrap_form form %}
+    <input class="btn btn-success" type="submit" value="Save">
+    <a href="{% url 'files:file_show' file_uuid=file.uuid %}" class="btn btn-primary">Cancel</a>
+  </form>
+  <div class="hide-for-no-js-users">
+    <select name="ratio" id="ratio-selector">
+      <option value="400">1/1</option>
+      <option value="300">4/3</option>
+      <option value="225">16/9</option>
+      <option value="600">2/3</option>
+    </select>
+    <br>
+    <canvas id="canvas" width="400" height="400"></canvas>
+  </div>
+{% endblock file_detail %}

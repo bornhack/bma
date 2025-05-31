@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 from urllib.parse import quote
 
 import shortuuid
@@ -17,6 +18,7 @@ from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpRequest
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -54,8 +56,10 @@ from utils.auth import support_authbearer_user
 from utils.mixins import CuratorGroupRequiredMixin
 
 from .filters import FileFilter
+from .forms import CropCenterForm
 from .forms import FileMultipleActionForm
 from .forms import UploadForm
+from .mixins import FileChangeViewMixin
 from .mixins import FileViewMixin
 from .models import BaseFile
 from .models import Thumbnail
@@ -245,12 +249,6 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
         response["Cache-Control"] = "max-age=3600"
     # all good
     return response
-
-
-class FileBrowserView(TemplateView):
-    """The file browser view."""
-
-    template_name = "filebrowser.html"
 
 
 class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
@@ -450,3 +448,48 @@ class FilePermissionsView(FileViewMixin, SingleTableMixin, TemplateView):
     def get_table_data(self) -> "list[UserObjectPermission| GroupObjectPermission]":
         """Get the data for the table."""
         return list(self.file.user_permissions.all()) + list(self.file.group_permissions.all())
+
+
+######### File Center Crop views ######################################################
+
+
+class FileCropCenterView(FileChangeViewMixin, FormView[CropCenterForm]):
+    """View to pick the center of a ThumbnailSource or Image."""
+
+    form_class = CropCenterForm
+    template_name = "file_crop_center.html"
+
+    def get_initial(self) -> dict[str, Any]:
+        """Lookup the data for the form."""
+        initial = super().get_initial()
+
+        if hasattr(self.file, "thumbnailsource"):
+            initial["center_x"] = self.file.thumbnailsource.crop_center_x
+            initial["center_y"] = self.file.thumbnailsource.crop_center_y
+        elif self.file.filetype == "image":
+            initial["center_x"] = self.file.crop_center_x
+            initial["center_y"] = self.file.crop_center_y
+        else:
+            error = "ThumbnailSource does not exist"
+            raise Http404(error)
+
+        return initial
+
+    def form_valid(self, form: CropCenterForm) -> HttpResponseRedirect:
+        """Apply the crop center."""
+        if hasattr(self.file, "thumbnailsource"):
+            self.file.thumbnailsource.crop_center_x = form.cleaned_data["center_x"]
+            self.file.thumbnailsource.crop_center_y = form.cleaned_data["center_y"]
+            self.file.thumbnailsource.save()
+            self.file.create_thumbnail_jobs()
+            messages.success(self.request, "Thumbnail Source crop center saved.")
+        elif self.file.filetype == "image":
+            self.file.crop_center_x = form.cleaned_data["center_x"]
+            self.file.crop_center_y = form.cleaned_data["center_y"]
+            self.file.save()
+            self.file.create_thumbnail_jobs()
+            messages.success(self.request, "Image crop center saved.")
+        else:
+            messages.info(self.request, "No changes made")
+
+        return redirect(self.file)

@@ -136,7 +136,7 @@ class UploadClient {
    * @param {string} mimetype - MimeType
    * @returns {Promise} 
    */
-  async crop(file, width, height, type = 'image/png') {
+  async crop(file, width, height, crop_center_x = 50, crop_center_y = 50, type = 'image/png') {
     return new Promise((resolve, reject) => {
       let quality = 0.6;
       if (type in this.config.encoding.images) {
@@ -146,9 +146,11 @@ class UploadClient {
         quality: quality,
         width: width,
         height: height,
+        resizeCenterX: crop_center_x,
+        resizeCenterY: crop_center_y,
         mimeType: type,
         convertSize: -1,
-        resize: 'cover',
+        resize: 'crop',
         retainExif: true,
         success(result) {
           resolve(result);
@@ -228,7 +230,7 @@ class UploadClient {
         const filename = `${job.job_uuid}.${job.filetype}`
         this.log(`Job for ${job.basefile_uuid}: ${job.job_type} ${job.width}x${job.height} ${job.mimetype} Custom aspect ratio: ${job.custom_aspect_ratio}`)
         if (job.custom_aspect_ratio)
-          return this.crop(this.source_file_store[job.source_url], job.width, job.height, job.mimetype).then(img=> {
+          return this.crop(this.source_file_store[job.source_url], job.width, job.height, job.crop_center_x, job.crop_center_y, job.mimetype).then(img=> {
             this.uploadJobResult(job, img, filename, {"width": job.width, "height": job.height, "mimetype": job.mimetype})
           });
         else
