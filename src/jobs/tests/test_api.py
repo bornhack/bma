@@ -6,7 +6,6 @@ from pathlib import Path
 
 from django.conf import settings
 from django.urls import reverse
-from django_stubs.test.client import _MonkeyPatchedWSGIResponse
 
 from jobs.models import BaseJob
 from utils.tests import BmaTestBase
@@ -193,9 +192,7 @@ class TestJobsApi(BmaTestBase):
         )
         assert response.json()["message"] == "No worker permission."
 
-    def upload_result(
-        self, job: BaseJob, data: tuple[str, BytesIO] | BytesIO | None, metadata: str | None
-    ) -> _MonkeyPatchedWSGIResponse:
+    def upload_result(self, job: BaseJob, data: tuple[str, BytesIO] | BytesIO | None, metadata: str | None): # type: ignore[no-untyped-def]
         filepath: str | Path = settings.BASE_DIR / "static_src/images/file-video-solid.png"
         with Path(filepath).open("rb") as f:
             payload = {
