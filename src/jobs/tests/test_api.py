@@ -9,8 +9,6 @@ from django.test.client import _MonkeyPatchedWSGIResponse
 from django.urls import reverse
 
 from jobs.models import BaseJob
-from django.urls import reverse
-
 from utils.tests import BmaTestBase
 
 
@@ -60,7 +58,6 @@ class TestJobsApi(BmaTestBase):
             reverse("api-v1-json:job_settings"), headers={"authorization": self.tokens[self.creator2]}
         )
         assert response.status_code == 200
-
 
     def test_job_list(self) -> None:
         """Test the job_list endpoint."""
