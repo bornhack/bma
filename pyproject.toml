@@ -170,6 +170,7 @@ passenv =[
     "DJANGO_SECRET_KEY",
     "DJANGO_ALLOWED_HOSTS",
     "DJANGO_DATABASE_URL",
+    "DJANGO_MEDIA_ROOT",
 ]
 
 ########## COVERAGE.PY ##########

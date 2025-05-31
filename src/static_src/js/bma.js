@@ -1,3 +1,12 @@
+$(document).ready(function() {
+  // remove the .noscript class from <body>
+  // this allows us to add the class .hide-for-nojs-users to any element as needed
+  $('body,html').removeClass("no-js");
+
+  // enable all js tooltips on the page
+  $('[data-bs-toggle="tooltip"]').tooltip();
+});
+
 window.addEventListener("load", (event) => {
   // make "select/unselect all" checkboxes in <th> work
   check = document.querySelector("th > input");

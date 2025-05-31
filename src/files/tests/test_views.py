@@ -312,3 +312,17 @@ class TestFileViews(BmaTestBase):
         tag_card = soup.select_one("#tag-card")
         tags = tag_card.select("form")
         assert len(tags) == 1, "did not find 1 tags after removing 1"
+    
+    ######### FILE CROP CENTER ###################################
+
+    def test_file_crop_center_view(self) -> None:
+        """Make sure the file crop center view works as intended."""
+        url = reverse("files:file_crop_center", kwargs={"file_uuid": self.files[0]})
+        self.client.login(username="creator2", password="secret")
+        data={"center_x":20,"center_y":20}
+        response = self.client.post(url, data, follow=True)
+        content = response.content.decode()
+        soup = BeautifulSoup(content, "html.parser")
+        rows = soup.select("div.alert.alert-success")
+        matches = [s for s in rows if "Image crop center saved." in str(s)]
+        self.assertEqual(len(matches), 1, "image crop center did not save.")
