@@ -251,12 +251,6 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
     return response
 
 
-class FileBrowserView(TemplateView):
-    """The file browser view."""
-
-    template_name = "filebrowser.html"
-
-
 class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
     """The view of many files and many actions."""
 

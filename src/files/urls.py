@@ -5,7 +5,6 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 from files.views import FileAlbumsView
-from files.views import FileBrowserView
 from files.views import FileCropCenterView
 from files.views import FileDetailView
 from files.views import FileJobsView
@@ -24,7 +23,6 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="files:file_list_grid"), name="file_list"),
     path("grid/", FileListView.as_view(), name="file_list_grid"),
     path("table/", FileListView.as_view(), name="file_list_table"),
-    path("jsbrowser/", FileBrowserView.as_view(), name="browse"),
     path("upload/", FileUploadView.as_view(), name="file_upload"),
     path("action/", FileMultipleActionView.as_view(), name="file_multiple_action"),
     path(
