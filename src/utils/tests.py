@@ -96,6 +96,10 @@ class BmaTestBase(TestCase):
         # everyone is a curator (except user0 and user1)
         curators.user_set.add(cls.creator2, cls.creator3, cls.moderator4, cls.moderator5, cls.curator6, cls.curator7)
 
+        # everyone is a worker (except user0 and user1)
+        workers, _ = Group.objects.get_or_create(name=settings.BMA_WORKER_GROUP_NAME)
+        workers.user_set.add(cls.creator2, cls.creator3, cls.moderator4, cls.moderator5, cls.curator6, cls.curator7)
+
     @classmethod
     def get_access_token(cls, user: User) -> str:
         """Test the full oauth2 public client authorization code pkce token flow."""

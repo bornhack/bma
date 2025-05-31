@@ -48,14 +48,18 @@ LICENSES=[
 
 NGINX_PROXY=False
 
+# permit these image mimetypes, and use this extension for them
 ALLOWED_IMAGE_TYPES={
     "image/jpeg": "jpg",
     "image/bmp": "bmp",
+    "image/gif": "gif",
     "image/svg+xml": "svg",
     "image/tiff": "tif",
     "image/png": "png",
+    "image/webp": "webp",
 }
 
+# permit these video mimetypes, and use this extension for them
 ALLOWED_VIDEO_TYPES={
     "video/mpeg": "mp2",
     "video/mp4": "mp4",
@@ -63,18 +67,21 @@ ALLOWED_VIDEO_TYPES={
     "video/x-ms-asf": "asf",
 }
 
+# permit these audio mimetypes, and use this extension for them
 ALLOWED_AUDIO_TYPES={
-    "audio/basic": "snd",
+    "audio/basic": "au",
     "audio/mid": "mid",
     "audio/mpeg": "mp3",
     "audio/x-aiff": "aif",
-    "audio/x-pn-realaudio": "ra",
+    "audio/x-pn-realaudio": "ram",
     "audio/x-wav": "wav",
 }
 
+# permit these document mimetypes, and use this extension for them
 ALLOWED_DOCUMENT_TYPES={
     "text/plain": "txt",
     "application/pdf": "pdf",
+    "application/wps-office.pdf": "pdf",
 }
 
 # filetype icons
