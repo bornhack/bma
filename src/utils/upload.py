@@ -17,13 +17,13 @@ def get_extension_from_mimetype(mimetype: str) -> str:
     """Find the preferred extension for a mimetype in settings."""
     # get extension based on mimetype
     if mimetype in settings.ALLOWED_IMAGE_TYPES:
-        return settings.ALLOWED_IMAGE_TYPES[mimetype]  # type: ignore[no-any-return]
+        return settings.ALLOWED_IMAGE_TYPES[mimetype]
     if mimetype in settings.ALLOWED_VIDEO_TYPES:
-        return settings.ALLOWED_VIDEO_TYPES[mimetype]  # type: ignore[no-any-return]
+        return settings.ALLOWED_VIDEO_TYPES[mimetype]
     if mimetype in settings.ALLOWED_AUDIO_TYPES:
-        return settings.ALLOWED_AUDIO_TYPES[mimetype]  # type: ignore[no-any-return]
+        return settings.ALLOWED_AUDIO_TYPES[mimetype]
     if mimetype in settings.ALLOWED_DOCUMENT_TYPES:
-        return settings.ALLOWED_DOCUMENT_TYPES[mimetype]  # type: ignore[no-any-return]
+        return settings.ALLOWED_DOCUMENT_TYPES[mimetype]
     raise ValueError(mimetype)
 
 

@@ -165,7 +165,7 @@ class ImageJob(BaseJob):
         """Get the value for the mimetype field."""
         for mimetype, extension in settings.ALLOWED_IMAGE_TYPES.items():
             if self.filetype.lower() == extension:
-                return mimetype  # type: ignore[no-any-return]
+                return mimetype
         raise FiletypeUnsupportedError(filetype=self.filetype)
 
 
