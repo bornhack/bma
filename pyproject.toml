@@ -49,7 +49,7 @@ test = [
     "pytest-django==4.11.1",
     "pytest-cov==6.1.1",
     "pytest-randomly==3.16.0",
-    "tox==4.26.0",
+    "tox==4.28.4",
 ]
 
 [project.urls]
