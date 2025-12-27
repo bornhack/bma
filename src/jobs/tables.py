@@ -19,7 +19,6 @@ class JobTable(tables.Table):
     basefile = tables.Column(verbose_name="File", linkify=True)
     job_type = tables.Column(verbose_name="Job Type", orderable=False)
     result_url = tables.Column(verbose_name="Result url", orderable=False)
-
     # show only at xxl and up
     width = BPColumn(bp="xxl", orderable=False)
     height = BPColumn(bp="xxl", orderable=False)

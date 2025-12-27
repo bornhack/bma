@@ -18,30 +18,7 @@ class AlbumManager(models.Manager):  # type: ignore[type-arg]
 
     def get_queryset(self):  # type: ignore[no-untyped-def]  # noqa: ANN201
         """Annotations and prefetches for the Album model."""
-        qs = super().get_queryset()
-
-        # queries to count past, present, and future memberships of each album
-        active_memberships = Count("memberships", filter=Q(memberships__period__contains=timezone.now()), distinct=True)
-        historic_memberships = Count("memberships", filter=Q(memberships__period__endswith__lt=timezone.now()))
-        future_memberships = Count("memberships", filter=Q(memberships__period__startswith__gt=timezone.now()))
-
-        return (
-            qs.annotate(
-                active_memberships=active_memberships,
-                historic_memberships=historic_memberships,
-                future_memberships=future_memberships,
-            )
-            .select_related("owner")
-            .prefetch_related("user_permissions__user")
-            .prefetch_related("user_permissions__permission")
-            .prefetch_related("group_permissions__group")
-            .prefetch_related("group_permissions__permission")
-            .prefetch_related("hits")
-            .annotate(hitcount=Count("hits", distinct=True))
-            .prefetch_active_files_list(recursive=True)
-            # ordering from Album META gets lost for some reason :(
-        ).order_by("created_at")
-
+        return super().get_queryset()
 
 class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
     """Custom queryset for album operations."""
@@ -76,3 +53,30 @@ class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
                 to_attr="active_files_list",
             ),
         )
+
+    def prefetch_user_permissions(self) -> models.QuerySet["Album"]:
+        """Prefetch user permissions."""
+        return self.prefetch_related("user_permissions__user").prefetch_related("user_permissions__permission")
+
+    def prefetch_group_permissions(self) -> models.QuerySet["Album"]:
+        """Prefetch group permissions."""
+        return self.prefetch_related("group_permissions__group").prefetch_related("group_permissions__permission")
+
+    def annotate_hitcount(self) -> models.QuerySet["Album"]:
+        """Annotate hitcounts for the qs."""
+        return self.annotate(hitcount=Count("hits", distinct=True))
+
+    def annotate_memberships(self) -> models.QuerySet["Album"]:
+        """Annotate membership counts."""
+        active_memberships = Count("memberships", filter=Q(memberships__period__contains=timezone.now()), distinct=True)
+        historic_memberships = Count("memberships", filter=Q(memberships__period__endswith__lt=timezone.now()))
+        future_memberships = Count("memberships", filter=Q(memberships__period__startswith__gt=timezone.now()))
+        return self.annotate(
+            active_memberships=active_memberships,
+            historic_memberships=historic_memberships,
+            future_memberships=future_memberships,
+        )
+
+    def select_owner(self) -> models.QuerySet["Album"]:
+        """Get owner with select_related()."""
+        return self.select_related("owner")
