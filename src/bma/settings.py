@@ -265,6 +265,11 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "console",
         },
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+        },
     },
     "formatters": {
         "syslog": {"format": "%(levelname)s %(name)s.%(funcName)s(): %(message)s"},
@@ -281,6 +286,11 @@ LOGGING = {
         "django": {
             "handlers": ["console"],
             "level": DJANGO_LOG_LEVEL,
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
             "propagate": False,
         },
         "bma": {
