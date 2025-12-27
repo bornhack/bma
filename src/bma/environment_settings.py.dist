@@ -22,7 +22,9 @@ DATABASES = {
 }
 
 # email settings
-{% if not django_email_realworld | default(False) %}
+{% if django_email_realworld | default(False) %}
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+{% else %}
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 {% endif %}
 EMAIL_HOST='{{ django_email_host }}'
