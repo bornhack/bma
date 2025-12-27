@@ -17,14 +17,14 @@ class JobTable(tables.Table):
 
     uuid = BPOverflowColumn(bp="lg", verbose_name="Job UUID")
     basefile = tables.Column(verbose_name="File", linkify=True)
-    job_type = tables.Column(verbose_name="Job Type")
-    result_url = tables.Column(verbose_name="Result url")
+    job_type = tables.Column(verbose_name="Job Type", orderable=False)
+    result_url = tables.Column(verbose_name="Result url", orderable=False)
 
     # show only at xxl and up
-    width = BPColumn(bp="xxl")
-    height = BPColumn(bp="xxl")
+    width = BPColumn(bp="xxl", orderable=False)
+    height = BPColumn(bp="xxl", orderable=False)
     filetype = BPColumn(bp="xxl")
-    custom_aspect_ratio = BPColumn(bp="xxl", verbose_name="Custom AR")
+    custom_aspect_ratio = BPColumn(bp="xxl", verbose_name="Custom AR", orderable=False)
     source_url = BPColumn(bp="xxl")
 
     # show only at 3xl and up
