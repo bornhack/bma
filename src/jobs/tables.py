@@ -23,7 +23,7 @@ class JobTable(tables.Table):
     # show only at xxl and up
     width = BPColumn(bp="xxl", orderable=False)
     height = BPColumn(bp="xxl", orderable=False)
-    filetype = BPColumn(bp="xxl")
+    filetype = BPColumn(bp="xxl", orderable=False)
     custom_aspect_ratio = BPColumn(bp="xxl", verbose_name="Custom AR", orderable=False)
     source_url = BPColumn(bp="xxl")
 
