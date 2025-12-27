@@ -28,6 +28,7 @@ class FileTable(tables.Table):
         attrs={
             "td": {"class": "align-middle"},
         },
+        orderable=False,
     )
     title = OverflowColumn(verbose_name="Title")
     mimetype = tables.Column(verbose_name="File Type")
