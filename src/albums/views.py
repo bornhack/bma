@@ -48,7 +48,7 @@ class AlbumListView(SingleTableMixin, FilterView):
 
     def get_queryset(self) -> models.QuerySet[Album]:
         """Use bmanager to get rich album objects."""
-        return Album.bmanager.annotate_memberships().annotate_hitcount().all()
+        return Album.bmanager.annotate_memberships().all()
 
 
 class AlbumDetailView(SingleTableMixin, FilterView):
