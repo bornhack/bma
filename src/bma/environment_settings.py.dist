@@ -77,6 +77,7 @@ ALLOWED_VIDEO_TYPES={
     "video/mp4": "mp4",
     "video/quicktime": "mov",
     "video/x-ms-asf": "asf",
+    "video/webm": "webm",
 }
 
 # permit these audio mimetypes, and use this extension for them
