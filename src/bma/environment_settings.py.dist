@@ -21,6 +21,21 @@ DATABASES = {
     "default": env.dj_db_url("DJANGO_DATABASE_URL", default="postgres://{{ django_postgres_user }}:{{ django_postgres_password }}@{{ django_postgres_host }}/{{ django_postgres_dbname }}")
 }
 
+# email settings
+{% if django_email_realworld | default(False) %}
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+{% else %}
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+{% endif %}
+EMAIL_HOST='{{ django_email_host }}'
+EMAIL_PORT={{ django_email_port }}
+EMAIL_HOST_USER='{{ django_email_user }}'
+EMAIL_HOST_PASSWORD='{{ django_email_password }}'
+EMAIL_USE_TLS=True
+DEFAULT_FROM_EMAIL='{{ django_email_from }}'
+SERVER_EMAIL='{{ django_email_from }}'
+ADMINS={{ django_admins }}
+
 # admin site url prefix, set to 'admin' for /admin/
 ADMIN_PREFIX = env.str("DJANGO_ADMIN_PREFIX", default="{{ django_admin_prefix|default('admin') }}")
 
@@ -62,6 +77,7 @@ ALLOWED_VIDEO_TYPES={
     "video/mp4": "mp4",
     "video/quicktime": "mov",
     "video/x-ms-asf": "asf",
+    "video/webm": "webm",
 }
 
 # permit these audio mimetypes, and use this extension for them

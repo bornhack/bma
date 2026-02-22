@@ -71,7 +71,7 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
     # assign permissions and return response
     album.add_initial_permissions()
     # get from database so the bmanager is used
-    album = Album.bmanager.get(pk=album.pk)
+    album = Album.bmanager.prefetch_active_files_list().get(pk=album.pk)
     return 201, {"bma_response": album}
 
 
@@ -83,7 +83,7 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
 )
 def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseType:
     """Return an album."""
-    album = get_object_or_404(Album.bmanager.all(), uuid=album_uuid)
+    album = get_object_or_404(Album.bmanager.annotate_memberships().prefetch_active_files_list().all(), uuid=album_uuid)
     return 200, {"bma_response": album}
 
 
@@ -95,7 +95,7 @@ def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseTy
 )
 def album_list(request: HttpRequest, filters: AlbumFilters = query) -> AlbumApiResponseType:
     """Return a list of albums."""
-    albums = Album.bmanager.all()
+    albums = Album.bmanager.annotate_memberships().prefetch_active_files_list().all()
 
     if filters.files:
         # __in is OR and we want AND, build a query for .exclude() with all file UUIDs
@@ -154,7 +154,7 @@ def album_update(
     check: bool = False,
 ) -> AlbumApiResponseType:
     """Update (PATCH) or replace (PUT) an Album."""
-    album = get_object_or_404(Album.bmanager.all(), uuid=album_uuid)
+    album = get_object_or_404(Album.bmanager.prefetch_active_files_list().all(), uuid=album_uuid)
     if not request.user.has_perm("change_album", album):
         # no permission
         return 403, {"message": "Permission denied."}

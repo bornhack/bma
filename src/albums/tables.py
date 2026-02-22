@@ -17,8 +17,7 @@ class AlbumTable(tables.Table):
     owner = tables.Column(linkify=True)
 
     # only shown on xl and up
-    active_memberships = BPColumn(bp="xl", verbose_name="Files")
-    hitcount = BPColumn(bp="xl", verbose_name="Hits")
+    active_memberships = BPColumn(bp="xl", verbose_name="Files", orderable=False)
 
     class Meta:
         """Define model, template, fields."""
@@ -31,5 +30,4 @@ class AlbumTable(tables.Table):
             "description",
             "owner",
             "active_memberships",
-            "hitcount",
         )

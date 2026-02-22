@@ -28,6 +28,7 @@ class FileTable(tables.Table):
         attrs={
             "td": {"class": "align-middle"},
         },
+        orderable=False,
     )
     title = OverflowColumn(verbose_name="Title")
     mimetype = tables.Column(verbose_name="File Type")
@@ -43,7 +44,7 @@ class FileTable(tables.Table):
 
     # only show on 5xl and up
     tags = BPColumn(bp="5xl", verbose_name="Tags")
-    hitcount = BPColumn(bp="5xl", verbose_name="Hits")
+    hitcount = BPColumn(bp="5xl", verbose_name="Hits", orderable=False)
 
     # only show on 6xl and up
     jobs = BPColumn(bp="6xl", verbose_name="Jobs", order_by="jobs_finished")

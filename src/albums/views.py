@@ -48,7 +48,7 @@ class AlbumListView(SingleTableMixin, FilterView):
 
     def get_queryset(self) -> models.QuerySet[Album]:
         """Use bmanager to get rich album objects."""
-        return Album.bmanager.all()
+        return Album.bmanager.annotate_memberships().all()
 
 
 class AlbumDetailView(SingleTableMixin, FilterView):
@@ -64,7 +64,7 @@ class AlbumDetailView(SingleTableMixin, FilterView):
 
     def get_object(self, queryset: models.QuerySet[Album] | None = None) -> Album:
         """Use the manager so the album object has prefetched active_files."""
-        album = Album.bmanager.get(pk=self.kwargs["album_uuid"])
+        album = Album.bmanager.prefetch_active_files_list().get(pk=self.kwargs["album_uuid"])
         # count the hit
         count_hit(self.request, album)
         return album  # type: ignore[no-any-return]

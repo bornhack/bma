@@ -11,6 +11,7 @@ import django_stubs_ext
 from utils.ninjafix import monkeypatch_ninja_uuid_converter
 
 from .environment_settings import ADMIN_PREFIX
+from .environment_settings import ADMINS
 from .environment_settings import ALLOWED_AUDIO_TYPES
 from .environment_settings import ALLOWED_DOCUMENT_TYPES
 from .environment_settings import ALLOWED_HOSTS
@@ -31,8 +32,15 @@ from .environment_settings import CSRF_COOKIE_SECURE
 from .environment_settings import DATABASES
 from .environment_settings import DEBUG
 from .environment_settings import DEBUG_TOOLBAR
+from .environment_settings import DEFAULT_FROM_EMAIL
 from .environment_settings import DEFAULT_THUMBNAIL_URLS
 from .environment_settings import DJANGO_LOG_LEVEL
+from .environment_settings import EMAIL_BACKEND
+from .environment_settings import EMAIL_HOST
+from .environment_settings import EMAIL_HOST_PASSWORD
+from .environment_settings import EMAIL_HOST_USER
+from .environment_settings import EMAIL_PORT
+from .environment_settings import EMAIL_USE_TLS
 from .environment_settings import FILETYPE_ICONS
 from .environment_settings import HITCOUNT_EXCLUDE_USER_GROUP
 from .environment_settings import HITCOUNT_HITS_PER_IP_LIMIT
@@ -44,6 +52,7 @@ from .environment_settings import MEDIA_ROOT
 from .environment_settings import NGINX_PROXY
 from .environment_settings import SECRET_KEY
 from .environment_settings import SECURE_PROXY_SSL_HEADER
+from .environment_settings import SERVER_EMAIL
 from .environment_settings import SESSION_COOKIE_SECURE
 
 # get BMA_VERSION from package registry
@@ -251,10 +260,23 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "console",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
         },
     },
     "formatters": {
@@ -272,6 +294,11 @@ LOGGING = {
         "django": {
             "handlers": ["console"],
             "level": DJANGO_LOG_LEVEL,
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
             "propagate": False,
         },
         "bma": {
