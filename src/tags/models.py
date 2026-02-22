@@ -8,10 +8,13 @@ from django.db import models
 from taggit.models import ItemBase
 from taggit.models import TagBase
 
+from .managers import BmaTagQuerySet
+
 
 class BmaTag(TagBase):
     """BMA uses this instead of the default taggit model to remove the unique=True constraint for tag name."""
 
+    objects = models.Manager.from_queryset(BmaTagQuerySet)()
     name = models.CharField(max_length=100, help_text="The tag")
     created_at = models.DateTimeField(auto_now_add=True)
 

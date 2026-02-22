@@ -7,7 +7,7 @@ from utils.storage import BmaFileSystemStorage
 from utils.upload import get_upload_path
 
 
-class Video(BaseFile):
+class Video(BaseFile):  # type: ignore[django-manager-missing]
     """The Video model."""
 
     original = models.FileField(

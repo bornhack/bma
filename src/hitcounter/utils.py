@@ -69,7 +69,7 @@ def count_hit(request: HttpRequest, content_object: "BaseFile | Album | BmaTag")
         return UpdateHitCountResponse(updated=False, reason="Not counted: hits per IP address limit reached")
 
     # create a new Hit object with request data
-    hit = content_object.hits.model(
+    hit = content_object.hits.model(  # type: ignore[misc]
         session=session_key,
         ip=get_ip(request),
         user_agent=request.headers.get("User-Agent", "")[:255],

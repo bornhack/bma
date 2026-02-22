@@ -1,7 +1,8 @@
 """Custom model manager and queryset for the BaseFile model."""
 
-from typing import TYPE_CHECKING
+from typing import Self
 
+from django.contrib.auth.models import AnonymousUser
 from django.db import models
 from django.db.models import Count
 from django.utils import timezone
@@ -11,69 +12,60 @@ from users.models import UserType
 from utils.polymorphic_related import RelatedPolymorphicManager
 from utils.polymorphic_related import RelatedPolymorphicQuerySet
 
-if TYPE_CHECKING:
-    from .models import BaseFile
-
 
 class BaseFileManager(RelatedPolymorphicManager):
     """Custom manager for file operations."""
-
-    def get_queryset(self) -> models.QuerySet["BaseFile"]:
-        """Prefetch and annotate."""
-        return (  # type: ignore[no-any-return]
-            super().get_queryset()
-        )
 
 
 class BaseFileQuerySet(RelatedPolymorphicQuerySet):
     """Custom queryset for bmanager file operations."""
 
-    def prefetch_image_version_list(self) -> models.QuerySet["BaseFile"]:
+    def prefetch_image_version_list(self) -> Self:
         """Prefetch image version list."""
-        return self.prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))  # type: ignore[no-any-return]
+        return self.prefetch_related(models.Prefetch("image_versions", to_attr="image_version_list"))
 
-    def prefetch_thumbnail_list(self) -> models.QuerySet["BaseFile"]:
+    def prefetch_thumbnail_list(self) -> Self:
         """Prefetch thumbnail list."""
-        return self.prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))  # type: ignore[no-any-return]
+        return self.prefetch_related(models.Prefetch("thumbnails", to_attr="thumbnail_list"))
 
-    def prefetch_tag_list(self) -> models.QuerySet["BaseFile"]:
+    def prefetch_tag_list(self) -> Self:
         """Prefetch tag list."""
-        return self.prefetch_related(models.Prefetch("tags", to_attr="tag_list"))  # type: ignore[no-any-return]
+        return self.prefetch_related(models.Prefetch("tags", to_attr="tag_list"))
 
-    def prefetch_thumbnails(self) -> models.QuerySet["BaseFile"]:
+    def prefetch_thumbnails(self) -> Self:
         """Prefetch thumbnails."""
-        return self.prefetch_related("thumbnails")  # type: ignore[no-any-return]
+        return self.prefetch_related("thumbnails")
 
-    def prefetch_permissions(self) -> models.QuerySet["BaseFile"]:
+    def prefetch_permissions(self) -> Self:
         """Prefetch user and group permissions for the qs."""
-        return (  # type: ignore[no-any-return]
+        return (
             self.prefetch_related("user_permissions__user")
             .prefetch_related("user_permissions__permission")
             .prefetch_related("group_permissions__group")
             .prefetch_related("group_permissions__permission")
         )
 
-    def annotate_hitcount(self) -> models.QuerySet["BaseFile"]:
+    def annotate_hitcount(self) -> Self:
         """Annotate hitcounts for the qs."""
-        return self.annotate(hitcount=Count("hits", distinct=True))  # type: ignore[no-any-return]
+        return self.annotate(hitcount=Count("hits", distinct=True))
 
-    def annotate_job_counts(self) -> models.QuerySet["BaseFile"]:
+    def annotate_job_counts(self) -> Self:
         """Annotate jobs_finished and jobs_unfinished on the qs."""
-        return self.annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True))).annotate(  # type: ignore[no-any-return]
+        return self.annotate(jobs_finished=Count("jobs", filter=models.Q(jobs__finished=True))).annotate(
             jobs_unfinished=Count("jobs", filter=models.Q(jobs__finished=False))
         )
 
-    def annotate_permissions(self) -> models.QuerySet["BaseFile"]:
+    def annotate_permissions(self) -> Self:
         """Annotate permission counts on the qs."""
-        return self.annotate(user_permission_count=Count("user_permissions")).annotate(  # type: ignore[no-any-return]
+        return self.annotate(user_permission_count=Count("user_permissions")).annotate(
             group_permission_count=Count("group_permissions")
         )
 
-    def get_for_api_response(self) -> models.QuerySet["BaseFile"]:
+    def get_for_api_response(self) -> Self:
         """Annotate everything needed for an API response."""
-        return self.annotate_job_counts().prefetch_image_version_list()  # type: ignore[no-any-return,attr-defined]
+        return self.annotate_job_counts().prefetch_image_version_list()
 
-    def get_permitted(self, user: UserType) -> models.QuerySet["BaseFile"]:
+    def get_permitted(self, user: UserType | AnonymousUser) -> Self:
         """Return files that are approved, published and not deleted, plus files where the user has view_basefile."""
         if hasattr(user, "permitted_files"):
             # not the first call in this request, use cached version
@@ -86,8 +78,8 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
         ).prefetch_related("uploader")
         files = public_files | perm_files
         # do not return duplicates and cache result
-        user.permitted_files = files.distinct()  # type: ignore[attr-defined]
-        return user.permitted_files  # type: ignore[no-any-return,attr-defined]
+        user.permitted_files = files.distinct()  # type: ignore[union-attr]
+        return user.permitted_files  # type: ignore[no-any-return,union-attr]
 
     def change_bool(self, *, field: str, value: bool) -> int:
         """Change a bool field on a queryset of files."""
@@ -119,7 +111,7 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
         """Undelete files in queryset."""
         return self.change_bool(field="deleted", value=False)
 
-    def prefetch_active_albums_list(self, *, recursive: bool = True) -> models.QuerySet["BaseFile"]:
+    def prefetch_active_albums_list(self, *, recursive: bool = True) -> Self:
         """Prefetch active albums into a list.
 
         Do NOT use the Album bmanager when prefetching inside the BaseFile bmanager,
@@ -145,7 +137,7 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
                 memberships__period__contains=timezone.now(),
             ).distinct()
 
-        return self.prefetch_related(  # type: ignore[no-any-return]
+        return self.prefetch_related(
             models.Prefetch(
                 "albums",
                 queryset=qs,

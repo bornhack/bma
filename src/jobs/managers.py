@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 class JobManager(RelatedPolymorphicManager):
     """Custom manager for job operations."""
 
-    def get_queryset(self) -> models.QuerySet["BaseJob"]:
+    def get_queryset(self) -> models.QuerySet["BaseJob"]:  # type: ignore[override]
         """Prefetch and annotate."""
         from jobs.models import ImageConversionJob
         from jobs.models import ThumbnailJob
         from jobs.models import ThumbnailSourceJob
 
         return (  # type: ignore[no-any-return]
-            super()
+            super()  # type: ignore[attr-defined]
             .get_queryset()
             .select_related("basefile")
             .select_related("user")

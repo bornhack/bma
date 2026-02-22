@@ -85,6 +85,7 @@ def upload(  # noqa: C901,PLR0913
     # get the file metadata
     data = file_metadata.dict(exclude_unset=True)
 
+    Model: type[Image | Video | Audio | Document]  # noqa: N806
     if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
         from images.models import Image as Model
 
@@ -102,7 +103,7 @@ def upload(  # noqa: C901,PLR0913
     tags = [tag for tag in data.pop("tags", []) if tag]
 
     # initiate the model instance
-    uploaded_file = Model(
+    uploaded_file = Model(  # type: ignore[misc]
         uploader=request.user,
         original=file_data,
         original_filename=str(file_data.name),
@@ -194,7 +195,7 @@ def upload(  # noqa: C901,PLR0913
 def file_list(request: HttpRequest, filters: FileFilters = query) -> FileApiResponseType:  # noqa: C901,PLR0912
     """Return a list of metadata for files."""
     # start out with a list of all permitted files and filter from there
-    files = BaseFile.bmanager.get_permitted(user=request.user).get_for_api_response().all()
+    files = BaseFile.objects.get_permitted(user=request.user).get_for_api_response().all()
 
     if filters.albums:
         files = files.filter(memberships__album__in=filters.albums, memberships__period__contains=timezone.now())
@@ -747,7 +748,7 @@ def file_thumbnail_delete(
     if check:
         # check mode requested, don't change anything
         return 202, {"message": "OK"}
-    basefile.thumbnail.delete()
+    basefile.thumbnails.all().delete()
     # create new ThubnailSource job, which will be picked up by a worker,
     # and autogenerate a new thumbnailsource
     ThumbnailSourceJob.objects.create(
@@ -816,7 +817,7 @@ def file_update(
         basefile = BaseFile.bmanager.get_for_api_response().get(uuid=file_uuid)
     except BaseFile.DoesNotExist as e:
         raise Http404 from e
-    if not request.user.has_perm("change_basefile", basefile):
+    if not request.user.has_perm(perm="change_basefile", obj=basefile):
         return 403, {"message": "Permission denied."}
     if check:
         # check mode requested, don't change anything

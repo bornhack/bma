@@ -2,7 +2,7 @@
 # mypy: disable-error-code="var-annotated"
 
 import logging
-import uuid
+import uuid as impuuid
 
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DateTimeRangeField
@@ -33,7 +33,7 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
 
     uuid = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid4,
+        default=impuuid.uuid4,
         editable=False,
         help_text="The unique ID (UUID4) of this object.",
     )
@@ -106,7 +106,7 @@ class Album(models.Model):  # type: ignore[django-manager-missing]
                 added += 1
         return added
 
-    def remove_members(self, *file_uuids: str) -> int:
+    def remove_members(self, *file_uuids: str | impuuid.UUID) -> int:
         """End the memberships for the file_uuids."""
         # maybe do this as one query with F() and .update()
         removed = 0
@@ -147,7 +147,7 @@ class AlbumMember(models.Model):
 
     uuid = models.UUIDField(
         primary_key=True,
-        default=uuid.uuid4,
+        default=impuuid.uuid4,
         editable=False,
         help_text="The unique ID (UUID4) of this object.",
     )

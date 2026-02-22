@@ -69,7 +69,7 @@ class JobTable(tables.Table):
         return filter_button(
             text=f'<a href="{record.basefile.get_absolute_url()}">{record.basefile.title}</a>',
             request=self.request,
-            files=record.basefile.uuid,
+            files=str(record.basefile.uuid),
         )
 
     def render_job_type(self, record: BaseJob) -> str:
@@ -82,13 +82,13 @@ class JobTable(tables.Table):
             return filter_button(
                 text=f'<a href="{record.user.get_absolute_url()}">{record.user}</a>',
                 request=self.request,
-                users=record.user.uuid,
+                users=str(record.user.uuid),
             )
         return ""
 
     def render_client_uuid(self, record: BaseJob) -> str:
         """Render the client_uuid column with a filter button."""
-        return filter_button(text=record.client_uuid, request=self.request, client_uuid=record.client_uuid)
+        return filter_button(text=str(record.client_uuid), request=self.request, client_uuid=str(record.client_uuid))
 
     def render_client_version(self, record: BaseJob) -> str:
         """Render the client_version column with a filter button."""

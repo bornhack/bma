@@ -28,19 +28,11 @@ class TestAlbumViews(BmaTestBase):
         content = response.content.decode()
         soup = BeautifulSoup(content, "html.parser")
         rows = soup.select("div.table-container > table > tbody > tr")
-        self.assertEqual(len(rows), 3, "album list does not return 2 albums")
-
-        # test filtering by files to show albums containing a single file
-        url += f"?files={self.files[0]}"
-        response = self.client.get(url)
-        content = response.content.decode()
-        soup = BeautifulSoup(content, "html.parser")
-        rows = soup.select("div.table-container > table > tbody > tr")
-        self.assertEqual(len(rows), 2, "filtering by files does not return 2 albums")
+        self.assertEqual(len(rows), 3, "album list does not return 3 albums")
 
     def test_album_memberships(self) -> None:
         """Test album memberships."""
-        membership = AlbumMember.objects.get(album_id=self.albums[0], basefile=self.files[0])
+        membership = AlbumMember.objects.get(album_id=self.albums[0], basefile=self.files[0])  # type: ignore[misc]
         assert f"{self.files[0]} is in album {self.albums[0]}" in membership.__str__()
         url = reverse("albums:album_remove_files", kwargs={"album_uuid": self.albums[0]})
         # remove file from album with the wrong user

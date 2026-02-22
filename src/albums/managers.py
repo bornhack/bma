@@ -1,6 +1,6 @@
 """Managers for the Album model."""
 
-from typing import TYPE_CHECKING
+from typing import Self
 
 from django.db import models
 from django.db.models import Count
@@ -8,9 +8,6 @@ from django.db.models import Q
 from django.utils import timezone
 
 from files.models import BaseFile
-
-if TYPE_CHECKING:
-    from .models import Album
 
 
 class AlbumManager(models.Manager):  # type: ignore[type-arg]
@@ -20,10 +17,11 @@ class AlbumManager(models.Manager):  # type: ignore[type-arg]
         """Annotations and prefetches for the Album model."""
         return super().get_queryset()
 
+
 class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
     """Custom queryset for album operations."""
 
-    def prefetch_active_files_list(self, *, recursive: bool = True) -> models.QuerySet["Album"]:
+    def prefetch_active_files_list(self, *, recursive: bool = True) -> Self:
         """Prefetch active files for each Album into a list.
 
         Do NOT use the BaseFile bmanager when prefetching inside the Album bmanager,
@@ -54,19 +52,19 @@ class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
             ),
         )
 
-    def prefetch_user_permissions(self) -> models.QuerySet["Album"]:
+    def prefetch_user_permissions(self) -> Self:
         """Prefetch user permissions."""
         return self.prefetch_related("user_permissions__user").prefetch_related("user_permissions__permission")
 
-    def prefetch_group_permissions(self) -> models.QuerySet["Album"]:
+    def prefetch_group_permissions(self) -> Self:
         """Prefetch group permissions."""
         return self.prefetch_related("group_permissions__group").prefetch_related("group_permissions__permission")
 
-    def annotate_hitcount(self) -> models.QuerySet["Album"]:
+    def annotate_hitcount(self) -> Self:
         """Annotate hitcounts for the qs."""
         return self.annotate(hitcount=Count("hits", distinct=True))
 
-    def annotate_memberships(self) -> models.QuerySet["Album"]:
+    def annotate_memberships(self) -> Self:
         """Annotate membership counts."""
         active_memberships = Count("memberships", filter=Q(memberships__period__contains=timezone.now()), distinct=True)
         historic_memberships = Count("memberships", filter=Q(memberships__period__endswith__lt=timezone.now()))
@@ -77,6 +75,6 @@ class AlbumQuerySet(models.QuerySet):  # type: ignore[type-arg]
             future_memberships=future_memberships,
         )
 
-    def select_owner(self) -> models.QuerySet["Album"]:
+    def select_owner(self) -> Self:
         """Get owner with select_related()."""
         return self.select_related("owner")

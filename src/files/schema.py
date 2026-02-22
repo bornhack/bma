@@ -132,8 +132,8 @@ class FileResponseSchema(ModelSchema):
     @staticmethod
     def resolve_size_bytes(obj: BaseFile, context: dict[str, HttpRequest]) -> int:
         """Get the value for the size_bytes field, return 0 if file is not found."""
-        if Path(obj.original.path).exists():
-            return int(obj.original.size)
+        if Path(obj.original.path).exists():  # type: ignore[attr-defined]
+            return int(obj.original.size)  # type: ignore[attr-defined]
         return 0
 
     @staticmethod

@@ -43,7 +43,7 @@ class FrontpageTemplateView(TemplateView):
         )
         if model == "image":
             qs = qs.prefetch_image_version_list()
-        return qs[:12]  # type: ignore[no-any-return]
+        return qs[:12]
 
     def _query_most_popular(self, model: str) -> QuerySet[Audio | Video | Image | Document] | None:
         """Get the 12 most popular uploads for a model."""
@@ -56,4 +56,4 @@ class FrontpageTemplateView(TemplateView):
         )
         if model == "image":
             qs = qs.prefetch_image_version_list()
-        return qs[:12]  # type: ignore[no-any-return]
+        return qs[:12]

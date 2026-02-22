@@ -40,19 +40,19 @@ class JobResponseSchema(Schema):
     @staticmethod
     def resolve_job_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
         """Get the value for the job_uuid field."""
-        return obj.uuid  # type: ignore[no-any-return]
+        return obj.uuid
 
     @staticmethod
     def resolve_basefile_uuid(obj: ImageConversionJob, context: dict[str, HttpRequest]) -> uuid.UUID:
         """Get the value for the basefile_uuid field."""
         if isinstance(obj, dict) and "basefile_uuid" in obj:
             return obj["basefile_uuid"]  # type: ignore[no-any-return]
-        return obj.basefile_id  # type: ignore[no-any-return]
+        return obj.basefile_id
 
     @staticmethod
     def resolve_user_uuid(obj: BaseJob, context: dict[str, HttpRequest]) -> uuid.UUID:
         """Get the value for the user_uuid field."""
-        return obj.user_id  # type: ignore[no-any-return]
+        return obj.user_id  # type: ignore[return-value]
 
 
 class ImageConversionJobResponseSchema(JobResponseSchema):

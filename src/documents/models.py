@@ -7,7 +7,7 @@ from utils.storage import BmaFileSystemStorage
 from utils.upload import get_upload_path
 
 
-class Document(BaseFile):
+class Document(BaseFile):  # type: ignore[django-manager-missing]
     """The Document model."""
 
     original = models.FileField(

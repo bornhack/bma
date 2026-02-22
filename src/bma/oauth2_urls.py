@@ -1,10 +1,11 @@
 """Urls for django-oauth2-toolkit mounted under /o/."""
 
 import oauth2_provider.views as oauth2_views
-from oauth2_provider.urls import base_urlpatterns, oidc_urlpatterns
 from decorator_include import decorator_include
 from django.conf import settings
 from django.urls import path
+from oauth2_provider.urls import base_urlpatterns
+from oauth2_provider.urls import oidc_urlpatterns
 
 from utils.auth import support_authbearer_user
 

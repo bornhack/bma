@@ -65,13 +65,13 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
     if "files" in payload.dict():
         # save m2m, avoid adding files to the album that are not permitted for the user
         requested_files = set(payload.dict()["files"])
-        permitted_files = set(BaseFile.bmanager.get_permitted(user=request.user).values_list("uuid", flat=True))
+        permitted_files = set(BaseFile.objects.get_permitted(user=request.user).values_list("uuid", flat=True))
         album.files.set(permitted_files.intersection(requested_files))
 
     # assign permissions and return response
     album.add_initial_permissions()
-    # get from database so the bmanager is used
-    album = Album.bmanager.prefetch_active_files_list().get(pk=album.pk)
+    # get fresh from database including file list
+    album = Album.objects.prefetch_active_files_list().get(pk=album.pk)
     return 201, {"bma_response": album}
 
 
@@ -83,7 +83,7 @@ def album_create(request: HttpRequest, payload: AlbumRequestSchema) -> AlbumApiR
 )
 def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseType:
     """Return an album."""
-    album = get_object_or_404(Album.bmanager.annotate_memberships().prefetch_active_files_list().all(), uuid=album_uuid)
+    album = get_object_or_404(Album.objects.annotate_memberships().prefetch_active_files_list().all(), uuid=album_uuid)
     return 200, {"bma_response": album}
 
 
@@ -95,7 +95,7 @@ def album_get(request: HttpRequest, album_uuid: uuid.UUID) -> AlbumApiResponseTy
 )
 def album_list(request: HttpRequest, filters: AlbumFilters = query) -> AlbumApiResponseType:
     """Return a list of albums."""
-    albums = Album.bmanager.annotate_memberships().prefetch_active_files_list().all()
+    albums = Album.objects.annotate_memberships().prefetch_active_files_list().all()
 
     if filters.files:
         # __in is OR and we want AND, build a query for .exclude() with all file UUIDs
@@ -154,7 +154,7 @@ def album_update(
     check: bool = False,
 ) -> AlbumApiResponseType:
     """Update (PATCH) or replace (PUT) an Album."""
-    album = get_object_or_404(Album.bmanager.prefetch_active_files_list().all(), uuid=album_uuid)
+    album = get_object_or_404(Album.objects.prefetch_active_files_list().all(), uuid=album_uuid)
     if not request.user.has_perm("change_album", album):
         # no permission
         return 403, {"message": "Permission denied."}
@@ -166,7 +166,7 @@ def album_update(
         data = payload.dict(exclude_unset=True)
         # handle the m2m seperate
         del data["files"]
-        Album.bmanager.filter(uuid=album.uuid).update(**data)
+        Album.objects.filter(uuid=album.uuid).update(**data)
         if "files" in payload.dict():
             album.update_members(*payload.dict()["files"], replace=False)
     else:
@@ -179,6 +179,5 @@ def album_update(
                 # set the attribute on the album
                 setattr(album, attr, value)
         album.save()
-    # use bmanager to get the album and return it
-    album = Album.bmanager.get(pk=album.pk)
+    album = Album.objects.prefetch_active_files_list().get(pk=album.pk)
     return 200, {"bma_response": album}

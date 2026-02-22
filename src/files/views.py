@@ -47,7 +47,7 @@ from jobs.tables import JobTable
 from permissions.tables import PermissionTable
 from tags.filters import TagFilter
 from tags.forms import TagForm
-from tags.mixins import TagViewMixin
+from tags.mixins import FileTagViewMixin
 from tags.models import BmaTag
 from tags.models import TaggedFile
 from tags.tables import TaggingTable
@@ -94,9 +94,9 @@ class FileListView(SingleTableMixin, FilterView):
         return [f"{self.request.resolver_match.url_name}.html"]
 
     def get_queryset(self, queryset: models.QuerySet[BaseFile] | None = None) -> models.QuerySet[BaseFile]:
-        """Use bmanager to get juicy file objects."""
-        return (  # type: ignore[no-any-return]
-            BaseFile.bmanager.get_permitted(user=self.request.user)
+        """Prefetch and annotate as needed."""
+        return (
+            BaseFile.objects.get_permitted(user=self.request.user)
             .prefetch_image_version_list()
             .prefetch_thumbnail_list()
             .prefetch_active_albums_list(recursive=True)
@@ -129,7 +129,7 @@ class FileDetailView(DetailView):  # type: ignore[type-arg]
         """Check permissions before returning the file."""
         try:
             basefile = (
-                BaseFile.bmanager.prefetch_image_version_list()
+                BaseFile.objects.prefetch_image_version_list()
                 .prefetch_thumbnail_list()
                 .prefetch_active_albums_list()
                 .get(pk=self.kwargs["file_uuid"])
@@ -191,12 +191,12 @@ def bma_media_view(request: HttpRequest, *, path: str, accel: bool) -> FileRespo
     pk = shortuuid.decode(shortid)
 
     try:
-        obj = None
+        obj: BaseFile | ThumbnailSource | ImageVersion | Thumbnail | None = None
         if prefix[0] == "o":
             # original
             obj = BaseFile.objects.get(pk=pk)
             basefile = obj
-            filepath = obj.original.path
+            filepath = obj.original.path  # type: ignore[attr-defined]
 
         elif prefix == "ts":
             # thumbnailsource
@@ -261,7 +261,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
         form = super().get_form()
         # any filters in the view decide what choices are actually rendered in the html form,
         # but all permitted files uuids are added as choices to make sure validation passes
-        form.fields["selection"].choices = BaseFile.bmanager.get_permitted(user=self.request.user).values_list(
+        form.fields["selection"].choices = BaseFile.objects.get_permitted(user=self.request.user).values_list(
             "pk", "pk"
         )
         return form  # type: ignore[no-any-return]
@@ -282,7 +282,9 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
 
         elif form.cleaned_data["action"] == "add_to_album":  # noqa: RET505
             # render a form to pick the album to which the files should be added
-            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.bmanager.all())
+            albums = get_objects_for_user(
+                self.request.user, "change_album", klass=Album.objects.prefetch_active_files_list().all()
+            )
             # only show albums which doesn't already have all the files as members
             form_uuids = form.cleaned_data["selection"]
             form_albums = []
@@ -302,7 +304,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
 
         elif form.cleaned_data["action"] == "remove_from_album":
             # render a form to pick the album from which the files should be removed
-            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.bmanager.all())
+            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.objects.all())
             for basefile in form.cleaned_data["selection"]:
                 albums = albums.filter(files__in=[basefile])
             # put the form together
@@ -331,7 +333,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
 ########## File job and album views ######################################################
 
 
-class FileJobsView(FileViewMixin, SingleTableMixin, FilterView):
+class FileJobsView(SingleTableMixin, FilterView):
     """File jobs view. Shows all jobs for a file."""
 
     template_name = "file_jobs.html"
@@ -342,13 +344,16 @@ class FileJobsView(FileViewMixin, SingleTableMixin, FilterView):
 
     def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:
         """Get jobs."""
-        return BaseJob.bmanager.filter(basefile=self.file)  # type: ignore[no-any-return]
+        self.file = get_object_or_404(
+            BaseFile.objects.get_permitted(user=self.request.user), uuid=self.kwargs["file_uuid"]
+        )
+        return BaseJob.objects.filter(basefile=self.file)
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add total_jobs to context."""
         context = super().get_context_data(**kwargs)
         context["total_jobs"] = self.file.jobs.count()
-        return context
+        return context  # type: ignore[no-any-return]
 
 
 class FileAlbumsView(FileViewMixin, SingleTableMixin, FilterView):
@@ -362,7 +367,7 @@ class FileAlbumsView(FileViewMixin, SingleTableMixin, FilterView):
 
     def get_table_data(self) -> models.QuerySet[Album]:
         """Get albums."""
-        return Album.bmanager.filter(uuid__in=self.object.albums.all().values_list("uuid", flat=True))
+        return Album.objects.filter(uuid__in=self.object.albums.all().values_list("uuid", flat=True))
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add total_albums to context."""
@@ -404,7 +409,7 @@ class FileTagCreateView(CuratorGroupRequiredMixin, FileViewMixin, FormView):  # 
         return redirect(self.file)
 
 
-class FileTagDetailView(TagViewMixin, SingleTableMixin, ListView):  # type: ignore[type-arg,misc]
+class FileTagDetailView(FileTagViewMixin, SingleTableMixin, ListView):  # type: ignore[type-arg,misc]
     """File tag detail view. Shows a list of taggings of a tag on a file."""
 
     table_class = TaggingTable
@@ -418,7 +423,7 @@ class FileTagDetailView(TagViewMixin, SingleTableMixin, ListView):  # type: igno
         return self.file.taggings.filter(tag=self.tag)  # type: ignore[no-any-return]
 
 
-class FileTagDeleteView(TagViewMixin, DeleteView):  # type: ignore[type-arg]
+class FileTagDeleteView(FileTagViewMixin, DeleteView):  # type: ignore[type-arg]
     """File untagging view. Removes a users tagging of a tag from a file."""
 
     model = TaggedFile

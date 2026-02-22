@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bma")
 
 
-class Image(BaseFile):
+class Image(BaseFile):  # type: ignore[django-manager-missing]
     """The Image model."""
 
     original = PictureField(
@@ -92,7 +92,7 @@ class Image(BaseFile):
         Performance sensitive, called from template tags, do not break prefetching. Loop over
         self.image_version_list instead of self.image_versions.filter().
         """
-        for image in self.image_version_list:
+        for image in self.image_version_list:  # type: ignore[attr-defined]
             if image.width == self.width and image.aspect_ratio == self.aspect_ratio and image.mimetype == mimetype:
                 return image  # type: ignore[no-any-return]
         return None
@@ -168,7 +168,7 @@ class Image(BaseFile):
         if mimetype:
             kwargs["mimetype"] = mimetype
         # use requested custom AR or Image original AR
-        for version in self.image_version_list:
+        for version in self.image_version_list:  # type: ignore[attr-defined]
             if version.aspect_ratio != kwargs["aspect_ratio"]:
                 continue
             if "mimetype" in kwargs and version.mimetype != kwargs["mimetype"]:
@@ -280,7 +280,7 @@ class ImageVersion(ImageModel, BaseModel):
     @property
     def uploader(self) -> "User":
         """Return the uploader of this image version."""
-        return self.job.user  # type: ignore[no-any-return]
+        return self.job.user  # type: ignore[return-value]
 
     class Meta:
         """Meta model options for the ImageVersion model."""

@@ -16,7 +16,7 @@ class FileViewMixin(SingleObjectMixin[BaseFile]):
         super().setup(request, *args, **kwargs)  # type: ignore[misc]
         try:
             self.object = self.file = (
-                BaseFile.bmanager.get_permitted(user=self.request.user)  # type: ignore[attr-defined]
+                BaseFile.objects.get_permitted(user=self.request.user)  # type: ignore[attr-defined]
                 .prefetch_image_version_list()
                 .get(uuid=kwargs["file_uuid"])
             )
@@ -38,7 +38,7 @@ class FileChangeViewMixin(SingleObjectMixin[BaseFile]):
         super().setup(request, *args, **kwargs)  # type: ignore[misc]
         try:
             self.object = self.file = (
-                BaseFile.bmanager.get_permitted(user=self.request.user)  # type: ignore[attr-defined]
+                BaseFile.objects.get_permitted(user=self.request.user)  # type: ignore[attr-defined]
                 .prefetch_image_version_list()
                 .get(uuid=kwargs["file_uuid"])
             )

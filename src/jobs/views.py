@@ -14,7 +14,6 @@ from .models import BaseJob
 from .tables import JobTable
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
     from django.forms import Form
 
 
@@ -27,15 +26,11 @@ class JobListView(SingleTableMixin, FilterView):
     filterset_class = JobFilter
     context_object_name = "jobs"
 
-    def get_queryset(self, queryset: "QuerySet[BaseJob] | None" = None) -> "QuerySet[BaseJob]":
-        """Get jobs using bmanager."""
-        return BaseJob.bmanager.all()  # type: ignore[no-any-return]
-
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, "Form"]:
         """Add form to the context."""
         context = super().get_context_data(**kwargs)
         context["total_jobs"] = BaseJob.objects.filter(
-            basefile__in=BaseFile.bmanager.get_permitted(user=self.request.user)
+            basefile__in=BaseFile.objects.get_permitted(user=self.request.user)
         ).count()
         return context  # type: ignore[no-any-return]
 

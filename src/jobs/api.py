@@ -203,7 +203,7 @@ def upload_result(  # noqa: PLR0913
         # save exif data from ImageExifExtractionJob
         elif job.job_type == "ImageExifExtractionJob":
             exif = json.load(data)
-            basefile.exif = exif
+            basefile.exif = exif  # type: ignore[attr-defined]
             basefile.save(update_fields=["exif", "updated_at"])
 
         else:
@@ -214,7 +214,7 @@ def upload_result(  # noqa: PLR0913
         return 422, {"message": "Result validation error"}
 
     # mark job as completed
-    job.user = request.user
+    job.user = request.user  # type: ignore[assignment]
     job.client_uuid = client.client_uuid
     job.client_version = client.client_version
     job.finished = True

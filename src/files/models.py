@@ -29,7 +29,7 @@ from permissions.utils import bma_assign_group_perm
 from permissions.utils import bma_assign_user_perm
 from pictures.models import PictureField
 from pictures.models import PictureFieldFile
-from tags.managers import BMATagManager
+from tags.managers import BmaTagManager
 from tags.models import TaggedFile
 from users.models import UserType
 from users.sentinel import get_deleted_user
@@ -76,7 +76,7 @@ class LicenseChoices(models.TextChoices):
     )
 
 
-class BaseFile(PolymorphicModel):
+class BaseFile(PolymorphicModel):  # type: ignore[django-manager-missing]
     """The polymorphic base model inherited by the Image, Video, Audio, and Document models."""
 
     class Meta:
@@ -95,7 +95,7 @@ class BaseFile(PolymorphicModel):
         verbose_name = "file"
         verbose_name_plural = "files"
 
-    objects = PolymorphicManager.from_queryset(BaseFileQuerySet)()
+    objects = PolymorphicManager.from_queryset(BaseFileQuerySet)()  # type: ignore[misc]
 
     bmanager = BaseFileManager.from_queryset(BaseFileQuerySet)()
 
@@ -193,7 +193,7 @@ class BaseFile(PolymorphicModel):
 
     tags = TaggableManager(
         through=TaggedFile,
-        manager=BMATagManager,
+        manager=BmaTagManager,
         help_text="The tags for this file",
     )
 
@@ -219,7 +219,7 @@ class BaseFile(PolymorphicModel):
     @property
     def filename(self) -> str:
         """Get the filename."""
-        return Path(self.original.path).name
+        return Path(self.original.path).name  # type: ignore[attr-defined]
 
     @property
     def license_name(self) -> str:
@@ -252,7 +252,7 @@ class BaseFile(PolymorphicModel):
 
         # add links for downloads
         links["downloads"] = {
-            "original": self.original.url,
+            "original": self.original.url,  # type: ignore[attr-defined]
         }
         if hasattr(self, "thumbnailsource"):
             links["downloads"]["thumbnail_source"] = self.thumbnailsource.source.url  # type: ignore[index]
@@ -350,7 +350,7 @@ class BaseFile(PolymorphicModel):
     @property
     def thumbnail_path(self) -> Path:
         """Return the path for the thumbnails for this file."""
-        path = Path(self.original.path)
+        path = Path(self.original.path)  # type: ignore[attr-defined]
         return path.parent / path.stem / "thumbnails"
 
     def parse_and_add_tags(self, tags: str, tagger: UserType) -> None:
@@ -374,15 +374,15 @@ class BaseFile(PolymorphicModel):
         elif self.filetype == "image":
             # create temporary thumbnailsource for job creation to get the
             # conversion rules from the thumbnail field
-            source = PictureFieldFile(instance=self, field=ThumbnailSource.source.field, name=self.original.name)
-            crop_x = self.crop_center_x
-            crop_y = self.crop_center_y
+            source = PictureFieldFile(instance=self, field=ThumbnailSource.source.field, name=self.original.name)  # type: ignore[attr-defined]
+            crop_x = self.crop_center_x  # type: ignore[attr-defined]
+            crop_y = self.crop_center_y  # type: ignore[attr-defined]
         else:
             # no thumbnailsource to work with yet,
             # make sure there is a ThumbnailSourceJob
             ThumbnailSourceJob.objects.get_or_create(
                 basefile=self,
-                source_url=self.original.url,
+                source_url=self.original.url,  # type: ignore[attr-defined]
                 finished=False,
             )
             return

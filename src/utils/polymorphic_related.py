@@ -3,6 +3,7 @@
 Borrowed from https://gist.github.com/Safrone/7c24b492a791679e6e94cc765459dc78
 which is from https://github.com/jazzband/django-polymorphic/pull/531
 """
+# mypy: ignore-errors
 
 import copy
 from collections import defaultdict

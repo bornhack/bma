@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from collections.abc import Collection
 
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -14,7 +15,7 @@ from images.models import Image
 from pictures.utils import get_height
 
 
-def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | dict[str, str]]]:
+def serialise_basefile(file: BaseFile) -> dict[str, Collection[str]]:
     """Serialise a BaseFile object into a JSON-serialisable dictionary."""
     json_data = {
         "uuid": str(file.uuid),
@@ -33,10 +34,10 @@ def serialise_basefile(file: BaseFile) -> dict[str, int | str | dict[str, str | 
     if file.filetype == "image":
         json_data.update(
             {
-                "aspect_ratio": file.aspect_ratio,
-                "exif": file.exif,
-                "width": file.width,
-                "height": file.height,
+                "aspect_ratio": file.aspect_ratio,  # type: ignore[attr-defined]
+                "exif": file.exif,  # type: ignore[attr-defined]
+                "width": file.width,  # type: ignore[attr-defined]
+                "height": file.height,  # type: ignore[attr-defined]
             }
         )
     return json_data
@@ -46,11 +47,11 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
     """Render a BMA widget rendered with the requested style, counter and UUID."""
     js_files = []
     try:
-        album = Album.bmanager.get(pk=uuid)
+        album = Album.objects.get(pk=uuid)
         js_files = [serialise_basefile(file) for file in album.active_files_list if file.permitted(user=request.user)]
     except Album.DoesNotExist:
         try:
-            file = BaseFile.bmanager.get(uuid=uuid)
+            file = BaseFile.objects.get(uuid=uuid)
             if file.permitted(user=request.user):
                 js_files.append(serialise_basefile(file))
         except BaseFile.DoesNotExist:
@@ -74,19 +75,14 @@ def bma_widget_view(request: HttpRequest, style: str, count: int, uuid: str) -> 
 
 def bma_widget_iframe_view(request: HttpRequest, style: str, option: int, uuid: str) -> HttpResponse:
     """Render a BMA iframe widget rendered with the requested style, counter and UUID."""
-    js_files = []
+    js_files = BaseFile.objects.none()
     try:
-        album = Album.bmanager.get(pk=uuid)
-        js_files = BaseFile.bmanager.filter(
+        album = Album.objects.get(pk=uuid)
+        js_files = BaseFile.objects.filter(
             uuid__in=[f.uuid for f in album.active_files_list if f.permitted(user=request.user)]
         )
     except Album.DoesNotExist:
-        try:
-            file = BaseFile.bmanager.get(uuid=uuid)
-            if file.permitted(user=request.user):
-                js_files.append(serialise_basefile(file))
-        except BaseFile.DoesNotExist:
-            pass
+        js_files = BaseFile.objects.get_permitted(user=request.user).filter(uuid=uuid)
 
     return render(
         request,

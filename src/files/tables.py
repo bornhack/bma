@@ -61,7 +61,7 @@ class FileTable(tables.Table):
     def render_albums(self, record: BaseFile) -> str:
         """Render albums as a list of links."""
         output = ""
-        for album in record.active_albums_list:
+        for album in record.active_albums_list:  # type: ignore[attr-defined]
             url = reverse("albums:album_detail_table", kwargs={"album_uuid": album.pk})
             output += filter_button(
                 text=f'<a href="{url}">{album.title}&nbsp;({len(album.active_files_list)})</a><br>',
@@ -75,7 +75,7 @@ class FileTable(tables.Table):
     def render_tags(self, record: BaseFile) -> str:
         """Render tags in a taggy way."""
         output = ""
-        for tag in record.tag_list:
+        for tag in record.tag_list:  # type: ignore[attr-defined]
             output += f'<span class="badge bg-secondary">{tag}</span> '
         if not output:
             output = "N/A"
@@ -86,7 +86,7 @@ class FileTable(tables.Table):
         finished_url = reverse("jobs:job_list") + f"?files={record.uuid}&finished=true"
         unfinished_url = reverse("jobs:job_list") + f"?files={record.uuid}&finished=false"
         return mark_safe(  # noqa: S308
-            f'<a href="{unfinished_url}">{record.jobs_unfinished}</a> / '
+            f'<a href="{unfinished_url}">{record.jobs_unfinished}</a> / '  # type: ignore[attr-defined]
             f'<a href="{finished_url}">{record.jobs_finished}</a>'
         )
 
@@ -107,7 +107,7 @@ class FileTable(tables.Table):
         mimetype = f'<i class="{record.filetype_icon}"></i> {record.filetype}<br>'
         mimetype += filter_button(text=f"<i>{record.mimetype}</i>", request=self.request, mimetype__icontains=value)
         if record.filetype == "image":
-            mimetype += f"<br>{record.width}*{record.height}<br>AR {record.aspect_ratio}"
+            mimetype += f"<br>{record.width}*{record.height}<br>AR {record.aspect_ratio}"  # type: ignore[attr-defined]
         return mark_safe(mimetype)  # noqa: S308
 
     def render_license(self, value: str, record: BaseFile) -> str:

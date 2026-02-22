@@ -1,21 +1,14 @@
 """The filters used for album list endpoints."""
 
 import uuid
-from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import django_filters
-from django.utils import timezone
 
-from files.models import BaseFile
 from utils.filters import FileAlbumSortingChoices
 from utils.filters import ListFilters
 
 from .models import Album
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
-    from django.http import HttpRequest
 
 
 class AlbumFilters(ListFilters):

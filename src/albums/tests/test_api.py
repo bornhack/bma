@@ -91,7 +91,9 @@ class TestAlbumsApi(BmaTestBase):
     def test_album_list_api(self) -> None:
         """Get album list from the API."""
         response = self.client.get(
-            reverse("api-v1-json:album_list"), headers={"authorization": self.tokens[self.creator2]}
+            reverse("api-v1-json:album_list"),
+            headers={"authorization": self.tokens[self.creator2]},
+            data={"sorting": "created_at_asc"},
         )
         assert response.status_code == 200
         assert len(response.json()["bma_response"]) == 3, "Did not get 3 albums"

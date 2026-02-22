@@ -58,9 +58,6 @@ def get_thumbnail_source_path(instance: "ThumbnailSource", filename: str) -> Pat
     """Return the upload path under MEDIA_ROOT for the thumbnail source file.
 
     The filename argument is not used.
-
-    Returns something like:
-
     """
     extension = get_extension_from_mimetype(mimetype=instance.mimetype)
     return Path(
@@ -79,13 +76,11 @@ def get_thumbnail_path(instance: "Thumbnail", filename: str = "") -> Path:
     """Return the upload path under MEDIA_ROOT for this Thumbnail.
 
     The filename argument is not used.
-
-    Returns something like:
     """
     extension = get_extension_from_mimetype(mimetype=instance.mimetype)
     return Path(
         # put the file under a user-specific dir
-        f"user_{instance.job.user.shortuuid}",
+        f"user_{instance.job.user.shortuuid}",  # type: ignore[union-attr]
         # and under a filetype-specific dir (image, video, audio, or document)
         instance.basefile.filetype,
         # under a file-specific dir
@@ -103,8 +98,6 @@ def get_image_version_path(instance: "ImageVersion", filename: str) -> Path:
     """Return the upload path under MEDIA_ROOT for this ImageVersion.
 
     The filename argument is not used.
-
-    Returns something like:
     """
     # return something like
     # user_dbd9d175-7a54-4339-b46d-de87791cb188/image/bma_image_6fcfaf74-3b39-4443-889e-93fc7bf8627b/400w.webp

@@ -7,7 +7,7 @@ from utils.storage import BmaFileSystemStorage
 from utils.upload import get_upload_path
 
 
-class Audio(BaseFile):
+class Audio(BaseFile):  # type: ignore[django-manager-missing]
     """The Audio model."""
 
     original = models.FileField(

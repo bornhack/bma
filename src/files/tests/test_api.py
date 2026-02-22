@@ -1129,7 +1129,7 @@ class TestFilesApi(BmaTestBase):
         """Test the case where a file has gone missing from disk for some reason."""
         self.file_upload()
         basefile = BaseFile.objects.get(uuid=self.file_uuid)
-        Path(basefile.original.path).unlink()
+        Path(basefile.original.path).unlink()  # type: ignore[attr-defined]
         response = self.client.get(
             reverse(
                 "api-v1-json:file_get",

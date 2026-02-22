@@ -23,6 +23,7 @@ from guardian.shortcuts import get_objects_for_user
 
 from files.filters import FileFilter
 from files.forms import FileMultipleActionForm
+from files.managers import BaseFileQuerySet
 from files.models import BaseFile
 from files.tables import FileTable
 from hitcounter.utils import count_hit
@@ -47,8 +48,8 @@ class AlbumListView(SingleTableMixin, FilterView):
     context_object_name = "albums"
 
     def get_queryset(self) -> models.QuerySet[Album]:
-        """Use bmanager to get rich album objects."""
-        return Album.bmanager.annotate_memberships().all()
+        """Annotate albums with memberships."""
+        return Album.objects.annotate_memberships().all()
 
 
 class AlbumDetailView(SingleTableMixin, FilterView):
@@ -63,17 +64,17 @@ class AlbumDetailView(SingleTableMixin, FilterView):
         return [f"{self.request.resolver_match.url_name}.html"]
 
     def get_object(self, queryset: models.QuerySet[Album] | None = None) -> Album:
-        """Use the manager so the album object has prefetched active_files."""
-        album = Album.bmanager.prefetch_active_files_list().get(pk=self.kwargs["album_uuid"])
+        """Prefetch active_files."""
+        album = Album.objects.prefetch_active_files_list().get(pk=self.kwargs["album_uuid"])
         # count the hit
         count_hit(self.request, album)
         return album  # type: ignore[no-any-return]
 
-    def get_queryset(self) -> str:
-        """Prefer a real bmanager qs over the list of files so each file obj has all needed info."""
+    def get_queryset(self) -> BaseFileQuerySet:
+        """Prefetch and annotate as needed."""
         uuids = [f.pk for f in self.get_object().active_files_list]
-        return (  # type: ignore[no-any-return]
-            BaseFile.bmanager.get_permitted(user=self.request.user)
+        return (
+            BaseFile.objects.get_permitted(user=self.request.user)
             .filter(pk__in=uuids)
             .prefetch_image_version_list()
             .prefetch_thumbnail_list()
@@ -104,7 +105,7 @@ class AlbumCreateView(CuratorGroupRequiredMixin, CreateView):  # type: ignore[ty
         form = super().get_form()
         form.fields["files"].choices = [
             (f[0], f"{f[1]} ({f[0]})")
-            for f in BaseFile.bmanager.get_permitted(user=self.request.user).values_list("pk", "title")
+            for f in BaseFile.objects.get_permitted(user=self.request.user).values_list("pk", "title")
         ]
         return form  # type: ignore[no-any-return]
 
@@ -151,13 +152,15 @@ class AlbumAddFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
         # do we have an album_uuid or not
         if "album_uuid" in self.kwargs:
             # show only one album in the form
-            album = get_object_or_404(Album.bmanager.all(), pk=self.kwargs["album_uuid"])
+            album = get_object_or_404(
+                Album.objects.all().prefetch_active_files_list(recursive=False), pk=self.kwargs["album_uuid"]
+            )
             if not self.request.user.has_perm("change_album", album):
                 raise PermissionDenied
             # show the files not already in the album in the form
             form.fields["files_to_add"].choices = [
                 (str(bf.pk), bf)
-                for bf in BaseFile.bmanager.get_permitted(user=self.request.user)
+                for bf in BaseFile.objects.get_permitted(user=self.request.user)
                 if bf not in album.active_files_list
             ]
             form.fields["album"].choices = [(album.pk, album.title)]
@@ -168,7 +171,7 @@ class AlbumAddFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
             albums = get_objects_for_user(self.request.user, "change_album", klass=Album)
             form.fields["album"].choices = [(a[0], a[1]) for a in albums.values_list("pk", "title")]
             form.fields["files_to_add"].choices = [
-                (bf.pk, bf.pk) for bf in BaseFile.bmanager.get_permitted(user=self.request.user)
+                (bf.pk, bf.pk) for bf in BaseFile.objects.get_permitted(user=self.request.user)
             ]
         return form  # type: ignore[no-any-return]
 
@@ -208,7 +211,9 @@ class AlbumRemoveFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-a
         # do we have an album_uuid or not
         if "album_uuid" in self.kwargs:
             # show only one album in the form
-            album = get_object_or_404(Album.bmanager.all(), pk=self.kwargs["album_uuid"])
+            album = get_object_or_404(
+                Album.objects.all().prefetch_active_files_list(recursive=False), pk=self.kwargs["album_uuid"]
+            )
             if not self.request.user.has_perm("change_album", album):
                 raise PermissionDenied
             # show the files in the album in the form
@@ -218,7 +223,7 @@ class AlbumRemoveFilesView(LoginRequiredMixin, FormView):  # type: ignore[type-a
         else:
             # we don't have an album_uuid, the form is rendered in FileMultipleActionView and
             # these field choices are only used for validation of the submitted form
-            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.bmanager.all())
+            albums = get_objects_for_user(self.request.user, "change_album", klass=Album.objects.all())
             form.fields["album"].choices = [(a[0], a[1]) for a in albums.values_list("pk", "title")]
             form.fields["files_to_remove"].choices = [
                 (str(bf.pk), bf)

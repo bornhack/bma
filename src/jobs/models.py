@@ -42,7 +42,7 @@ class FiletypeUnsupportedError(Exception):
 class BaseJob(PolymorphicModel):
     """Base model to represent file processing jobs."""
 
-    objects = RelatedPolymorphicManager()
+    objects = RelatedPolymorphicManager()  # type: ignore[misc]
 
     bmanager = JobManager()
 
@@ -107,6 +107,10 @@ class BaseJob(PolymorphicModel):
         """Use class name as job type."""
         return self.__class__.__name__
 
+    def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
+        """Implemented in subclasses."""
+        raise NotImplementedError
+
 
 class FileUploadJob(BaseJob):
     """Model to contain file upload jobs. File upload jobs are created on upload. No extra fields."""
@@ -114,7 +118,7 @@ class FileUploadJob(BaseJob):
     def result_url(self) -> str:
         """Return the result url."""
         # the basefile model doesn't have the .original field so this is a bit awkward
-        return str(self.basefile.get_real_instance().original.url)
+        return str(self.basefile.get_real_instance().original.url)  # type: ignore[attr-defined]
 
 
 class ImageJob(BaseJob):
@@ -181,7 +185,7 @@ class ImageConversionJob(ImageJob):
             job=self,
             image=self.basefile,
             # use AR from source image if no custom AR is requested
-            aspect_ratio=self.custom_aspect_ratio or self.basefile.aspect_ratio,
+            aspect_ratio=self.custom_aspect_ratio or self.basefile.aspect_ratio,  # type: ignore[attr-defined]
             imagefile=f,
             file_size=f.size,  # type: ignore[misc]
             **data,
@@ -266,7 +270,7 @@ class ThumbnailJob(ImageJob):
 
         # set thumbnailsource FK?
         if hasattr(self.basefile, "thumbnailsource"):
-            data["source"] = self.basefile.thumbnailsource
+            data["source"] = self.basefile.thumbnailsource  # type: ignore[assignment]
         thumb = Thumbnail(
             job=self,
             basefile=self.basefile,

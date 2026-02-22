@@ -265,7 +265,7 @@ class BmaTestBase(TestCase):
         )
         assert response.status_code == 200
         assert " created!" in response.content.decode()
-        return response.context_data["album"].uuid  # type: ignore[no-any-return]
+        return response.context_data["album"].uuid  # type: ignore[no-any-return,index]
 
     @classmethod
     def admin_files_action(cls, *file_uuids: str, username: str, action: str) -> None:

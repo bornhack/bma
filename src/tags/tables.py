@@ -21,8 +21,8 @@ class TagTable(tables.Table):
     name = tables.Column(verbose_name="Tag")
     weight = tables.Column(verbose_name="Weight")
     taggings = tables.Column(verbose_name="Taggings")
-    tagged_files = tables.Column(verbose_name="Tagged Files", empty_values=())
-    taggings_per_file = tables.Column(verbose_name="Taggings/File", empty_values=())
+    tagged_files = tables.Column(verbose_name="Tagged Files", empty_values=(), orderable=False)
+    taggings_per_file = tables.Column(verbose_name="Taggings/File", empty_values=(), orderable=False)
     created_at = tables.Column(verbose_name="Tag Time")
     slug = tables.Column(verbose_name="Url Slug")
 

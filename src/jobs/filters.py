@@ -37,7 +37,7 @@ def get_user_widget_data(request: "HttpRequest") -> "QuerySet[User]":
 
 def get_permitted_files(request: "HttpRequest") -> "QuerySet[BaseFile]":
     """Called by JobFilter to get files for the form field."""
-    return BaseFile.bmanager.get_permitted(user=request.user).all()  # type: ignore[no-any-return]
+    return BaseFile.objects.get_permitted(user=request.user).all()
 
 
 class JobFilter(django_filters.FilterSet):
