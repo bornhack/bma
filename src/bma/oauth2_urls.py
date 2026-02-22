@@ -1,16 +1,15 @@
 """Urls for django-oauth2-toolkit mounted under /o/."""
 
 import oauth2_provider.views as oauth2_views
+from oauth2_provider.urls import base_urlpatterns, oidc_urlpatterns
 from decorator_include import decorator_include
 from django.conf import settings
 from django.urls import path
 
 from utils.auth import support_authbearer_user
 
-oauth2_endpoint_views = [
-    path("authorize/", oauth2_views.AuthorizationView.as_view(), name="authorize"),
-    path("token/", oauth2_views.TokenView.as_view(), name="token"),
-    path("revoke-token/", oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
+oauth2_endpoint_views = [*base_urlpatterns, *oidc_urlpatterns]
+oauth2_endpoint_views += [
     path(
         "authorized_tokens/",
         decorator_include(
@@ -23,7 +22,7 @@ oauth2_endpoint_views = [
     ),
 ]
 
-# allow app management in debug mode
+# only allow "manual" app management in debug mode
 if settings.DEBUG:
     oauth2_endpoint_views += [
         path("applications/", oauth2_views.ApplicationList.as_view(), name="list"),
