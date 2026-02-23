@@ -32,7 +32,7 @@ dependencies = [
     "django-taggit==6.1.0",
     "environs[django]==14.2.0",
     "fontawesomefree==6.6.0",
-    "orjson==3.11.4",
+    "orjson==3.11.7",
     "psycopg2-binary==2.9.10",
     "shortuuid==1.0.13",
 ]
