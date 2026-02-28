@@ -17,7 +17,7 @@ dependencies = [
     "demoji==1.1.0",
     "Django==5.2.11",
     "django-allauth[socialaccount]==65.14.3",
-    "django-bootstrap5==25.1",
+    "django-bootstrap5==26.2",
     "django-cleanup==9.0.0",
     "django-cors-headers==4.9.0",
     "django-decorator-include==3.3",
