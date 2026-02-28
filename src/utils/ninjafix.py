@@ -5,10 +5,10 @@ from typing import Any
 
 def monkeypatch_ninja_uuid_converter() -> None:
     """Workaround https://github.com/vitalik/django-ninja/issues/1266 for now."""
-    import importlib
-    import sys
+    import importlib  # noqa: PLC0415
+    import sys  # noqa: PLC0415
 
-    import django.urls
+    import django.urls  # noqa: PLC0415
 
     module_name = "ninja.signature.utils"
     sys.modules.pop(module_name, None)

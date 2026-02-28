@@ -15,9 +15,9 @@ class JobManager(RelatedPolymorphicManager):
 
     def get_queryset(self) -> models.QuerySet["BaseJob"]:  # type: ignore[override]
         """Prefetch and annotate."""
-        from jobs.models import ImageConversionJob
-        from jobs.models import ThumbnailJob
-        from jobs.models import ThumbnailSourceJob
+        from jobs.models import ImageConversionJob  # noqa: PLC0415
+        from jobs.models import ThumbnailJob  # noqa: PLC0415
+        from jobs.models import ThumbnailSourceJob  # noqa: PLC0415
 
         return (  # type: ignore[no-any-return]
             super()  # type: ignore[attr-defined]

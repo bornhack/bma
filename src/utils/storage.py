@@ -49,7 +49,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 name,
             ):
                 # file is an original
-                user, filetype, filename = parts
+                _user, filetype, filename = parts
                 pk = filename.split(".")[0].split("_")[2]
                 prefix = f"o{filetype[0]}"
 
@@ -58,7 +58,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 name,
             ):
                 # file is a thumbnailsource
-                user, filetype, filedir, filename = parts
+                _user, filetype, _filedir, filename = parts
                 pk = filename.split(".")[0].split("_")[1]
                 prefix = "ts"
 
@@ -67,7 +67,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 name,
             ):
                 # file is an imageversion
-                user, filetype, filedir, aspectratio, filename = parts
+                _user, filetype, _filedir, _aspectratio, filename = parts
                 pk = filename.split(".")[0].split("_")[2]
                 prefix = "iv"
 
@@ -76,7 +76,7 @@ class BmaFileSystemStorage(FileSystemStorage):
                 name,
             ):
                 # file is a thumbnail
-                user, filetype, filedir, _, aspectratio, filename = parts
+                _user, filetype, _filedir, _, _aspectratio, filename = parts
                 pk = filename.split(".")[0].split("_")[2]
                 prefix = "t"
 

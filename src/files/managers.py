@@ -120,7 +120,7 @@ class BaseFileQuerySet(RelatedPolymorphicQuerySet):
         If recursive is True then each prefetched album also gets a prefetch list of active files.
         """
         # late import to avoid circular import
-        from albums.models import Album
+        from albums.models import Album  # noqa: PLC0415
 
         if recursive:
             qs = (

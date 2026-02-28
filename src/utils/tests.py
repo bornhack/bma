@@ -235,7 +235,7 @@ class BmaTestBase(TestCase):
             {
                 "title": title,
                 "description": description,
-                "files": files if files else [],
+                "files": files or [],
             },
             headers={"authorization": cls.tokens[getattr(cls, creator)]},
             content_type="application/json",
@@ -259,7 +259,7 @@ class BmaTestBase(TestCase):
             data={
                 "title": title,
                 "description": description,
-                "files": files if files else [],
+                "files": files or [],
             },
             follow=True,
         )

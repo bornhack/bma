@@ -197,7 +197,7 @@ class PictureField(ImageField):
 
     def check(self, **kwargs: str) -> list[ValueError | checks.CheckMessage]:  # type: ignore[override]
         """Run the checks."""
-        return FileField.check(self, **kwargs) + self._check_aspect_ratios() + self._check_width_height_field()  # type: ignore[operator]
+        return FileField.check(self, **kwargs) + self._check_aspect_ratios() + self._check_width_height_field()
 
     def _check_aspect_ratios(self) -> list[ValueError]:
         """Check each aspect ratio configured on the field."""

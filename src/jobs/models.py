@@ -178,7 +178,7 @@ class ImageConversionJob(ImageJob):
 
     def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
         """Save the result of an ImageConversionJob."""
-        from images.models import ImageVersion
+        from images.models import ImageVersion  # noqa: PLC0415
 
         # create model instance
         image = ImageVersion(
@@ -226,7 +226,7 @@ class ThumbnailSourceJob(BaseJob):
 
     def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
         """Handle the result of a ThumbnailSourceJob."""
-        from files.models import ThumbnailSource
+        from files.models import ThumbnailSource  # noqa: PLC0415
 
         # delete any existing ThumbnailSource for this file
         ts = ThumbnailSource(  # type: ignore[misc]
@@ -266,7 +266,7 @@ class ThumbnailJob(ImageJob):
 
     def handle_result(self, f: UploadedFile, data: dict[str, str]) -> None:
         """Save the result of a ThumbnailJob as a Thumbnail object."""
-        from files.models import Thumbnail
+        from files.models import Thumbnail  # noqa: PLC0415
 
         # set thumbnailsource FK?
         if hasattr(self.basefile, "thumbnailsource"):

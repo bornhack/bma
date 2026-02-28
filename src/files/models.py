@@ -234,7 +234,7 @@ class BaseFile(PolymorphicModel):  # type: ignore[django-manager-missing]
     @property
     def source(self) -> str:
         """Consider the BMA canonical URL the source if no other source has been specified."""
-        return self.original_source if self.original_source else self.get_absolute_url()
+        return self.original_source or self.get_absolute_url()
 
     def get_absolute_url(self) -> str:
         """The detail url for the file."""
@@ -392,7 +392,7 @@ class BaseFile(PolymorphicModel):  # type: ignore[django-manager-missing]
                 continue
 
             # file missing, an unfinished job to create one should exist
-            job, created = ThumbnailJob.objects.get_or_create(
+            job, _created = ThumbnailJob.objects.get_or_create(
                 basefile=self,
                 width=version.width,
                 height=version.height,

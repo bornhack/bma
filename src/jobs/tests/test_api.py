@@ -196,7 +196,7 @@ class TestJobsApi(BmaTestBase):
         filepath: str | Path = settings.BASE_DIR / "static_src/images/file-video-solid.png"
         with Path(filepath).open("rb") as f:
             payload = {
-                "data": data if data else f,
+                "data": data or f,
                 "client": json.dumps(
                     {"client_uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "client_version": "test-1.2.3"}
                 ),

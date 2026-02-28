@@ -87,15 +87,15 @@ def upload(  # noqa: C901,PLR0913
 
     Model: type[Image | Video | Audio | Document]  # noqa: N806
     if data["mimetype"] in settings.ALLOWED_IMAGE_TYPES:
-        from images.models import Image as Model
+        from images.models import Image as Model  # noqa: PLC0415
 
         data["aspect_ratio"] = Fraction(data["width"], data["height"])
     elif data["mimetype"] in settings.ALLOWED_VIDEO_TYPES:
-        from videos.models import Video as Model
+        from videos.models import Video as Model  # noqa: PLC0415
     elif data["mimetype"] in settings.ALLOWED_AUDIO_TYPES:
-        from audios.models import Audio as Model
+        from audios.models import Audio as Model  # noqa: PLC0415
     elif data["mimetype"] in settings.ALLOWED_DOCUMENT_TYPES:
-        from documents.models import Document as Model
+        from documents.models import Document as Model  # noqa: PLC0415
     else:
         return 422, {"message": "File type not supported"}
 

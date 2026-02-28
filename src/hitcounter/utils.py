@@ -113,4 +113,4 @@ def get_ip(request: HttpRequest) -> str:
     # this will raise an exception if the IP is not valid
     validate_ip(ip_address.strip())
     # all good
-    return ip_address
+    return str(ip_address)

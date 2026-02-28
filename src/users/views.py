@@ -63,7 +63,7 @@ class BmaCliConfigDownloadView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:  # type: ignore[no-untyped-def]
         """Return the JSON config."""
         redirect_uris = [f"https://{hostname}/api/csrf/" for hostname in settings.ALLOWED_HOSTS]
-        app, app_created = Application.objects.get_or_create(
+        app, _created = Application.objects.get_or_create(
             user=request.user,
             redirect_uris=" ".join(redirect_uris),
             client_type="public",

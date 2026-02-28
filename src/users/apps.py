@@ -13,10 +13,10 @@ class UsersConfig(AppConfig):
 
     def ready(self) -> None:
         """Connect signal to create groups on first request."""
-        from utils.signals import bma_startup
+        from utils.signals import bma_startup  # noqa: PLC0415
 
-        from .models import User
-        from .signals import create_webapp_oauth_app
+        from .models import User  # noqa: PLC0415
+        from .signals import create_webapp_oauth_app  # noqa: PLC0415
 
         request_started.connect(bma_startup, dispatch_uid="bma_startup_signal")
         post_save.connect(create_webapp_oauth_app, sender=User, dispatch_uid="create_webapp_oauth_app")

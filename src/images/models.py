@@ -117,7 +117,7 @@ class Image(BaseFile):  # type: ignore[django-manager-missing]
             if self.get_fullsize_version(mimetype=mimetype):
                 continue
             # create job for this filetype
-            job, created = ImageConversionJob.objects.get_or_create(
+            ImageConversionJob.objects.get_or_create(
                 basefile=self,
                 width=self.width,
                 height=self.height,
@@ -129,7 +129,7 @@ class Image(BaseFile):  # type: ignore[django-manager-missing]
     def create_exif_job(self) -> None:
         """Create exif data extraction job."""
         # get exif data?
-        job, created = ImageExifExtractionJob.objects.get_or_create(
+        ImageExifExtractionJob.objects.get_or_create(
             basefile=self,
             source_url=self.original.url,
             finished=False,
@@ -142,7 +142,7 @@ class Image(BaseFile):  # type: ignore[django-manager-missing]
             if version.path.exists():
                 continue
             # file missing, a new job must be created
-            job, created = ImageConversionJob.objects.get_or_create(
+            ImageConversionJob.objects.get_or_create(
                 basefile=self,
                 width=version.width,
                 height=version.height,
