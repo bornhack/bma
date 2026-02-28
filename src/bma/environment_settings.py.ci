@@ -28,6 +28,7 @@ DATABASES = {
 }
 
 ADMINS = [("admin", "admin@example.com")]
+DEFAULT_FROM_EMAIL="admin@example.com"
 
 # admin site url prefix, set to 'admin' for /admin/
 ADMIN_PREFIX = "admin"
