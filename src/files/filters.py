@@ -258,7 +258,7 @@ class FileFilter(django_filters.FilterSet):
     def filter_taggers_any(
         self, queryset: models.QuerySet[BaseFile], name: str, value: str
     ) -> models.QuerySet[BaseFile]:
-        """Include only files tagged by any of the selected tags."""
+        """Include only files tagged by any of the selected taggers."""
         if not value:
             return queryset
         return queryset.filter(taggings__tagger__handle__in=value)
