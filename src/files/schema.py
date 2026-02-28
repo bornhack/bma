@@ -29,11 +29,11 @@ class UploadRequestSchema(ModelSchema):
     width: int | None = None
     height: int | None = None
 
-    class Config:
+    class Meta:
         """Specify trivial model fields."""
 
         model = BaseFile
-        model_fields = ("attribution",)
+        fields = ("attribution",)
 
 
 class FileUpdateRequestSchema(ModelSchema):
@@ -44,11 +44,11 @@ class FileUpdateRequestSchema(ModelSchema):
     original_source: str | None = ""
     attribution: str | None = ""
 
-    class Config:
+    class Meta:
         """Specify the model fields to allow."""
 
         model = BaseFile
-        model_fields = (
+        fields = (
             "title",
             "description",
             "original_source",
@@ -105,11 +105,11 @@ class FileResponseSchema(ModelSchema):
     height: int | None = None
     aspect_ratio: str | None = None
 
-    class Config:
+    class Meta:
         """Specify the model fields to include."""
 
         model = BaseFile
-        model_fields = (
+        fields = (
             "uuid",
             "uploader",
             "created_at",

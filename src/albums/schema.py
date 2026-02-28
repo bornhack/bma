@@ -18,11 +18,11 @@ class AlbumRequestSchema(ModelSchema):
     description: str = ""
     files: Sequence[uuid.UUID] = []
 
-    class Config:
+    class Meta:
         """Set model and fields."""
 
         model = Album
-        model_fields = ("title", "description", "files")
+        fields = ("title", "description", "files")
 
 
 """Response schemas below here."""
@@ -34,11 +34,11 @@ class AlbumResponseSchema(ModelSchema):
     links: dict[str, str | dict[str, str]]
     files: Sequence[uuid.UUID] = []
 
-    class Config:
+    class Meta:
         """Set model and fields."""
 
         model = Album
-        model_fields = (
+        fields = (
             "uuid",
             "owner",
             "created_at",

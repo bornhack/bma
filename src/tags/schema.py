@@ -24,11 +24,11 @@ class TagResponseSchema(ModelSchema):
     slug: str
     weight: int
 
-    class Config:
+    class Meta:
         """Specify the model fields to allow."""
 
         model = BmaTag
-        model_fields = ("name", "slug")
+        fields = ("name", "slug")
 
     @staticmethod
     def resolve_weight(obj: BmaTag) -> int:
