@@ -138,6 +138,7 @@ class TestFileViews(BmaTestBase):
 
         # change it up
         self.change_initial_test_files()
+        self.client.login(username="moderator4", password="secret")
 
         # test approved filter
         self.assert_file_list_rows(5, qs="?approved=true")
@@ -169,10 +170,12 @@ class TestFileViews(BmaTestBase):
 
     def test_file_list_view_taggers_filters(self) -> None:
         """Test the taggers filter of the file list view."""
+        self.change_initial_test_files()
         # use moderator so all files are visible
         self.client.login(username="moderator4", password="secret")
 
-        self.change_initial_test_files()
+        # user should be able to see 24 files now
+        self.assert_file_list_rows(24)
 
         # test taggers_all filter
         self.assert_file_list_rows(0, qs="?taggers_all=creator2&taggers_all=creator3")
