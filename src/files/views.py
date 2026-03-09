@@ -333,7 +333,7 @@ class FileMultipleActionView(LoginRequiredMixin, FormView):  # type: ignore[type
 ########## File job and album views ######################################################
 
 
-class FileJobsView(SingleTableMixin, FilterView):
+class FileJobsView(FileViewMixin, SingleTableMixin, FilterView):
     """File jobs view. Shows all jobs for a file."""
 
     template_name = "file_jobs.html"
@@ -342,18 +342,15 @@ class FileJobsView(SingleTableMixin, FilterView):
     table_class = JobTable
     filterset_class = JobFilter
 
-    def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:
+    def get_queryset(self, queryset: models.QuerySet[BaseJob] | None = None) -> models.QuerySet[BaseJob]:  # type: ignore[override]
         """Get jobs."""
-        self.file = get_object_or_404(
-            BaseFile.objects.get_permitted(user=self.request.user), uuid=self.kwargs["file_uuid"]
-        )
         return BaseJob.objects.filter(basefile=self.file)
 
     def get_context_data(self, **kwargs: dict[str, str]) -> dict[str, str]:
         """Add total_jobs to context."""
         context = super().get_context_data(**kwargs)
         context["total_jobs"] = self.file.jobs.count()
-        return context  # type: ignore[no-any-return]
+        return context
 
 
 class FileAlbumsView(FileViewMixin, SingleTableMixin, FilterView):

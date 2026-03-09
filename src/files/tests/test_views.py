@@ -267,6 +267,17 @@ class TestFileViews(BmaTestBase):
         rows = soup.select("div.table-container > table > tbody > tr")
         assert len(rows) == 2, "did not get 2 rows in file tag list view"
 
+    ######### FILE JOB LIST ####################################
+
+    def test_file_job_list_view(self) -> None:
+        """Test the file job list view."""
+        self.client.login(username="creator2", password="secret")
+        response = self.client.get(reverse("files:file_jobs", kwargs={"file_uuid": self.files[0]}))
+        content = response.content.decode()
+        soup = BeautifulSoup(content, "html.parser")
+        rows = soup.select("div.table-container > table > tbody > tr")
+        assert len(rows) == 25, "did not get 25 rows in file job list view"
+
     ######### FILE TAG CREATE ####################################
 
     def test_file_tag_create_view(self) -> None:
