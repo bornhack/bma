@@ -24,7 +24,7 @@ dependencies = [
     "django-filter==25.2",
     "django-guardian==3.3.0",
     "django-htmx==1.27.0",
-    "django-ninja==1.6.0",
+    "django-ninja==1.6.2",
     "django-stubs-ext==5.2.9",
     "django-tables2==2.8.0",
     "django-oauth-toolkit==3.2.0",
