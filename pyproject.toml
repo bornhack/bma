@@ -33,7 +33,7 @@ dependencies = [
     "environs[django]==14.6.0",
     "fontawesomefree==6.6.0",
     "orjson==3.11.7",
-    "psycopg2-binary==2.9.10",
+    "psycopg2-binary==2.9.11",
     "shortuuid==1.0.13",
 ]
 [project.optional-dependencies]
