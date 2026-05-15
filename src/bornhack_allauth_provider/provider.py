@@ -17,7 +17,7 @@ class BornHackProvider(OpenIDConnectProvider):
 
     def extract_uid(self, data: dict[str, str]) -> str:
         """Get BornHack username from the OIDC standard claim 'sub'."""
-        return str(data["sub"])
+        return str(data["userinfo"]["sub"])
 
     def extract_common_fields(self, data: dict[str, str]) -> dict[str, str]:
         """Map OIDC user claims to the data dict used in BornHackSocialAccountAdapter.populate_user()."""
