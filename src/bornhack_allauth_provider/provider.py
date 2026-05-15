@@ -23,11 +23,11 @@ class BornHackProvider(OpenIDConnectProvider):
         """Map OIDC user claims to the data dict used in BornHackSocialAccountAdapter.populate_user()."""
         return {
             # standard OIDC user claims
-            "username": str(data["sub"]),
-            "handle": str(data.get("preferred_username", "")),
+            "username": str(data["userinfo"]["sub"]),
+            "handle": str(data["userinfo"].get("preferred_username", "")),
             # custom BornHack user claims
-            "description": str(data.get("bornhack:v2:description", "")),
-            "public_credit_name": str(data.get("bornhack:v2:public_credit_name", "BMA user")),
+            "description": str(data["userinfo"].get("bornhack:v2:description", "")),
+            "public_credit_name": str(data["userinfo"].get("bornhack:v2:public_credit_name", "BMA user")),
         }
 
 
