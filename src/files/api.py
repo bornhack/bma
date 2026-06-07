@@ -90,6 +90,8 @@ def upload(  # noqa: C901,PLR0913
         from images.models import Image as Model  # noqa: PLC0415
 
         data["aspect_ratio"] = Fraction(data["width"], data["height"])
+        if data["aspect_ratio"] == "1":
+            data["aspect_ratio"] = "1/1"
     elif data["mimetype"] in settings.ALLOWED_VIDEO_TYPES:
         from videos.models import Video as Model  # noqa: PLC0415
     elif data["mimetype"] in settings.ALLOWED_AUDIO_TYPES:
