@@ -48,8 +48,8 @@ class AlbumListView(SingleTableMixin, FilterView):
     context_object_name = "albums"
 
     def get_queryset(self) -> models.QuerySet[Album]:
-        """Annotate albums with memberships."""
-        return Album.objects.annotate_memberships().all()
+        """Annotate albums with memberships. Exclude empty albums for now."""
+        return Album.objects.annotate_memberships().exclude(active_memberships=0).all()
 
 
 class AlbumDetailView(SingleTableMixin, FilterView):
