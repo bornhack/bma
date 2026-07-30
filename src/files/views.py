@@ -81,7 +81,11 @@ class FileUploadView(LoginRequiredMixin, FormView):  # type: ignore[type-arg]
 
 
 class FileListView(SingleTableMixin, FilterView):
-    """File list view."""
+    """File list view.
+
+    Default sorting is newest first, controlled by the FileFilter.qs property.
+    Users can change sorting using the "Sort by" dropdown in the filter panel.
+    """
 
     table_class = FileTable
     template_name = "file_list.html"
@@ -93,8 +97,8 @@ class FileListView(SingleTableMixin, FilterView):
         """Template name depends on the type of listview."""
         return [f"{self.request.resolver_match.url_name}.html"]
 
-    def get_queryset(self, queryset: models.QuerySet[BaseFile] | None = None) -> models.QuerySet[BaseFile]:
-        """Prefetch and annotate as needed."""
+    def get_queryset(self) -> models.QuerySet[BaseFile]:
+        """Prefetch and annotate as needed. Ordering is handled by FileFilter.qs."""
         return (
             BaseFile.objects.get_permitted(user=self.request.user)
             .prefetch_image_version_list()

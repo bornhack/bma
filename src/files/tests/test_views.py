@@ -195,6 +195,40 @@ class TestFileViews(BmaTestBase):
         self.change_initial_test_files()
         self.assert_file_list_rows(3, qs="?tagged_all=more-fire")
 
+    ######### FILE LIST SORTING ##################################
+    def test_file_list_view_default_sort(self) -> None:
+        """Test that the default sort is newest first (descending created_at)."""
+        self.client.login(username="moderator4", password="secret")
+        url = reverse("files:file_list_table")
+        response = self.client.get(url)
+        content = response.content.decode()
+        soup = BeautifulSoup(content, "html.parser")
+        rows = soup.select("div.table-container > table > tbody > tr")
+        # should get all 24 files
+        self.assertEqual(len(rows), 24)
+
+    def test_file_list_view_sort_newest_first(self) -> None:
+        """Test sorting by newest first."""
+        self.client.login(username="moderator4", password="secret")
+        self.assert_file_list_rows(24, qs="?sort=-created_at")
+
+    def test_file_list_view_sort_oldest_first(self) -> None:
+        """Test sorting by oldest first."""
+        self.client.login(username="moderator4", password="secret")
+        self.assert_file_list_rows(24, qs="?sort=created_at")
+
+    def test_file_list_view_sort_title(self) -> None:
+        """Test sorting by title."""
+        self.client.login(username="moderator4", password="secret")
+        self.assert_file_list_rows(24, qs="?sort=title")
+        self.assert_file_list_rows(24, qs="?sort=-title")
+
+    def test_file_list_view_sort_hitcount(self) -> None:
+        """Test sorting by popularity (hitcount)."""
+        self.client.login(username="moderator4", password="secret")
+        self.assert_file_list_rows(24, qs="?sort=-hitcount")
+        self.assert_file_list_rows(24, qs="?sort=hitcount")
+
     ######### FILE MULTIPLE ACTION ######################################
 
     def test_file_multiple_actions_view(self) -> None:

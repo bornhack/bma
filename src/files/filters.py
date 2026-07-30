@@ -37,6 +37,20 @@ class FileFilters(ListFilters):
     sorting: FileAlbumSortingChoices | None = None
 
 
+# Sorting choices for the web UI FileFilter.
+# Uses Django-style ordering strings (prefix with "-" for descending).
+SORT_CHOICES = (
+    ("-created_at", "Newest first"),
+    ("created_at", "Oldest first"),
+    ("-updated_at", "Recently updated"),
+    ("updated_at", "Least recently updated"),
+    ("title", "Title (A-Z)"),
+    ("-title", "Title (Z-A)"),
+    ("-hitcount", "Most popular"),
+    ("hitcount", "Least popular"),
+)
+
+
 def get_uploader_widget_data() -> list[tuple[str, str]]:
     """Use handle and display name in the widget."""
     return [
@@ -78,8 +92,32 @@ class FileFilter(django_filters.FilterSet):
 
     @property
     def qs(self) -> models.QuerySet[BaseFile]:
-        """This is called after filtering."""
-        return super().qs  # type: ignore[no-any-return]
+        """Apply sorting after filtering, default to newest first."""
+        qs = super().qs
+        sort = self.data.get("sort") if self.data else None
+        if sort:
+            if sort in ("-hitcount", "hitcount"):
+                qs = qs.annotate(hitcount=models.Count("hits", distinct=True))
+            qs = qs.order_by(sort)
+        else:
+            qs = qs.order_by("-created_at")
+        return qs  # type: ignore[no-any-return]
+
+    ####### SORTING ##################
+    sort = django_filters.ChoiceFilter(
+        choices=SORT_CHOICES,
+        label="Sort by",
+        method="filter_sort",
+    )
+
+    def filter_sort(self, queryset: models.QuerySet[BaseFile], name: str, value: str) -> models.QuerySet[BaseFile]:
+        """No-op: actual sorting is applied in the qs property.
+
+        This method exists because django_filters requires a method for
+        custom filters, but we handle ordering in the qs property to
+        ensure it runs after all other filters.
+        """
+        return queryset
 
     ####### FILETYPES ##############
     file_types = django_filters.MultipleChoiceFilter(
