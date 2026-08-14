@@ -12,7 +12,7 @@ from users.views import BmaCliConfigDownloadView
 from users.views import UserSettingsUpdateView
 from users.views import UserSettingsView
 from utils.admin import file_admin
-from utils.views import csrfview
+from utils.views import csrfview, robotstxtview
 
 from .oauth2_urls import oauth2_endpoint_views
 
@@ -21,6 +21,7 @@ urlpatterns = [
     path("manage/", file_admin.urls),
     path("accounts/", include("allauth.urls")),
     path("api/csrf/", csrfview),
+    path("robots.txt", robotstxtview),
     path("o/", include((oauth2_endpoint_views, "oauth2_provider"), namespace="oauth2_provider")),
     path("", include("frontpage.urls")),
     path("files/", include("files.urls", namespace="files")),
