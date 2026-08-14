@@ -13,7 +13,7 @@ def csrfview(request: HttpRequest) -> HttpResponse:
 
 
 def robotstxtview(request: HttpRequest) -> HttpResponse:
-    """This view just returns a plain robots.txt"""
+    """This view just returns a plain robots.txt."""
     return """
 User-agent: *
 Disallow: /
