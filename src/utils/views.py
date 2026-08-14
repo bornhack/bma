@@ -10,3 +10,11 @@ def csrfview(request: HttpRequest) -> HttpResponse:
     """This view just returns a csrf token for use in API calls."""
     token = get_token(request)
     return render(request, "csrf.html", {"csrftoken": token})
+
+
+def robotstxtview(request: HttpRequest) -> HttpResponse:
+    """This view just returns a plain robots.txt."""
+    return """
+User-agent: *
+Disallow: /
+    """
