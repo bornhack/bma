@@ -12,7 +12,8 @@ from users.views import BmaCliConfigDownloadView
 from users.views import UserSettingsUpdateView
 from users.views import UserSettingsView
 from utils.admin import file_admin
-from utils.views import csrfview, robotstxtview
+from utils.views import csrfview
+from utils.views import robotstxtview
 
 from .oauth2_urls import oauth2_endpoint_views
 
