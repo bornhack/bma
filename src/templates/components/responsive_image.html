@@ -1,0 +1,38 @@
+{% comment %}
+{# 
+    Responsive image component.
+
+    srcset contains all available image versions. The browser uses
+    "sizes" to estimate how wide the image will actually be displayed,
+    and then chooses the most appropriate srcset candidate.
+
+    "sizes" should describe the CSS/display width of the image,
+    NOT the physical resolution of the screen. For example:
+        33.333vw = roughly one third of the viewport
+        25vw     = roughly one quarter
+        20vw     = roughly one fifth
+        16.667vw = roughly one sixth
+
+    The aspect ratio is used by render_source_set to find the
+    corresponding ImageVersion objects. BMA stores ratios as strings
+    such as "3113/4670", which are converted to Fraction objects
+    inside the template tag.
+{% endcomment %}
+<picture class="bma-responsive-image">
+    <source
+        srcset="{% render_source_set image=image mimetype='image/webp' aspect_ratio=ratio %}"
+        sizes="{{ sizes }}"
+        type="image/webp"
+    >
+    <img
+        src="{{ image.original.url }}"
+        width="{{ image.width }}"
+        height="{{ image.height }}"
+        alt="{{ alt|default:"" }}"
+        loading="{{ loading|default:'lazy' }}"
+        {% if fetchpriority %}fetchpriority="{{ fetchpriority }}"{% endif %}
+        decoding="async"
+        class="bma-responsive-image img-fluid shadow-sm squircle"
+        style="aspect-ratio: 1 / 1; object-fit: cover; border: none; padding: 0;"
+    >
+</picture>

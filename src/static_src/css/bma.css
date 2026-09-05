@@ -1,7 +1,98 @@
-/* why is this here? */
-main > .container {
-    padding: 60px 15px 0;
+/*========================================================================
+//* ?                BornHack Media Archive CSS Styling
+/*========================================================================**/
+
+/* Add bootstrap to separate layer, allowing for more control and ability to override: */
+@layer bootstrap, base;
+
+@import url("/static/css/vendor/bootstrap-v5.3.3.bmacustom.css") layer(bootstrap);
+
+/* Trying to make Bootstrap's collapse transition a bit smoother: */
+@layer bootstrap {
+  .collapse {
+    transition: 0.4s ease-in-out;
+  }
+  .collapse:not(.show) {
+    transition: 0.6s ease-in-out;
+  }
 }
+/* Eeeeeverything else is in 'base' layer: */
+@layer base {
+/*--------------------------------------------
+ *                Animations
+ *         (and kinda accessibility) 
+/*---------------------------------------------*/
+@media (prefers-reduced-motion: no-preference) {  
+  .nav-link:hover {
+      transform: scale(1.05);
+      color:rgb(255, 255, 255);      
+  }
+
+  .bma-responsive-image:hover {
+    img {
+      transform: scale(1.055);
+      zoom: 1.055;
+      transition: all 0.25s ease-in-out;
+    }
+  }
+
+  /* A F*cking TRANSITION BETWEEN VIEWS! How cool is that!?? */
+  @view-transition {
+    navigation: auto;
+  }
+}
+/*--------------------------------------------
+ *               Color Schemes
+/*---------------------------------------------*/
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #152331;  /* fallback for old browsers */
+    background: linear-gradient(to top, #000000, #152331);
+    background: -webkit-linear-gradient(to top, #000000, #152331);
+  }
+  .navbar {
+    background-color: rgba(14, 15, 16);
+    backdrop-filter: blur(18px);
+    text-rendering: optimizeLegibility;
+  } 
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background: #f5f7fa;  /* fallback for old browsers */
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: -webkit-linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  .navbar {
+    background-color: rgba(14, 15, 16, 0.9);
+    backdrop-filter: blur(18px);
+    text-rendering: optimizeLegibility;
+  }
+}
+
+nav .nav-link {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Make ~fancy~ corners */
+/* Credit to: https://gist.github.com/pouyakary for squircles */
+.squircle {
+  --squircle-displacement:
+      25pt;
+
+  clip-path: shape(
+    from 0 var(--squircle-displacement),
+    curve to var(--squircle-displacement) 0 with 0 0 / 0 0,
+    hline to calc(100% - var(--squircle-displacement)),
+    curve to 100% var(--squircle-displacement) with 100% 0 / 100% 0,
+    vline to calc(100% - var(--squircle-displacement)),
+    curve to calc(100% - var(--squircle-displacement)) 100% with 100% 100% / 100% 100%,
+    hline to var(--squircle-displacement),
+    curve to 0 calc(100% - var(--squircle-displacement)) with 0 100% / 0 100%,
+    close
+  );
+}
+
 
 /* photoswipe captions start
  * https://photoswipe.com/caption/
@@ -115,7 +206,7 @@ div.image-hover.zoom:hover i::before{
 /* hover effect on thumbnails end */
 
 /* make navbar colors in darkmode */
-@media (prefers-color-scheme: dark) { .bg-dark { background-color: var(--bs-gray-800) !important }}
+/*@media (prefers-color-scheme: dark) { .bg-dark { background-color: var(--bs-gray-800) !important }}*/
 
 /* File upload page floating delete action button */
 .fab-delete {
@@ -141,3 +232,5 @@ div.image-hover.zoom:hover i::before{
 
 /* remove dropzone preview background */
 .dropzone .dz-preview.dz-image-preview{background: unset !important}
+
+}

@@ -155,29 +155,40 @@ class Image(BaseFile):  # type: ignore[django-manager-missing]
     def get_versions(
         self, mimetype: str | None = None, aspect_ratio: Fraction | None = None
     ) -> dict[Fraction | None, dict[str, dict[int, "ImageVersion"]]]:
-        """Get image versions. Return a dict with ratio: mimetype: size: ImageVersion dicts.
-
-        Performance sensitive, called from template tags, do not break prefetching. Loop over
-        self.image_version_list instead of self.image_versions.filter().
-        """
+        """Get image versions grouped by: aspect ratio, MIME type and width."""
         versions = {}
-        kwargs = {
-            "aspect_ratio": aspect_ratio or self.aspect_ratio,
-        }
-        # filter by mimetype?
-        if mimetype:
-            kwargs["mimetype"] = mimetype
-        # use requested custom AR or Image original AR
+        try:
+            default_ratio = (
+                Fraction(self.aspect_ratio) if self.aspect_ratio else None
+                )
+        except (ValueError, ZeroDivisionError):                                             
+            default_ratio = None
+
+        requested_ratio = (
+            aspect_ratio if aspect_ratio is not None else default_ratio 
+        )                                                          
+        # image_version_list is populated by prefetch_image_version_list().
+        # IMPORTANT: use this prefetched list rather than self.image_versions.filter()
+        # because this function is performance-sensitive and should not trigger
+        # additional database queries.
+
         for version in self.image_version_list:  # type: ignore[attr-defined]
-            if version.aspect_ratio != kwargs["aspect_ratio"]:
+            ratio = Fraction(version.aspect_ratio)                                          
+            
+            if ratio != requested_ratio:    #(If it isn't None)
                 continue
-            if "mimetype" in kwargs and version.mimetype != kwargs["mimetype"]:
+            # If a mimetype was requested, ignore versions using another format.
+            if mimetype is not None and version.mimetype != mimetype:
                 continue
-            if version.aspect_ratio not in versions:
-                versions[version.aspect_ratio] = {}
-            if version.mimetype not in versions[version.aspect_ratio]:
-                versions[version.aspect_ratio][version.mimetype] = {}
-            versions[version.aspect_ratio][version.mimetype][version.width] = version
+            # Create the aspect-ratio level of the dictionary if it doesn't exist.
+            if ratio not in versions:
+                versions[ratio] = {}
+            # Create the aspect-ratio level of the dictionary if it doesn't exist.
+            if version.mimetype not in versions[ratio]:
+                versions[ratio][version.mimetype] = {}
+
+            versions[ratio][version.mimetype][version.width] = version
+        # Return all matching versions, grouped by: aspect ratio->mimetype->width.
         return versions
 
     def fullsize_url(self, mimetype: str = "image/webp") -> str:

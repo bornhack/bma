@@ -322,17 +322,20 @@ if DEBUG_TOOLBAR:
     ]
 
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
+DJANGO_TABLES2_TABLE_ATTRS = {
+    "class": "table table-hover",
+}
 
 BOOTSTRAP5 = {
     "css_url": {
         "url": "/static/css/vendor/bootstrap-v5.3.3.bmacustom.css",
         "integrity": "sha384-NSDJNX0+9+JzRVqkB3YCbc+RPJViTJTxRtbNxtPdijmG31S8GbNfHNX3ycwBm632",
-        "crossorigin": "anonymous",
+        "crossorigin": "anonymous",      
     },
     "javascript_url": {
-        "url": "/static/js/vendor/bootstrap-v5.3.3.bundle.min.js",
-        "integrity": "sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz",
-        "crossorigin": "anonymous",
+                "url": "/static/js/vendor/bootstrap-v5.3.3.bundle.min.js",
+                "integrity": "sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz",
+                "crossorigin": "anonymous",
     },
 }
 
@@ -354,9 +357,4 @@ PICTURES = {
     "PIXEL_DENSITIES": [1, 2],
     "USE_PLACEHOLDERS": False,
     "PROCESSOR": "images.picture_processor.dummy_processor",
-}
-
-
-DJANGO_TABLES2_TABLE_ATTRS = {
-    "class": "table table-hover",
 }

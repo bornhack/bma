@@ -2,22 +2,19 @@
 {% load django_bootstrap5 %}
 {% load render_table from django_tables2 %}
 {% block title %}Album list{% endblock title %}
-
 {% block main_content %}
-  <div class="row">
-
+<section class="row">
     <!-- Sidebar with album filters start -->
-    <div id="AlbumFilters" class="col-xl-2 col-12 collapse collapse-horizontal">
-    {% include "includes/album_filters.html" %}
-    </div>
+    <aside id="AlbumFilters" class="col-md-4 collapse collapse-horizontal">
+        {% include "includes/album_filters.html" %}
+    </aside>
     <!-- Sidebar with album filters end -->
 
     <!-- Main content start -->
-    <div class="col">
+     <section class="col">
       <h1>Albums</h1>
       {% include "includes/album_list_table.html" %}
-    </div>
     <!-- Main content end -->
-
-  </div>
+     </section>
+  </section>
 {% endblock main_content %}

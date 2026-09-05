@@ -46,6 +46,7 @@ class AlbumListView(SingleTableMixin, FilterView):
     template_name = "album_list.html"
     filterset_class = AlbumFilter
     context_object_name = "albums"
+    paginate_by = 10
 
     def get_queryset(self) -> models.QuerySet[Album]:
         """Annotate albums with memberships. Exclude empty albums for now."""

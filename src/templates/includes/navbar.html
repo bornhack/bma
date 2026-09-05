@@ -1,8 +1,8 @@
 {% load static %}
 {% load bma_utils %}
 <!-- Fixed navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
-  <div class="container-fluid">
+<nav class="navbar navbar-expand-lg shadow-lg fixed-top">
+  <div class="col-lg-10 container-md text-center">
     <a class="navbar-brand" href="/">
       <img class="d-inline-block" src="{% static 'images/logo_bma_white.svg' %}" width="275">
     </a>
@@ -12,9 +12,9 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
       <ul class="navbar-nav me-auto mb-2 mb-md-0">
         {# files / albums / tags #}
-        <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "file_list_table" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a></li>
-        <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a></li>
-        <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == "tag_list" %} active{% endif %}" href="{% url 'tags:tag_list' %}">Tags</a></li>
+        <a class="nav-link {% if request.resolver_match.url_name == "file_list_grid" %} active{% endif %}" href="{% url 'files:file_list' %}">Files</a>
+        <a class="nav-link {% if request.resolver_match.url_name == "album_list" %} active{% endif %}" href="{% url 'albums:album_list' %}">Albums</a>
+        <a class="nav-link {% if request.resolver_match.url_name == "tag_list" %} active{% endif %}" href="{% url 'tags:tag_list' %}">Tags</a>
 
       </ul>
       <form class="d-flex">
@@ -30,41 +30,41 @@
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">{% get_group_icons request.user %} {{ request.user.handle }}</a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             {% if request.user.is_creator %}
-              <li><a class="dropdown-item" href="{% url 'files:file_upload' %}"><i class="fas fa-fw fa-upload d-inline-block"></i> Upload Files</a></li>
+              <a class="dropdown-item" href="{% url 'files:file_upload' %}"><i class="fas fa-fw fa-upload d-inline-block"></i> Upload Files</a>
             {% endif %}
 
             {% if request.user.is_staff %}
-              <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-fw fa-hammer d-inline-block"></i> Django Admin</a></li>
+              <a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-fw fa-hammer d-inline-block"></i> Django Admin</a>
             {% endif %}
 
             {% if request.user.is_creator or request.user.is_moderator %}
-              <li><a class="dropdown-item" href="{% url 'file_admin:files_basefile_changelist' %}"><i class="fas fa-fw fa-solid fa-table-cells-column-lock d-inline-block"></i> Manage Files</a></li>
+              <a class="dropdown-item" href="{% url 'file_admin:files_basefile_changelist' %}"><i class="fas fa-fw fa-solid fa-table-cells-column-lock d-inline-block"></i> Manage Files</a>
             {% endif %}
 
-            <li><a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-fw fa-user d-inline-block"></i> Show Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> Settings</a></li>
-            <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-fw fa-sign-out d-inline-block"></i> Logout</a></li>
+            <a class="dropdown-item" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-fw fa-user d-inline-block"></i> Show Profile</a>
+            <a class="dropdown-item" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> Settings</a>
+            <a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-fw fa-sign-out d-inline-block"></i> Logout</a>
           </ul>
         </div>
         {# Small screen usermenu #}
         <div class="d-lg-none">
           <ul class="navbar-nav">
-            <li><a class="nav-link" href="#">{% get_group_icons request.user %} {{ request.user.handle }}</a></li>
+            <a class="nav-link" href="#">{% get_group_icons request.user %} {{ request.user.handle }}</a>
             {% if request.user.is_creator %}
-              <li><a class="nav-link" href="{% url 'files:file_upload' %}"><i class="fas fa-fw fa-upload d-inline-block"></i> Upload Files</a></li>
+              <a class="nav-link" href="{% url 'files:file_upload' %}"><i class="fas fa-fw fa-upload d-inline-block"></i> Upload Files</a>
             {% endif %}
 
             {% if request.user.is_staff %}
-              <li><a class="nav-link" href="{% url 'admin:index' %}"><i class="fas fa-fw fa-hammer d-inline-block"></i> Django Admin</a></li>
+              <a class="nav-link" href="{% url 'admin:index' %}"><i class="fas fa-fw fa-hammer d-inline-block"></i> Django Admin</a>
             {% endif %}
 
             {% if request.user.is_creator or request.user.is_moderator %}
-              <li><a class="nav-link" href="{% url 'file_admin:files_basefile_changelist' %}"><i class="fas fa-fw fa-solid fa-table-cells-column-lock d-inline-block"></i> Manage Files</a></li>
+              <a class="nav-link" href="{% url 'file_admin:files_basefile_changelist' %}"><i class="fas fa-fw fa-solid fa-table-cells-column-lock d-inline-block"></i> Manage Files</a>
             {% endif %}
 
-            <li><a class="nav-link" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-fw fa-user d-inline-block"></i> Show Profile</a></li>
-            <li><a class="nav-link" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> User Settings</a></li>
-            <li><a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-fw fa-sign-out d-inline-block"></i> Logout</a></li>
+            <a class="nav-link" href="{% url 'users:user_profile' user_handle=request.user.handle %}"><i class="fas fa-fw fa-user d-inline-block"></i> Show Profile</a>
+            <a class="nav-link" href="{% url 'user_settings' %}"><i class="fas fa-fw fa-cog d-inline-block"></i> User Settings</a>
+            <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-fw fa-sign-out d-inline-block"></i> Logout</a>
           </ul>
         </div>
       {% endif %}

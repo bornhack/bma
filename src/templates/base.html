@@ -6,11 +6,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="color-scheme" content="dark light">
     <title>{% block title %}Untitled page{% endblock %} - BornHack Media Archive</title>
 
     <!-- Bootstrap CSS -->
-    {% bootstrap_css %}
+    {# {% bootstrap_css %} #}
 
     <!-- FontAwesome CSS -->
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
@@ -41,29 +42,27 @@
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="d-flex flex-column min-vh-100 bma-no-js {% block body-extra-classes %}{% endblock %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}' hx-ext="json-enc">
-    {% block body %}
-      <header>
-        {% include "includes/navbar.html" %}
-      </header>
+  <body class="bma-no-js min-h100dvh pt-5 {% block body-extra-classes %}{% endblock %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}' hx-ext="json-enc">
+    
+    <header>
+      {% include "includes/navbar.html" %}
+    </header>
 
-      <main class="flex-shrink-0">
-        <div class="container-fluid mt-5 pt-5">
-          {% bootstrap_messages %}
-          <!-- Begin page content -->
-          {% block main_content %}
-            <p class="lead">This is the default content of the block 'body' in the base.html template of the BMA project. Please replace in templates inheriting from base.html</p>
-          {% endblock main_content %}
-        </div>
+      <main class="container col-lg-10 col- pt-4">
+      {% bootstrap_messages %}
+      <!-- Begin page content -->
+      {% block main_content %}
+      <p class="lead">This is the default content of the block 'body' in the base.html template of the BMA project. Please replace in templates inheriting from base.html</p>
+      {% endblock main_content %}
       </main>
 
-      <footer class="footer mt-auto py-3">
-        <div class="container">
-          <span class="text-muted">BMA Version {{ bma_version }}</span>
-          <span>| <a href="https://bornhack.dk/privacy-policy/">Privacy policy</a></span>
-          <span>| <a href="https://bornhack.dk/contact/">Contact</a></span>
-        </div>
-      </footer>
-    {% endblock body %}
+    <footer class="footer mt-auto py-3">
+      <div class="container">
+        <span class="text-muted">BMA Version {{ bma_version }}</span>
+        <span>| <a href="https://bornhack.dk/privacy-policy/">Privacy policy</a></span>
+        <span>| <a href="https://bornhack.dk/contact/">Contact</a></span>
+      </div>
+    </footer>
+    
   </body>
 </html>
