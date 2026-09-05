@@ -147,16 +147,16 @@ def media_query(container_width: int | None = None, **kwargs: str) -> str:
 
 
 @register.simple_tag()
-def render_source_set(*, image: "Image", mimetype: str, aspect_ratio: Fraction | None = None) -> str:
+def render_source_set(*, image: "Image", mimetype: str, aspect_ratio: Fraction | str | None = None) -> str:
     """Return a source set for an image with all the versions of a given mimetype and AR."""
-    output = ""
+    if aspect_ratio and not isinstance(aspect_ratio, Fraction):
+        aspect_ratio = Fraction(aspect_ratio)
+
     # if aspect_ratio is None (no custom AR was requested): use the AR of the parent Image
     ratiokey = aspect_ratio or Fraction(image.aspect_ratio)
-    versions = image.get_versions(mimetype=mimetype, aspect_ratio=aspect_ratio).get(ratiokey, {}).get(mimetype, {})
-    for version in versions.values():
-        output += f"{version.imagefile.url} {version.width}w, "
-    # remove trailing ", "
-    return output[:-2]
+    versions = image.get_versions(mimetype=mimetype, aspect_ratio=ratiokey).get(ratiokey, {}).get(mimetype, {})
+
+    return ", ".join(f"{version.imagefile.url} {version.width}w" for version in versions.values())  #.join() is preferable to +=, search: "quadratic time complexity"
 
 
 @register.simple_tag()
