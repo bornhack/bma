@@ -87,7 +87,7 @@ class FileListView(SingleTableMixin, FilterView):
     template_name = "file_list.html"
     filterset_class = FileFilter
     context_object_name = "files"
-    paginator_class = LazyPaginator
+    paginate_by = 25
 
     def get_template_names(self) -> list[str]:
         """Template name depends on the type of listview."""
